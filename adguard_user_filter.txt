@@ -1,0 +1,204 @@
+!*********************************************** PASS
+@@kmcert.com
+@@www.filetender.com
+@@www.alphascan.co.kr
+@@metoc.navy.mil###content
+@@dcimg*.dcinside.co.kr/viewimage.php?
+@@//mk.kakaocdn.net/dna/emoticons/*
+@@sb-talk.kakao.com/$app=KakaoTalk.exe
+@@item.kakao.com/$app=KakaoTalk.exe
+@@ac-sb-talk.kakao.com/$app=KakaoTalk.exe
+@@www.youtube.com*autoplay=1*$domain=www.fmkorea.com
+@@||nice.checkplus.co.kr^
+@@||front.wemakeprice.com/authentication^
+@@||nid.naver.com/oauth2.0^
+@@||auth.danawa.com/sns/callback^
+@@||dadispapi.gmarket.co.kr/target^
+@@||dadispapi.auction.co.kr/target^
+@@||youtube.com/get_video_info^$domain=www.youtube.com
+@@||www.youtube.com/embed^$app=com.android.chrome
+@@||www.youtube.com/embed^$app=com.microsoft.emmx
+@@||ssl.g9.co.kr^$important,document,~extension
+@@||cart.g9.co.kr^$important,document,~extension
+@@||accounts.paradoxplaza.com^$important,document,~extension
+@@||mitem.gmarket.co.kr/Item/CouponGettingBannerList?GoodsCode=*$app=com.ebay.kr.gmarket
+!*********************************************** XXXXX
+google.co.kr^
+ilbe.com^
+womad.life^
+facebook.com###u_0_c
+www.youtube.com*autoplay=1*
+||click.linkprice.com^$important
+||chromefeedcontentsuggestions-pa.googleapis.com^
+!*********************************************** naver
+www.naver.com###news_cast
+www.naver.com##.column_bottom
+www.naver.com##.column_banner
+naver.com##.footer
+naver.com##.sc_newscast
+naver.com##.sc_themecast, .id_enter
+naver.com##.sc_shopcast
+naver.com##.banner_area
+webplayer_*.min.js^$domain=news.naver.com
+!*********************************************** M naver
+m.naver.com##.cw_now_wrap, .MM_NOW_WRAP, .MM_INACTIVE
+m.naver.com##.cw_title_wrap
+m.naver.com###SEARCH_HOME_WRAP > div.grid1.id_cui_recommend_board.MM_PANEL_RECOMMEND:last-child
+m.naver.com##.cw_cont
+m.naver.com###SEARCH_HOME_WRAP > div.grid1.id_cui_commemoration_banner:nth-child(5)
+m.naver.com###SEARCH_HOME_WRAP > div.grid1.id_cui_commemoration_banner.MM_HOME_ISSUEBANNER:nth-child(2)
+m.naver.com##.nmap_wrapper
+m.naver.com###mflick > div.eg-flick-container > div.flick-panel.eg-flick-panel:last-child > div.wrap.id_news > div.grid1_wrap.brick-house:first-child > div.brick-vowel:nth-child(2) > div.grid1.id_cui_thumbnail_video._MM_PAGING:nth-child(5) > div.cui_thumbnail_video.type_ctv_news._MM_PAGING_CONT:first-child
+m.naver.com###mflick > div.eg-flick-container > div.flick-panel.eg-flick-panel:last-child > div.wrap.id_news > div.grid1_wrap.brick-house:first-child > div.brick-vowel:first-child > div.grid1.id_cui_airs_news._MM_NEWS_FEED:nth-child(9) > div.cui_airs_news._MM_NEWS_FEED_AIRS > ul.can_l
+m.naver.com###mflick > div.eg-flick-container > div.flick-panel.eg-flick-panel:last-child > div.wrap.id_news > div.grid1_wrap.brick-house:first-child > div.brick-vowel:first-child > div.grid1.id_cui_airs_news._MM_NEWS_FEED:nth-child(10) > div.cui_airs_news._MM_NEWS_FEED_AIRS > ul.can_l
+m.naver.com###mflick > div.eg-flick-container > div.flick-panel.eg-flick-panel:last-child > div.wrap.id_news > div.grid1_wrap.brick-house:first-child > div.brick-vowel:first-child > div.grid1.id_cui_airs_news._MM_NEWS_FEED:nth-child(11) > div.cui_airs_news._MM_NEWS_FEED_AIRS > ul.can_l
+m.naver.com###mflick > div.eg-flick-container > div.flick-panel.eg-flick-panel:last-child > div.wrap.id_news > div.grid1_wrap.brick-house:first-child > div.brick-vowel:first-child > div.grid1.id_cui_airs_news._MM_NEWS_FEED:last-child > div.cui_airs_news._MM_NEWS_FEED_AIRS > ul.can_l
+m.naver.com###mflick > div.eg-flick-container > div.flick-panel.eg-flick-panel:last-child > div.wrap.id_news > div.grid1_wrap.brick-house:first-child > div.brick-vowel:nth-child(2) > div.grid1.id_cui_airs_news._MM_NEWS_FEED:nth-child(6) > div.cui_airs_news._MM_NEWS_FEED_AIRS > ul.can_l
+m.naver.com###mflick > div.eg-flick-container > div.flick-panel.eg-flick-panel:last-child > div.wrap.id_news > div.grid1_wrap.brick-house:first-child > div.brick-vowel:nth-child(2) > div.grid1.id_cui_airs_news._MM_NEWS_FEED:nth-child(7) > div.cui_airs_news._MM_NEWS_FEED_AIRS > ul.can_l
+m.naver.com###mflick > div.eg-flick-container > div.flick-panel.eg-flick-panel:nth-child(2) > div.wrap.id_news > div.grid1_wrap.brick-house:first-child > div.brick-vowel:first-child > div.grid1.id_cui_series_subscribe:nth-child(4) > div.cui_series_subscribe._MM_PAGING
+m.naver.com###mflick > div.eg-flick-container > div.flick-panel.eg-flick-panel:nth-child(2) > div.wrap.id_news > div.grid1_wrap.brick-house:first-child > div.brick-vowel:first-child > div.grid1.id_cui_channel_journal._MM_PAGING:nth-child(2) > div.cui_channel_journal.ccj_unsubscribe._MM_PAGING_CONT:first-child
+m.naver.com###mflick > div.eg-flick-container > div.flick-panel.eg-flick-panel:nth-child(2) > div.wrap.id_news > div.grid1_wrap.brick-house:first-child > div.brick-vowel:nth-child(2) > div.grid1.id_cui_series_subscribe:nth-child(4) > div.cui_series_subscribe._MM_PAGING > div.css_list_wrap._MM_PAGING_CONT:nth-child(2) > ul.css_reporter_list:first-child
+m.naver.com###mflick > div.eg-flick-container > div.flick-panel.eg-flick-panel:nth-child(2) > div.wrap.id_news > div.grid1_wrap.brick-house:first-child > div.brick-vowel:nth-child(2) > div.grid1.id_cui_series_subscribe:nth-child(4) > div.cui_series_subscribe._MM_PAGING
+m.naver.com###mflick > div.eg-flick-container > div.flick-panel.eg-flick-panel:nth-child(2) > div.wrap.id_news > div.grid1_wrap.brick-house:first-child > div.brick-vowel:nth-child(2) > div.grid1.id_cui_thumbnail_video._MM_PAGING:nth-child(5) > div.cui_thumbnail_video.type_ctv_news._MM_PAGING_CONT:first-child
+m.naver.com###mflick > div.eg-flick-container > div.flick-panel.eg-flick-panel:nth-child(2) > div.wrap.id_news > div.grid1_wrap.brick-house:first-child > div.brick-vowel:first-child > div.grid1.id_cui_airs_news._MM_NEWS_FEED:nth-child(9) > div.cui_airs_news._MM_NEWS_FEED_AIRS > ul.can_l
+m.naver.com###mflick > div.eg-flick-container > div.flick-panel.eg-flick-panel:nth-child(2) > div.wrap.id_news > div.grid1_wrap.brick-house:first-child > div.brick-vowel:first-child > div.grid1.id_cui_airs_news._MM_NEWS_FEED:nth-child(10) > div.cui_airs_news._MM_NEWS_FEED_AIRS > ul.can_l
+m.naver.com###mflick > div.eg-flick-container > div.flick-panel.eg-flick-panel:nth-child(2) > div.wrap.id_news > div.grid1_wrap.brick-house:first-child > div.brick-vowel:first-child > div.grid1.id_cui_airs_news._MM_NEWS_FEED:nth-child(11) > div.cui_airs_news._MM_NEWS_FEED_AIRS > ul.can_l
+m.naver.com###mflick > div.eg-flick-container > div.flick-panel.eg-flick-panel:nth-child(2) > div.wrap.id_news > div.grid1_wrap.brick-house:first-child > div.brick-vowel:first-child > div.grid1.id_cui_airs_news._MM_NEWS_FEED:last-child > div.cui_airs_news._MM_NEWS_FEED_AIRS > ul.can_l
+m.naver.com###mflick > div.eg-flick-container > div.flick-panel.eg-flick-panel:nth-child(2) > div.wrap.id_news > div.grid1_wrap.brick-house:first-child > div.brick-vowel:nth-child(2) > div.grid1.id_cui_airs_news._MM_NEWS_FEED:nth-child(6) > div.cui_airs_news._MM_NEWS_FEED_AIRS > ul.can_l
+m.naver.com###mflick > div.eg-flick-container > div.flick-panel.eg-flick-panel:nth-child(2) > div.wrap.id_news > div.grid1_wrap.brick-house:first-child > div.brick-vowel:nth-child(2) > div.grid1.id_cui_airs_news._MM_NEWS_FEED:nth-child(7) > div.cui_airs_news._MM_NEWS_FEED_AIRS > ul.can_l
+m.naver.com###mflick > div.eg-flick-container > div.flick-panel.eg-flick-panel:first-child > div.wrap.id_news > div.grid1_wrap.brick-house:first-child > div.brick-vowel:first-child > div.grid1.id_cui_channel_journal._MM_PAGING:nth-child(2) > div.cui_channel_journal.ccj_unsubscribe._MM_PAGING_CONT:first-child
+m.naver.com###mflick > div.eg-flick-container > div.flick-panel.eg-flick-panel:first-child > div.wrap.id_news > div.grid1_wrap.brick-house:first-child > div.brick-vowel:first-child > div.grid1.id_cui_series_subscribe:nth-child(4) > div.cui_series_subscribe._MM_PAGING
+m.naver.com###mflick > div.eg-flick-container > div.flick-panel.eg-flick-panel:first-child > div.wrap.id_news > div.grid1_wrap.brick-house:first-child > div.brick-vowel:nth-child(2) > div.grid1.id_cui_series_subscribe:nth-child(4) > div.cui_series_subscribe._MM_PAGING
+!*********************************************** daum & kakao
+tv.kakao.com##li.item_typeL
+daum.net###auto
+daum.net###realestate
+daum.net###kakaotv
+www.daum.net##.box_shopping
+www.daum.net##.wing_tmp
+www.daum.net###cEtc
+www.daum.net###blogTab
+www.daum.net###channelTab
+v.daum.net##.cp_view
+v.daum.net##.inside_view, .hc_news_pc_cEtc_inside_daum
+sports.v.daum.net##.fixed_bar, .vod_open
+sports.v.daum.net##.relate_cluster, .\#cluster, .hc_sports_pc_mArticle_cluster_201801_b
+play.kakao.com###mArticle > div.live_cont.\#live_tab\#recommend_live:nth-child(2)
+play.kakao.com###mArticle > div.live_cont.\#tvplus_tab\#recommend_tvplus:nth-child(2)
+!*********************************************** M daum
+m.daum.net###shopping_box
+m.daum.net###todaySeries
+m.daum.net###channel_news1_top > div.out_ibox:last-child
+m.daum.net###channel_4u_top
+m.daum.net###channel_news2_top > div.out_ibox:last-child
+m.daum.net###channel_tv_top
+m.daum.net###channel_shopping_top
+m.daum.net###channel_money_top
+m.daum.net###channel_homecooking_top
+m.daum.net###channel_pet_top
+m.daum.net###channel_women_top
+m.daum.net###channel_men_top
+m.daum.net###channel_travel_top
+m.daum.net###channel_business_top
+m.daum.net###channel_funnwebtoon_top
+m.daum.net##.bnr_layer, .bnr_appset_v2_low
+v.daum.net##.bnr_layer
+v.daum.net##.wrap_viewrelate
+m.daum.net###channel_news1_top > div.out_ibox:first-child > div.box_g._rubics_area:last-child
+m.daum.net###channel_enter_top > div.out_ibox:last-child > div.box_g._rubics_area:nth-child(2)
+daum.net##.section_media
+m.daum.net###channel_news1_top
+m.daum.net###kkomkkomNewsDiv
+m.daum.net###rankingTvProgramDiv
+news.v.daum.net###kakaoContent > aside:last-child > div:nth-child(4)
+news.v.daum.net###kakaoContent > aside:last-child > div:nth-child(6)
+!*********************************************** pc KakaoTalk
+||mud-kage.kakao.co.kr/dn^$app=KakaoTalk.exe
+||t1.daumcdn.net^$app=KakaoTalk.exe
+||analytics.ad.daum.net^$domain=analytics.ad.daum.net
+!*********************************************** M kakaoTalk tap
+||talkchannel-api.kakao.com
+||talkchannel-log.kakao.com
+||tg.kakao.com
+||mud-kage.kakao.co.kr^
+dns://developers.kakao.com^
+developers.kakao.com^
+dns://kyson.kakao.com^
+kyson.kakao.com^
+dns://m1.daumcdn.net^
+m1.daumcdn.net^
+www.kakaocorp.com^
+dns://brunch.co.kr^
+brunch.co.kr^
+!*********************************************** PotPlayer 64
+211.231.100.32:3300$network,app=PotPlayer64.exe
+||play.kakao.com^$app=PotPlayer64.exe
+||get.daum.net^$app=PotPlayer64.exe
+||kapi.kakao.com^$app=PotPlayer64.exe
+||p1-play.edge4k.com^$app=PotPlayer64.exe
+||t1.daumcdn.net^$domain=tv.kakao.com,app=PotPlayer64.exe
+!*********************************************** smasung app ad
+||*.cloudfront.net^$app=com.sec.android.daemonapp
+||media.bidr.io^$app=com.samsung.android.game.gamehome
+||api.glb.samsung-gamelauncher.com^$app=com.samsung.android.game.gamehome
+||*.cloudfront.net^$app=com.samsung.android.game.gamehome
+||content.samsungknowledge.com^
+||img.youtube.com^$app=com.sec.android.app.samsungapps
+||img.samsungapps.com/display^$app=com.sec.android.app.samsungapps
+||*.cloudfront.net^$app=com.samsung.android.app.spage
+!*********************************************** DC
+gall.dcinside.com###search_wrap
+gall.dcinside.com##.stickyunit
+gall.dcinside.com##.right_content
+gall.dcinside.com##.con_banner, .writing_banbox
+gall.dcinside.com##.sch_alliance_box
+gall.dcinside.com##.all_box
+gall.dcinside.com###bottom_listwrap > div:last-child
+gall.dcinside.com##.gnb_bar
+!*********************************************** fm
+fmkorea.com##.content_widget
+fmnation.net##.cd_bdtop_pc
+fmkorea.com###header
+fmkorea.com##.a1
+fmkorea.com##.cmt_editor
+fmkorea.com##.socket_button
+fmkorea.com##.doc_sns
+fmkorea.com##.prev_next_btns
+fmkorea.com##.icon-hit
+fmkorea.com##.bd_tl
+fmkorea.com###content > div.content_dummy > div:first-child > div:nth-child(3) > section.fmWidgetStyle2019.bd > div.grayWidgetStyle_content_Wrapper:last-child > div.fm_best_widget._bd_pc:nth-child(3)
+!*********************************************** M fm
+//image.fmkorea.com/modules/point/icons/*$domain=m.fmkorea.com
+m.fmkorea.com##header.hd:first-child
+m.fmkorea.com##footer:nth-child(7)
+m.fmkorea.com##.bd_tl
+m.fmkorea.com##.prev_next_btns
+m.fmkorea.com##.doc_sns
+m.fmkorea.com##.bd_bc, .fl
+m.fmkorea.com##.fm_vote
+m.fmkorea.com##.icon-hit
+m.fmkorea.com##.iconshop_icon
+m.fmkorea.com##.cmt_editor
+m.fmkorea.com##.if_lst_btn
+m.fmkorea.com##.socket_button
+m.fmkorea.com##.msearch
+https://loader.fmkorea.com/_loader/iframeM1main.php?c$domain=m.fmkorea.com
+m.fmkorea.com##div.bd:nth-child(3) > div:last-child > section.fmWidgetStyle2019.bd.bd_mobile > div.grayWidgetStyle_content_Wrapper:last-child > div.fm_best_widget._bd_mobile:nth-child(5)
+m.fmkorea.com##div.bd:nth-child(3) > div:last-child > section.fmWidgetStyle2019.bd.bd_mobile > div.grayWidgetStyle_content_Wrapper:last-child > div.new_lst_btn.new_lst_btn_doc.best1.bestY:nth-child(3)
+!*********************************************** web
+lenov.ru##.col-black
+twitch.tv##.find-me
+luckyquiz.tistory.com###h237
+filetender.net###main > div:last-child > a:nth-child(3)
+bbs.ruliweb.com##.board_notice
+bbs.ruliweb.com###board_top
+stellaris.paradoxwikis.com###\#pdx-cookie
+forum.paradoxplaza.com##.pdx-cookie-container, .pdx-cookie--container, .--active, .uix_noticeInner
+eu4.paradoxwikis.com##.pdx-cookie-container, .pdx-cookie--container, .--active
+!*********************************************** test
+!@@||mitem.gmarket.co.kr/Item/CouponGettingBannerList?GoodsCode=*&isBigSmileDayItem=false$app=com.ebay.kr.gmarket
+!dcinside.com##.img_dccon
+!gall.dcinside.com##.comment_dccon
+!dcinside.com/dccon.php?no=*
+||json2.dcinside.com/json0/app_ad_setting.php$app=com.dcinside.app
+*:17000$network,app=com.riotgames.league.wildrift
