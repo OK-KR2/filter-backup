@@ -196,9 +196,9 @@ stellaris.paradoxwikis.com###\#pdx-cookie
 forum.paradoxplaza.com##.pdx-cookie-container, .pdx-cookie--container, .--active, .uix_noticeInner
 eu4.paradoxwikis.com##.pdx-cookie-container, .pdx-cookie--container, .--active
 !*********************************************** test
-!@@||mitem.gmarket.co.kr/Item/CouponGettingBannerList?GoodsCode=*&isBigSmileDayItem=false$app=com.ebay.kr.gmarket
 !dcinside.com##.img_dccon
 !gall.dcinside.com##.comment_dccon
 !dcinside.com/dccon.php?no=*
-||json2.dcinside.com/json0/app_ad_setting.php$app=com.dcinside.app
-!#!#*:17000$network,app=com.riotgames.league.wildrift
+*:17000$network,app=com.riotgames.league.wildrift
+@@||upload.dcinside.com^$domain=dcinside.com,app=com.dcinside.app
+@@upload.dcinside.com/_app_write_api.php
