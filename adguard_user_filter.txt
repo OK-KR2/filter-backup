@@ -201,4 +201,4 @@ eu4.paradoxwikis.com##.pdx-cookie-container, .pdx-cookie--container, .--active
 !gall.dcinside.com##.comment_dccon
 !dcinside.com/dccon.php?no=*
 ||json2.dcinside.com/json0/app_ad_setting.php$app=com.dcinside.app
-*:17000$network,app=com.riotgames.league.wildrift
+!*:17000$network,app=com.riotgames.league.wildrift
