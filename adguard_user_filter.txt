@@ -199,8 +199,3 @@ eu4.paradoxwikis.com##.pdx-cookie-container, .pdx-cookie--container, .--active
 *:17000$network,app=com.riotgames.league.wildrift
 @@upload.dcinside.com
 @@dcimg6.dcinside.co.kr
-!*********************************************** https list
-!#* pcc.siren24.com
-!#* auth.riotgames.com / riot-geo.pas.si.riotgames.com / riot-client.dyn.riotcdn.net / authenticate.riotgames.com / tdm.cros.wr.pvp.net
-!#* firebase-settings.crashlytics.com / firebaseremoteconfig.googleapis.com / dcid.dcinside.com
-!#* nid.naver.com / new-m.pay.naver.com / m.pay.naver.com / mts.naver.com / pay.naver.com
