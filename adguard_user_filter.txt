@@ -196,9 +196,11 @@ stellaris.paradoxwikis.com###\#pdx-cookie
 forum.paradoxplaza.com##.pdx-cookie-container, .pdx-cookie--container, .--active, .uix_noticeInner
 eu4.paradoxwikis.com##.pdx-cookie-container, .pdx-cookie--container, .--active
 !*********************************************** test
-!dcinside.com##.img_dccon
-!gall.dcinside.com##.comment_dccon
-!dcinside.com/dccon.php?no=*
 *:17000$network,app=com.riotgames.league.wildrift
-@@||upload.dcinside.com^$domain=dcinside.com,app=com.dcinside.app
-@@upload.dcinside.com/_app_write_api.php
+@@upload.dcinside.com
+@@dcimg6.dcinside.co.kr
+!*********************************************** https list
+!#* pcc.siren24.com
+!#* auth.riotgames.com / riot-geo.pas.si.riotgames.com / riot-client.dyn.riotcdn.net / authenticate.riotgames.com / tdm.cros.wr.pvp.net
+!#* firebase-settings.crashlytics.com / firebaseremoteconfig.googleapis.com / dcid.dcinside.com
+!#* nid.naver.com / new-m.pay.naver.com / m.pay.naver.com / mts.naver.com / pay.naver.com
