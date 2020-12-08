@@ -197,5 +197,7 @@ forum.paradoxplaza.com##.pdx-cookie-container, .pdx-cookie--container, .--active
 eu4.paradoxwikis.com##.pdx-cookie-container, .pdx-cookie--container, .--active
 !*********************************************** test
 *:17000$network,app=com.riotgames.league.wildrift
+*:1900$network,app=com.netflix.mediaclient
 @@upload.dcinside.com
-@@dcimg6.dcinside.co.kr
+@@*:443$network,app=com.dcinside.app
+||json2.dcinside.com/json1/app_ad_charge.php^
