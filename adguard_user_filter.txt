@@ -200,4 +200,3 @@ eu4.paradoxwikis.com##.pdx-cookie-container, .pdx-cookie--container, .--active
 *:1900$network,app=com.netflix.mediaclient
 @@upload.dcinside.com
 @@*:443$network,app=com.dcinside.app
-||json2.dcinside.com/json1/app_ad_charge.php^
