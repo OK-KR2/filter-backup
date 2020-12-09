@@ -1,28 +1,29 @@
-!*********************************************** PASS
-@@kmcert.com
 @@www.filetender.com
 @@www.alphascan.co.kr
 @@metoc.navy.mil###content
+@@||accounts.paradoxplaza.com^$important,document,~extension
+@@upload.dcinside.com
+@@*:443$network,app=com.dcinside.app
 @@dcimg*.dcinside.co.kr/viewimage.php?
+@@kmcert.com
+@@||nice.checkplus.co.kr^
+@@||nid.naver.com/oauth2.0^
+@@||auth.danawa.com/sns/callback^
+@@||front.wemakeprice.com/authentication^
 @@//mk.kakaocdn.net/dna/emoticons/*
 @@sb-talk.kakao.com/$app=KakaoTalk.exe
 @@item.kakao.com/$app=KakaoTalk.exe
 @@ac-sb-talk.kakao.com/$app=KakaoTalk.exe
-@@www.youtube.com*autoplay=1*$domain=www.fmkorea.com
-@@||nice.checkplus.co.kr^
-@@||front.wemakeprice.com/authentication^
-@@||nid.naver.com/oauth2.0^
-@@||auth.danawa.com/sns/callback^
-@@||dadispapi.gmarket.co.kr/target^
-@@||dadispapi.auction.co.kr/target^
 @@||youtube.com/get_video_info^$domain=www.youtube.com
 @@||www.youtube.com/embed^$app=com.android.chrome
 @@||www.youtube.com/embed^$app=com.microsoft.emmx
+@@www.youtube.com*autoplay=1*$domain=www.fmkorea.com
+@@||dadispapi.auction.co.kr/target^
+@@||dadispapi.gmarket.co.kr/target^
+@@||mitem.gmarket.co.kr/Item/CouponGettingBannerList?GoodsCode=*$app=com.ebay.kr.gmarket
 @@||ssl.g9.co.kr^$important,document,~extension
 @@||cart.g9.co.kr^$important,document,~extension
-@@||accounts.paradoxplaza.com^$important,document,~extension
-@@||mitem.gmarket.co.kr/Item/CouponGettingBannerList?GoodsCode=*$app=com.ebay.kr.gmarket
-!*********************************************** XXXXX
+!*********************************************** X
 google.co.kr^
 ilbe.com^
 womad.life^
@@ -132,20 +133,12 @@ dns://brunch.co.kr^
 brunch.co.kr^
 !*********************************************** PotPlayer 64
 211.231.100.32:3300$network,app=PotPlayer64.exe
+210.220.163.82$network
 ||play.kakao.com^$app=PotPlayer64.exe
 ||get.daum.net^$app=PotPlayer64.exe
 ||kapi.kakao.com^$app=PotPlayer64.exe
 ||p1-play.edge4k.com^$app=PotPlayer64.exe
 ||t1.daumcdn.net^$domain=tv.kakao.com,app=PotPlayer64.exe
-!*********************************************** smasung app ad
-||*.cloudfront.net^$app=com.sec.android.daemonapp
-||media.bidr.io^$app=com.samsung.android.game.gamehome
-||api.glb.samsung-gamelauncher.com^$app=com.samsung.android.game.gamehome
-||*.cloudfront.net^$app=com.samsung.android.game.gamehome
-||content.samsungknowledge.com^
-||img.youtube.com^$app=com.sec.android.app.samsungapps
-||img.samsungapps.com/display^$app=com.sec.android.app.samsungapps
-||*.cloudfront.net^$app=com.samsung.android.app.spage
 !*********************************************** DC
 gall.dcinside.com###search_wrap
 gall.dcinside.com##.stickyunit
@@ -185,7 +178,18 @@ m.fmkorea.com##.msearch
 https://loader.fmkorea.com/_loader/iframeM1main.php?c$domain=m.fmkorea.com
 m.fmkorea.com##div.bd:nth-child(3) > div:last-child > section.fmWidgetStyle2019.bd.bd_mobile > div.grayWidgetStyle_content_Wrapper:last-child > div.fm_best_widget._bd_mobile:nth-child(5)
 m.fmkorea.com##div.bd:nth-child(3) > div:last-child > section.fmWidgetStyle2019.bd.bd_mobile > div.grayWidgetStyle_content_Wrapper:last-child > div.new_lst_btn.new_lst_btn_doc.best1.bestY:nth-child(3)
-!*********************************************** web
+!*********************************************** smasung app ad
+||*.cloudfront.net^$app=com.sec.android.daemonapp
+||media.bidr.io^$app=com.samsung.android.game.gamehome
+||api.glb.samsung-gamelauncher.com^$app=com.samsung.android.game.gamehome
+||*.cloudfront.net^$app=com.samsung.android.game.gamehome
+||content.samsungknowledge.com^
+||img.youtube.com^$app=com.sec.android.app.samsungapps
+||img.samsungapps.com/display^$app=com.sec.android.app.samsungapps
+||*.cloudfront.net^$app=com.samsung.android.app.spage
+!***********************************************
+*:1900$network,app=com.netflix.mediaclient
+app.dcinside.com/favicon.ico
 lenov.ru##.col-black
 twitch.tv##.find-me
 luckyquiz.tistory.com###h237
@@ -195,8 +199,3 @@ bbs.ruliweb.com###board_top
 stellaris.paradoxwikis.com###\#pdx-cookie
 forum.paradoxplaza.com##.pdx-cookie-container, .pdx-cookie--container, .--active, .uix_noticeInner
 eu4.paradoxwikis.com##.pdx-cookie-container, .pdx-cookie--container, .--active
-!*********************************************** test
-*:1900$network,app=com.netflix.mediaclient
-@@upload.dcinside.com
-@@*:443$network,app=com.dcinside.app
-app.dcinside.com/favicon.ico
