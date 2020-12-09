@@ -196,7 +196,7 @@ stellaris.paradoxwikis.com###\#pdx-cookie
 forum.paradoxplaza.com##.pdx-cookie-container, .pdx-cookie--container, .--active, .uix_noticeInner
 eu4.paradoxwikis.com##.pdx-cookie-container, .pdx-cookie--container, .--active
 !*********************************************** test
-*:17000$network,app=com.riotgames.league.wildrift
 *:1900$network,app=com.netflix.mediaclient
 @@upload.dcinside.com
 @@*:443$network,app=com.dcinside.app
+app.dcinside.com/favicon.ico
