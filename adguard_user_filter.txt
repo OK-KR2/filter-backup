@@ -2,9 +2,6 @@
 @@www.alphascan.co.kr
 @@metoc.navy.mil###content
 @@||accounts.paradoxplaza.com^$important,document,~extension
-@@upload.dcinside.com
-@@*:443$network,app=com.dcinside.app
-@@dcimg*.dcinside.co.kr/viewimage.php?
 @@kmcert.com
 @@||nice.checkplus.co.kr^
 @@||nid.naver.com/oauth2.0^
@@ -189,7 +186,6 @@ m.fmkorea.com##div.bd:nth-child(3) > div:last-child > section.fmWidgetStyle2019.
 ||*.cloudfront.net^$app=com.samsung.android.app.spage
 !***********************************************
 *:1900$network,app=com.netflix.mediaclient
-app.dcinside.com/favicon.ico
 lenov.ru##.col-black
 twitch.tv##.find-me
 luckyquiz.tistory.com###h237
