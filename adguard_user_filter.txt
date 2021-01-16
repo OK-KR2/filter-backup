@@ -20,6 +20,8 @@
 @@||mitem.gmarket.co.kr/Item/CouponGettingBannerList?GoodsCode=*$app=com.ebay.kr.gmarket
 @@||ssl.g9.co.kr^$important,document,~extension
 @@||cart.g9.co.kr^$important,document,~extension
+@@||developers.kakao.com^&app=com.ebay.kr.gmarket
+@@||m.gmarket.co.kr/Event^&app=com.ebay.kr.gmarket
 !*********************************************** X
 google.co.kr^
 ilbe.com^
@@ -185,6 +187,7 @@ m.fmkorea.com##div.bd:nth-child(3) > div:last-child > section.fmWidgetStyle2019.
 ||img.samsungapps.com/display^$app=com.sec.android.app.samsungapps
 ||*.cloudfront.net^$app=com.samsung.android.app.spage
 !***********************************************
+*:17000$network
 *:1900$network,app=com.netflix.mediaclient
 lenov.ru##.col-black
 twitch.tv##.find-me
