@@ -129,6 +129,8 @@ m1.daumcdn.net^
 www.kakaocorp.com^
 dns://brunch.co.kr^
 brunch.co.kr^
+||pf-api.kakao.com^
+||shopper.kakao.com^
 !*********************************************** PotPlayer 64
 211.231.100.32:3300$network,app=PotPlayer64.exe
 210.220.163.82$network
