@@ -27,7 +27,7 @@ ilbe.com^
 womad.life^
 facebook.com###u_0_c
 www.youtube.com*autoplay=1*
-||click.linkprice.com^$important
+||click.linkprice.com^
 ||chromefeedcontentsuggestions-pa.googleapis.com^
 !*********************************************** naver
 www.naver.com###news_cast
@@ -120,15 +120,13 @@ news.v.daum.net###kakaoContent > aside:last-child > div:nth-child(6)
 ||talkchannel-log.kakao.com
 ||tg.kakao.com
 ||mud-kage.kakao.co.kr^
-dns://developers.kakao.com^
-developers.kakao.com^
-dns://kyson.kakao.com^
-kyson.kakao.com^
-dns://m1.daumcdn.net^
-m1.daumcdn.net^
-www.kakaocorp.com^
-dns://brunch.co.kr^
-brunch.co.kr^
+||developers.kakao.com^
+||kyson.kakao.com^
+||m1.daumcdn.net^
+||www.kakao.com^$app=com.kakao.talk
+||news.daum.net^$app=com.kakao.talk
+||www.kakaocorp.com^$app=com.kakao.talk
+||brunch.co.kr^$app=com.kakao.talk
 ||pf-api.kakao.com^
 ||shopper.kakao.com^
 !*********************************************** PotPlayer 64
