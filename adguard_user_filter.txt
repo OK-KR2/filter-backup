@@ -182,6 +182,8 @@ m.fmkorea.com##div.bd:nth-child(3) > div:last-child > section.fmWidgetStyle2019.
 ||img.samsungapps.com/display^$app=com.sec.android.app.samsungapps
 ||api.glb.samsung-gamelauncher.com^$app=com.samsung.android.game.gamehome
 !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ X
+*:3333$network
+*:5555$network
 *:17000$network
 *:1900$network,app=com.netflix.mediaclient
 ilbe.com^
