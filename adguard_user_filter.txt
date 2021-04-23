@@ -12,6 +12,7 @@
 @@||nid.naver.com/oauth2.0^
 @@||auth.danawa.com/sns/callback^
 @@||front.wemakeprice.com/authentication^
+@@||card.ok-name.co.kr^$important,document
 @@||youtube.com/get_video_info^$domain=www.youtube.com
 @@||www.youtube.com/embed^$app=com.android.chrome
 @@||www.youtube.com/embed^$app=com.microsoft.emmx
