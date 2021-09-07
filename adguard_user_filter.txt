@@ -121,7 +121,6 @@ news.v.daum.net###kakaoContent > aside:last-child > div:nth-child(6)
 ||news.daum.net^$app=com.kakao.talk
 ||www.kakaocorp.com^$app=com.kakao.talk
 ||brunch.co.kr^$app=com.kakao.talk
-||pf-api.kakao.com^
 ||shopper.kakao.com^
 ||view.kakao.com^$app=com.kakao.talk
 ||talk-pilsner.kakao.com^
