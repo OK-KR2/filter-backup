@@ -209,3 +209,5 @@ stellaris.paradoxwikis.com###\#pdx-cookie
 filetender.net###main > div:last-child > a:nth-child(3)
 forum.paradoxplaza.com##.pdx-cookie-container, .pdx-cookie--container, .--active, .uix_noticeInner
 eu4.paradoxwikis.com##.pdx-cookie-container, .pdx-cookie--container, .--active
+youtube.com##ytd-app:nth-child(11) > ytd-popup-container.style-scope.ytd-app:nth-child(13) > tp-yt-paper-dialog.style-scope.ytd-popup-container
+pinterest.co.kr###__PWS_ROOT__ > div.zI7.iyn.Hsu:first-child > div:last-child > div.zI7.iyn.Hsu > div:nth-child(4)
