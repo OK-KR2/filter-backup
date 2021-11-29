@@ -1,0 +1,87 @@
+!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ pass
+@@kmcert.com
+@@www.filetender.com
+@@www.alphascan.co.kr
+@@metoc.navy.mil###content
+@@sb-talk.kakao.com/$app=KakaoTalk.exe
+@@item.kakao.com/$app=KakaoTalk.exe
+@@ac-sb-talk.kakao.com/$app=KakaoTalk.exe
+@@www.youtube.com*autoplay=1*$domain=www.fmkorea.com
+@@//mk.kakaocdn.net/dna/emoticons/*
+@@||nice.checkplus.co.kr^
+@@||nid.naver.com/oauth2.0^
+@@||auth.danawa.com/sns/callback^
+@@||front.wemakeprice.com/authentication^
+@@||card.ok-name.co.kr^$important,document
+@@||youtube.com/get_video_info^$domain=www.youtube.com
+@@||www.youtube.com/embed^$app=com.android.chrome
+@@||www.youtube.com/embed^$app=com.microsoft.emmx
+@@||dadispapi.auction.co.kr/target^
+@@||dadispapi.gmarket.co.kr/target^
+@@||ssl.g9.co.kr^$important,document,~extension
+@@||cart.g9.co.kr^$important,document,~extension
+@@||developers.kakao.com^&app=com.ebay.kr.gmarket
+@@||developers.kakao.com^$app=com.ebay.kr.auction
+@@||accounts.paradoxplaza.com^$important,document,~extension
+!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ pc Kakao app
+||mud-kage.kakao.co.kr/dn^$app=KakaoTalk.exe
+||t1.daumcdn.net^$app=KakaoTalk.exe
+||analytics.ad.daum.net^$domain=analytics.ad.daum.net
+!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  M kakao app
+||talkchannel-api.kakao.com
+||talkchannel-log.kakao.com
+||tg.kakao.com
+||mud-kage.kakao.co.kr^
+||developers.kakao.com^
+||kyson.kakao.com^
+||m1.daumcdn.net^
+||www.kakao.com^$app=com.kakao.talk
+||news.daum.net^$app=com.kakao.talk
+||www.kakaocorp.com^$app=com.kakao.talk
+||brunch.co.kr^$app=com.kakao.talk
+||shopper.kakao.com^
+||view.kakao.com^$app=com.kakao.talk
+!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ PotPlayer 64
+211.231.100.32:3300$network,app=PotPlayer64.exe
+210.220.163.82$network
+||play.kakao.com^$app=PotPlayer64.exe
+||get.daum.net^$app=PotPlayer64.exe
+||kapi.kakao.com^$app=PotPlayer64.exe
+||p1-play.edge4k.com^$app=PotPlayer64.exe
+||t1.daumcdn.net^$domain=tv.kakao.com,app=PotPlayer64.exe
+!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ smasung app ad
+||content.samsungknowledge.com^
+||*.cloudfront.net^$app=com.sec.android.daemonapp
+||*.cloudfront.net^$app=com.samsung.android.app.spage
+||img.youtube.com^$app=com.sec.android.app.samsungapps
+||media.bidr.io^$app=com.samsung.android.game.gamehome
+||*.cloudfront.net^$app=com.samsung.android.game.gamehome
+||img.samsungapps.com/display^$app=com.sec.android.app.samsungapps
+||api.glb.samsung-gamelauncher.com^$app=com.samsung.android.game.gamehome
+!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ X
+*:3333$network
+*:5555$network
+*:17000$network
+*:1900$network,app=com.netflix.mediaclient
+ilbe.com^
+womad.life^
+google.co.kr^
+facebook.com###u_0_c
+www.youtube.com*autoplay=1*
+www.uuoobe.kr^
+*.uuoobe.kr^
+||www.uuoobe.kr^
+||*.uuoobe.kr^
+click.linkprice.com^
+*.click.linkprice.com^
+||click.linkprice.com^
+||chromefeedcontentsuggestions-pa.googleapis.com^
+lenov.ru##.col-black
+stellaris.paradoxwikis.com###\#pdx-cookie
+filetender.net###main > div:last-child > a:nth-child(3)
+forum.paradoxplaza.com##.pdx-cookie-container, .pdx-cookie--container, .--active, .uix_noticeInner
+eu4.paradoxwikis.com##.pdx-cookie-container, .pdx-cookie--container, .--active
+youtube.com##ytd-app:nth-child(11) > ytd-popup-container.style-scope.ytd-app:nth-child(13) > tp-yt-paper-dialog.style-scope.ytd-popup-container
+dcinside.com##.block-disable
+vod-mplayer.afreecatv.com
+afreecatv.com/v101/hls/creatives/media/
