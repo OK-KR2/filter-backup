@@ -123,7 +123,9 @@ news.v.daum.net###kakaoContent > aside:last-child > div:nth-child(6)
 ||brunch.co.kr^$app=com.kakao.talk
 ||shopper.kakao.com^
 ||view.kakao.com^$app=com.kakao.talk
-||talk-pilsner.kakao.com^
+||talk-pilsner.kakao.com^$app=com.kakao.talk
+||tv.kakao.com^$app=com.kakao.talk
+||vaccine.kakao.com^$app=com.kakao.talk
 !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ PotPlayer 64
 211.231.100.32:3300$network,app=PotPlayer64.exe
 210.220.163.82$network
