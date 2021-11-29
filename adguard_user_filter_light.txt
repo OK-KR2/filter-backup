@@ -41,7 +41,6 @@
 ||brunch.co.kr^$app=com.kakao.talk
 ||shopper.kakao.com^
 ||view.kakao.com^$app=com.kakao.talk
-||talk-pilsner.kakao.com^$app=com.kakao.talk
 ||tv.kakao.com^$app=com.kakao.talk
 ||vaccine.kakao.com^$app=com.kakao.talk
 !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ PotPlayer 64
