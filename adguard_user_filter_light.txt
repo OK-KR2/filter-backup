@@ -60,6 +60,27 @@
 ||*.cloudfront.net^$app=com.samsung.android.game.gamehome
 ||img.samsungapps.com/display^$app=com.sec.android.app.samsungapps
 ||api.glb.samsung-gamelauncher.com^$app=com.samsung.android.game.gamehome
+!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ M fm
+m.fmkorea.com##header.hd:first-child
+m.fmkorea.com##footer:nth-child(7)
+m.fmkorea.com##.bd_tl
+m.fmkorea.com##.prev_next_btns
+m.fmkorea.com##.doc_sns
+m.fmkorea.com##.bd_bc, .fl
+m.fmkorea.com##.fm_vote
+m.fmkorea.com##.icon-hit
+m.fmkorea.com##.iconshop_icon
+m.fmkorea.com##.cmt_editor
+m.fmkorea.com##.if_lst_btn
+m.fmkorea.com##.socket_button
+m.fmkorea.com##.msearch
+m.fmkorea.com##.direction_first
+m.fmkorea.com##.document_address, .document_address_m
+//image5jvqbd.fmkorea.com/modules/point/icons/^
+//image.fmkorea.com/modules/point/icons/*$domain=m.fmkorea.com
+https://loader.fmkorea.com/_loader/iframeM1main.php?c$domain=m.fmkorea.com
+m.fmkorea.com##div.bd:nth-child(3) > div:last-child > section.fmWidgetStyle2019.bd.bd_mobile > div.grayWidgetStyle_content_Wrapper:last-child > div.fm_best_widget._bd_mobile:nth-child(5)
+m.fmkorea.com##div.bd:nth-child(3) > div:last-child > section.fmWidgetStyle2019.bd.bd_mobile > div.grayWidgetStyle_content_Wrapper:last-child > div.new_lst_btn.new_lst_btn_doc.best1.bestY:nth-child(3)
 !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ X
 *:3333$network
 *:5555$network
@@ -87,3 +108,11 @@ youtube.com##ytd-app:nth-child(11) > ytd-popup-container.style-scope.ytd-app:nth
 dcinside.com##.block-disable
 vod-mplayer.afreecatv.com
 afreecatv.com/v101/hls/creatives/media/
+||adcr.naver.com^
+||adcr.naver^
+||adcr.naver.com/favicon.ico$domain=adcr.naver.com,important
+||bingapis.com^
+||msn.com^
+||bing.com^
+||bingviz.com^
+||facebook.com^
