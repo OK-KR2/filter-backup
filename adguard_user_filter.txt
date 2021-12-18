@@ -216,3 +216,11 @@ pinterest.co.kr###__PWS_ROOT__ > div.zI7.iyn.Hsu:first-child > div:last-child > 
 dcinside.com##.block-disable
 vod-mplayer.afreecatv.com
 afreecatv.com/v101/hls/creatives/media/
+||adcr.naver.com^
+||adcr.naver^
+||adcr.naver.com/favicon.ico$domain=adcr.naver.com,important
+||bingapis.com^
+||msn.com^
+||bing.com^
+||bingviz.com^
+||facebook.com^
