@@ -23,6 +23,8 @@
 @@||developers.kakao.com^&app=com.ebay.kr.gmarket
 @@||developers.kakao.com^$app=com.ebay.kr.auction
 @@||accounts.paradoxplaza.com^$important,document,~extension
+@@||mitem.gmarket.co.kr/Item^$app=com.ebay.kr.gmarket
+@@||accounts.google.co.kr^$app=com.google.android.gms
 !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ naver
 www.naver.com###news_cast
 www.naver.com##.column_bottom
@@ -33,6 +35,7 @@ naver.com##.sc_themecast, .id_enter
 naver.com##.sc_shopcast
 naver.com##.banner_area
 webplayer_*.min.js^$domain=news.naver.com
+news.naver.com$$script[tag-content="autoPlay"]
 !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ M naver
 m.naver.com##.cw_now_wrap, .MM_NOW_WRAP, .MM_INACTIVE
 m.naver.com##.cw_title_wrap
@@ -143,6 +146,203 @@ gall.dcinside.com##.sch_alliance_box
 gall.dcinside.com##.all_box
 gall.dcinside.com###bottom_listwrap > div:last-child
 gall.dcinside.com##.gnb_bar
+##.group-power-link
+nstatic.dcinside.com/dc/w/css/common.css?101
+nstatic.dcinside.com/dc/w/css/contents.css
+#
+##.banner_box{max-height:90px}
+##.banner_box
+##.ad_bottom_list{clear:both;position:relative;padding:40px 0 20px 0;background:#fff;margin:0 auto;text-align:center}
+##.leftbanner{margin-bottom:19px}
+##.rightbanner
+##.rightbanner1{overflow:hidden;width:300px;min-height:250px;margin-top:15px}
+##.ad_bottom_list
+##.leftbanner
+##.rightbanner
+##.rightbanner1
+#
+##.power_click{position:relative;margin-top:30px;font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic","맑은 고딕",arial,Dotum,돋움,sans-serif}
+##.power_click
+##.top_link{position:absolute;right:0;top:2px;border:1px solid #c3c3c3;padding:2px 5px 2px ;line-height:14px;font-size:11px;color:#555}/*211118 폰트 버 padding:2px 5px 1px;line-height:15px*/
+##.power_click
+##.top_link:hover{text-decoration:none}
+##.power_click
+##.innertxt{font-size:11px;color:#b2b1b1;font-weight:normal;vertical-align:0;line-height:22px}
+##.pw_goods_list{margin-top:10px}
+##.pw_goods_list ul{overflow:hidden;height:105px;padding:10px;border:1px solid #eaeaea}
+##.pw_goods_list li{float:left;width:346px;margin-left:20px}
+##.pw_goods_list li:first-child{margin-left:0}
+##.pw_goods_list li a{display:block;background:#ccc}
+##.pw_goods_list li a:hover
+##.goods_tit{text-decoration:underline}
+##.pw_goods_img{float:left;width:105px}
+##.pw_goods_info{float:left;width:225px;padding-left:15px;margin-top:5px}
+##.pw_goods_tit{overflow:hidden;height:40px;font-size:15px;font-weight:bold;line-height:20px}
+##.pw_goods_price{margin-top:5px;font-size:14px;color:#2a52de}
+##.freeicon{padding:2px 3px 1px;line-height:21px;vertical-align:1px;background:#2a52de;color:#fff;font-size:11px}
+##.pw_goods_logo{margin-top:5px;width:85px;text-align:left}
+##.power_click
+##.adicon{vertical-align:-4px}
+#
+##.power_click
+##.power_click
+##.top_link
+##.power_click
+##.top_link:hover
+##.power_click
+##.innertxt
+##.pw_goods_list
+##.pw_goods_list ul
+##.pw_goods_list li
+##.pw_goods_list li:first-child
+##.pw_goods_list li a
+##.pw_goods_list li a:hover
+##.goods_tit
+##.pw_goods_img
+##.pw_goods_info
+##.pw_goods_tit
+##.pw_goods_price
+##.freeicon
+##.pw_goods_logo
+##.power_click
+##.adicon
+#
+##.power_link
+##.integrate_cont.power_link{padding:13px 16px 17px;border-bottom:0;background:#f5fcff}
+##.power_link:first-child{padding-top:13px}
+##.integrate_sch
+##.inner
+##.integrate_cont.power_link:first-child{padding-top:13px}
+##.power_link h3{margin-top:2px;font-size:14px}
+##.adicon{display:inline-block;width:27px;height:16px;margin-left:4x;vertical-align:-2px;background-position:-140px -193px}
+##.power_link
+##.tit_txt{text-decoration:underline;color:#4656c7}
+##.pwlink_list li{margin-top:12px}
+##.pwlink_list li:first-child{margin-top:10px}
+##.link_dsc_txt{margin-top:6px}
+##.power_link
+##.btn_blue_round.h21{margin-top:0px}
+##.power_link
+##.link_upinfo{margin-top:5px;color:#29367c;text-decoration:underline}
+##.power_link
+##.link_upinfo::after{content:" ";display:inline-block;width:5px;height:9px;margin-left:3px; background-image:url(https://nstatic.dcinside.com/dc/w/images/sp/sp_img.png);background-position:-124px -58px}
+#
+##.power_link
+##.integrate_cont.power_link
+##.power_link:first-child
+##.integrate_sch
+##.inner
+##.integrate_cont.power_link:first-child
+##.power_link h3
+##.adicon
+##.power_link
+##.tit_txt
+##.pwlink_list li
+##.pwlink_list li:first-child
+##.link_dsc_txt
+##.power_link
+##.btn_blue_round.h21
+##.power_link
+##.link_upinfo
+##.power_link
+##.link_upinfo::after
+#
+#@#.banner_box{max-height:90px}
+#@#.banner_box
+#@#.ad_bottom_list{clear:both;position:relative;padding:40px 0 20px 0;background:#fff;margin:0 auto;text-align:center}
+#@#.leftbanner{margin-bottom:19px}
+#@#.rightbanner
+#@#.rightbanner1{overflow:hidden;width:300px;min-height:250px;margin-top:15px}
+#@#.ad_bottom_list
+#@#.leftbanner
+#@#.rightbanner
+#@#.rightbanner1
+#
+#@#.power_click{position:relative;margin-top:30px;font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic","맑은 고딕",arial,Dotum,돋움,sans-serif}
+#@#.power_click
+#@#.top_link{position:absolute;right:0;top:2px;border:1px solid #c3c3c3;padding:2px 5px 2px ;line-height:14px;font-size:11px;color:#555}/*211118 폰트 버 padding:2px 5px 1px;line-height:15px*/
+#@#.power_click
+#@#.top_link:hover{text-decoration:none}
+#@#.power_click
+#@#.innertxt{font-size:11px;color:#b2b1b1;font-weight:normal;vertical-align:0;line-height:22px}
+#@#.pw_goods_list{margin-top:10px}
+#@#.pw_goods_list ul{overflow:hidden;height:105px;padding:10px;border:1px solid #eaeaea}
+#@#.pw_goods_list li{float:left;width:346px;margin-left:20px}
+#@#.pw_goods_list li:first-child{margin-left:0}
+#@#.pw_goods_list li a{display:block;background:#ccc}
+#@#.pw_goods_list li a:hover
+#@#.goods_tit{text-decoration:underline}
+#@#.pw_goods_img{float:left;width:105px}
+#@#.pw_goods_info{float:left;width:225px;padding-left:15px;margin-top:5px}
+#@#.pw_goods_tit{overflow:hidden;height:40px;font-size:15px;font-weight:bold;line-height:20px}
+#@#.pw_goods_price{margin-top:5px;font-size:14px;color:#2a52de}
+#@#.freeicon{padding:2px 3px 1px;line-height:21px;vertical-align:1px;background:#2a52de;color:#fff;font-size:11px}
+#@#.pw_goods_logo{margin-top:5px;width:85px;text-align:left}
+#@#.power_click
+#@#.adicon{vertical-align:-4px}
+#
+#@#.power_click
+#@#.power_click
+#@#.top_link
+#@#.power_click
+#@#.top_link:hover
+#@#.power_click
+#@#.innertxt
+#@#.pw_goods_list
+#@#.pw_goods_list ul
+#@#.pw_goods_list li
+#@#.pw_goods_list li:first-child
+#@#.pw_goods_list li a
+#@#.pw_goods_list li a:hover
+#@#.goods_tit
+#@#.pw_goods_img
+#@#.pw_goods_info
+#@#.pw_goods_tit
+#@#.pw_goods_price
+#@#.freeicon
+#@#.pw_goods_logo
+#@#.power_click
+#@#.adicon
+#
+#@#.power_link
+#@#.integrate_cont.power_link{padding:13px 16px 17px;border-bottom:0;background:#f5fcff}
+#@#.power_link:first-child{padding-top:13px}
+#@#.integrate_sch
+#@#.inner
+#@#.integrate_cont.power_link:first-child{padding-top:13px}
+#@#.power_link h3{margin-top:2px;font-size:14px}
+#@#.adicon{display:inline-block;width:27px;height:16px;margin-left:4x;vertical-align:-2px;background-position:-140px -193px}
+#@#.power_link
+#@#.tit_txt{text-decoration:underline;color:#4656c7}
+#@#.pwlink_list li{margin-top:12px}
+#@#.pwlink_list li:first-child{margin-top:10px}
+#@#.link_dsc_txt{margin-top:6px}
+#@#.power_link
+#@#.btn_blue_round.h21{margin-top:0px}
+#@#.power_link
+#@#.link_upinfo{margin-top:5px;color:#29367c;text-decoration:underline}
+#@#.power_link
+#@#.link_upinfo::after{content:" ";display:inline-block;width:5px;height:9px;margin-left:3px; background-image:url(https://nstatic.dcinside.com/dc/w/images/sp/sp_img.png);background-position:-124px -58px}
+#
+#@#.power_link
+#@#.integrate_cont.power_link
+#@#.power_link:first-child
+#@#.integrate_sch
+#@#.inner
+#@#.integrate_cont.power_link:first-child
+#@#.power_link h3
+#@#.adicon
+#@#.power_link
+#@#.tit_txt
+#@#.pwlink_list li
+#@#.pwlink_list li:first-child
+#@#.link_dsc_txt
+#@#.power_link
+#@#.btn_blue_round.h21
+#@#.power_link
+#@#.link_upinfo
+#@#.power_link
+#@#.link_upinfo::after
 !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ fm
 fmkorea.com##.content_widget
 fmnation.net##.cd_bdtop_pc
@@ -176,7 +376,7 @@ m.fmkorea.com##.document_address, .document_address_m
 https://loader.fmkorea.com/_loader/iframeM1main.php?c$domain=m.fmkorea.com
 m.fmkorea.com##div.bd:nth-child(3) > div:last-child > section.fmWidgetStyle2019.bd.bd_mobile > div.grayWidgetStyle_content_Wrapper:last-child > div.fm_best_widget._bd_mobile:nth-child(5)
 m.fmkorea.com##div.bd:nth-child(3) > div:last-child > section.fmWidgetStyle2019.bd.bd_mobile > div.grayWidgetStyle_content_Wrapper:last-child > div.new_lst_btn.new_lst_btn_doc.best1.bestY:nth-child(3)
-!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ smasung app ad
+!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ smasung app
 ||content.samsungknowledge.com^
 ||*.cloudfront.net^$app=com.sec.android.daemonapp
 ||*.cloudfront.net^$app=com.samsung.android.app.spage
@@ -185,6 +385,7 @@ m.fmkorea.com##div.bd:nth-child(3) > div:last-child > section.fmWidgetStyle2019.
 ||*.cloudfront.net^$app=com.samsung.android.game.gamehome
 ||img.samsungapps.com/display^$app=com.sec.android.app.samsungapps
 ||api.glb.samsung-gamelauncher.com^$app=com.samsung.android.game.gamehome
+||gos-api.gos-gsp.io^
 !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ X
 *:3333$network
 *:5555$network
@@ -224,3 +425,4 @@ afreecatv.com/v101/hls/creatives/media/
 ||bing.com^
 ||bingviz.com^
 ||facebook.com^
+www.youtube.com##.ytp-scroll-min.ytp-pause-overlay
