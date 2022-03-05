@@ -23,6 +23,8 @@
 @@||developers.kakao.com^&app=com.ebay.kr.gmarket
 @@||developers.kakao.com^$app=com.ebay.kr.auction
 @@||accounts.paradoxplaza.com^$important,document,~extension
+@@||mitem.gmarket.co.kr/Item^$app=com.ebay.kr.gmarket
+@@||accounts.google.co.kr^$app=com.google.android.gms
 !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ pc Kakao app
 ||mud-kage.kakao.co.kr/dn^$app=KakaoTalk.exe
 ||t1.daumcdn.net^$app=KakaoTalk.exe
@@ -51,7 +53,7 @@
 ||kapi.kakao.com^$app=PotPlayer64.exe
 ||p1-play.edge4k.com^$app=PotPlayer64.exe
 ||t1.daumcdn.net^$domain=tv.kakao.com,app=PotPlayer64.exe
-!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ smasung app ad
+!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ smasung app
 ||content.samsungknowledge.com^
 ||*.cloudfront.net^$app=com.sec.android.daemonapp
 ||*.cloudfront.net^$app=com.samsung.android.app.spage
@@ -60,6 +62,7 @@
 ||*.cloudfront.net^$app=com.samsung.android.game.gamehome
 ||img.samsungapps.com/display^$app=com.sec.android.app.samsungapps
 ||api.glb.samsung-gamelauncher.com^$app=com.samsung.android.game.gamehome
+||gos-api.gos-gsp.io^
 !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ M fm
 m.fmkorea.com##header.hd:first-child
 m.fmkorea.com##footer:nth-child(7)
@@ -116,3 +119,5 @@ afreecatv.com/v101/hls/creatives/media/
 ||bing.com^
 ||bingviz.com^
 ||facebook.com^
+news.naver.com$$script[tag-content="autoPlay"]
+www.youtube.com##.ytp-scroll-min.ytp-pause-overlay
