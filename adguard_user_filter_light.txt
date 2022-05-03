@@ -25,6 +25,11 @@
 @@||accounts.paradoxplaza.com^$important,document,~extension
 @@||mitem.gmarket.co.kr/Item^$app=com.ebay.kr.gmarket
 @@||accounts.google.co.kr^$app=com.google.android.gms
+@@||cdn3.studiouniversal.net/video^$domain=player3.studiouniversal.net,app=com.microsoft.emmx.beta
+@@||obank.kbstar.com^$important,document
+@@||live.contents.adpopcorn.com^
+@@||rpi.adpopcorn.com^
+@@||cdn3.studiouniversal.net/video^$domain=player3.studiouniversal.net,app=com.microsoft.emmx.beta
 !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ pc Kakao app
 ||mud-kage.kakao.co.kr/dn^$app=KakaoTalk.exe
 ||t1.daumcdn.net^$app=KakaoTalk.exe
@@ -45,6 +50,10 @@
 ||view.kakao.com^$app=com.kakao.talk
 ||tv.kakao.com^$app=com.kakao.talk
 ||vaccine.kakao.com^$app=com.kakao.talk
+gw-tv.gl.kakao.com	
+news-igzqtwve.kgslb.com
+vaccine.kakao.com
+vaccine-map.kakao.com
 !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ PotPlayer 64
 211.231.100.32:3300$network,app=PotPlayer64.exe
 210.220.163.82$network
@@ -108,6 +117,14 @@ filetender.net###main > div:last-child > a:nth-child(3)
 forum.paradoxplaza.com##.pdx-cookie-container, .pdx-cookie--container, .--active, .uix_noticeInner
 eu4.paradoxwikis.com##.pdx-cookie-container, .pdx-cookie--container, .--active
 youtube.com##ytd-app:nth-child(11) > ytd-popup-container.style-scope.ytd-app:nth-child(13) > tp-yt-paper-dialog.style-scope.ytd-popup-container
+youtube.com##.ytp-ce-element, .ytp-ce-video, .ytp-ce-element-show, .ytp-ce-top-right-quad, .ytp-ce-size-1280
+youtube.com##.ytp-ce-element, .ytp-ce-video, .ytp-ce-bottom-right-quad, .ytp-ce-size-1280, .ytp-ce-element-show
+||sb.scorecardresearch.com^
+||*.swarmcloud.net^
+||stun.l.google.com^
+||*.cdnbye.com^
+||*.local^
+||global.stun.twilio.com^
 dcinside.com##.block-disable
 vod-mplayer.afreecatv.com
 afreecatv.com/v101/hls/creatives/media/
