@@ -29,7 +29,6 @@
 @@||obank.kbstar.com^$important,document
 @@||live.contents.adpopcorn.com^
 @@||rpi.adpopcorn.com^
-@@||cdn3.studiouniversal.net/video^$domain=player3.studiouniversal.net,app=com.microsoft.emmx.beta
 !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ pc Kakao app
 ||mud-kage.kakao.co.kr/dn^$app=KakaoTalk.exe
 ||t1.daumcdn.net^$app=KakaoTalk.exe
@@ -50,7 +49,7 @@
 ||view.kakao.com^$app=com.kakao.talk
 ||tv.kakao.com^$app=com.kakao.talk
 ||vaccine.kakao.com^$app=com.kakao.talk
-gw-tv.gl.kakao.com	
+gw-tv.gl.kakao.com
 news-igzqtwve.kgslb.com
 vaccine.kakao.com
 vaccine-map.kakao.com
