@@ -137,6 +137,5 @@ afreecatv.com/v101/hls/creatives/media/
 ||facebook.com^
 news.naver.com$$script[tag-content="autoPlay"]
 www.youtube.com##.ytp-scroll-min.ytp-pause-overlay
-noonoo.tv/bbs/bannerhit.php?bn_id=13
-noonoo.tv/bbs/bannerhit.php?bn_id=14
-noonoo.tv/bbs/bannerhit.php?bn_id=*
+noonoo.tv/bbs/bannerhit.php?
+noonoo.tv/bbs/bannerhit.php
