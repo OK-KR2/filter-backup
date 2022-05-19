@@ -139,3 +139,4 @@ news.naver.com$$script[tag-content="autoPlay"]
 www.youtube.com##.ytp-scroll-min.ytp-pause-overlay
 noonoo.tv/bbs/bannerhit.php?
 noonoo.tv/bbs/bannerhit.php
+noonoo.tv/bbs/bannerhit.php^
