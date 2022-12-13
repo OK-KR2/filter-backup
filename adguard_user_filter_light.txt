@@ -140,3 +140,8 @@ www.youtube.com##.ytp-scroll-min.ytp-pause-overlay
 noonoo.tv/bbs/bannerhit.php?
 noonoo.tv/bbs/bannerhit.php
 noonoo.tv/bbs/bannerhit.php^
+noonoo.tv###container > div.view-content:first-child > div.partner-banner-flex:first-child
+noonoo.tv###container > div.view-content:first-child > div.content:last-child > div.partner-banner-flex:nth-child(3)
+noonoo.tv###container > div.view-content:first-child > div.partner-banner-flex:nth-child(3)
+eomisae.co.kr###main > div.eq.container-fluid:last-child > div:nth-child(3) > center > ins.adsbygoogle:nth-child(2)
+eomisae.co.kr###main > div.eq.container-fluid:last-child > div:nth-child(3)
