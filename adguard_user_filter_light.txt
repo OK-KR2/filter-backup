@@ -53,6 +53,7 @@ gw-tv.gl.kakao.com
 news-igzqtwve.kgslb.com
 vaccine.kakao.com
 vaccine-map.kakao.com
+||tv.kakao.com^$important
 !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ PotPlayer 64
 211.231.100.32:3300$network,app=PotPlayer64.exe
 210.220.163.82$network
