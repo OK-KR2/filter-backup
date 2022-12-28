@@ -135,7 +135,7 @@ afreecatv.com/v101/hls/creatives/media/
 ||msn.com^
 ||bing.com^
 ||bingviz.com^
-||facebook.com^
+@@||facebook.com^
 news.naver.com$$script[tag-content="autoPlay"]
 www.youtube.com##.ytp-scroll-min.ytp-pause-overlay
 noonoo.tv/bbs/bannerhit.php?
