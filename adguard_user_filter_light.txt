@@ -18,8 +18,6 @@
 @@||www.youtube.com/embed^$app=com.microsoft.emmx
 @@||dadispapi.auction.co.kr/target^
 @@||dadispapi.gmarket.co.kr/target^
-@@||ssl.g9.co.kr^$important,document,~extension
-@@||cart.g9.co.kr^$important,document,~extension
 @@||developers.kakao.com^&app=com.ebay.kr.gmarket
 @@||developers.kakao.com^$app=com.ebay.kr.auction
 @@||accounts.paradoxplaza.com^$important,document,~extension
@@ -135,14 +133,7 @@ afreecatv.com/v101/hls/creatives/media/
 ||msn.com^
 ||bing.com^
 ||bingviz.com^
-@@||facebook.com^
 news.naver.com$$script[tag-content="autoPlay"]
 www.youtube.com##.ytp-scroll-min.ytp-pause-overlay
-noonoo.tv/bbs/bannerhit.php?
-noonoo.tv/bbs/bannerhit.php
-noonoo.tv/bbs/bannerhit.php^
-noonoo.tv###container > div.view-content:first-child > div.partner-banner-flex:first-child
-noonoo.tv###container > div.view-content:first-child > div.content:last-child > div.partner-banner-flex:nth-child(3)
-noonoo.tv###container > div.view-content:first-child > div.partner-banner-flex:nth-child(3)
 eomisae.co.kr###main > div.eq.container-fluid:last-child > div:nth-child(3) > center > ins.adsbygoogle:nth-child(2)
 eomisae.co.kr###main > div.eq.container-fluid:last-child > div:nth-child(3)
