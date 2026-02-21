@@ -108,10 +108,10 @@ naver.com##div[id*="veta"]
 #%#//scriptlet('prevent-fetch', 'google-analytics.com')
 ||connect.facebook.net^
 ||facebook.com/tr/
+||nam.veta.naver.com^
 ! 개인추가
 ||pstatic.net.topo.gscdn.net^
 ||nrc.naver.com^
-||nam.veta.naver.com^
 ! [통합 필터: 도메인 차단 + 내부 광고 요소 숨기기]
 ! 버전: 2026.01.11 (기존 필터 기반 최적화)
 ! 1. 접속 차단 및 광고 서버 (DNS/Domain)
