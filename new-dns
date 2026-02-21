@@ -1,3 +1,11 @@
+! 카카오 광고 및 분석 보완
+||ad.kakao.com^
+||display.ad.daum.net^
+||kaikas.kakao.com^
+! 스포티파이 추적 및 분석기 (제미니)
+||spclient.wg.spotify.com^
+||apresolve.spotify.com^
+||dealer.spotify.com^
 ! 광고 차단 감지 (제미니)
 ||fundingchoicesmessages.google.com^
 ||google-analytics.com/analytics.js^
@@ -60,5 +68,6 @@ etoland.co.kr#%#//scriptlet('trusted-click-element', '[data-cookie-key]', '', '3
 @@||slack.com^$important
 @@||slack-edge.com^$important
 @@||slack-msgs.com^$important
+@@||slack-files.com^$important
 @@||slack-imgs.com^$important
 @@||slack-redir.net^$important
