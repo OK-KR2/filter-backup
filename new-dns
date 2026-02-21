@@ -129,6 +129,9 @@ $removeparam=_hsenc
 $removeparam=_hsmi
 $removeparam=mc_cid
 $removeparam=mc_eid
+! 광고 서버 사전 연결 시도 차단 (제미니)
+#%#//scriptlet('abort-current-inline-script', 'dns-prefetch')
+#%#//scriptlet('abort-current-inline-script', 'preconnect')
 ! 슬랙 완전 허용 (제미니)
 @@||slack.com^$important
 @@||slack-edge.com^$important
