@@ -108,7 +108,6 @@ naver.com##div[id*="veta"]
 #%#//scriptlet('prevent-fetch', 'google-analytics.com')
 ||connect.facebook.net^
 ||facebook.com/tr/
-||nam.veta.naver.com^
 ! 개인추가
 ||pstatic.net.topo.gscdn.net^
 ||nrc.naver.com^
