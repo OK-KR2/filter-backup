@@ -54,9 +54,7 @@ daum.net##div[id^="ad_"]
 ||static.doubleclick.net^
 ||g.doubleclick.net^
 ||google-analytics.com^
-||google-analytics.com/analytics.js^
 ||pagead2.googlesyndication.com^
-||pagead2.googlesyndication.com/pagead/js/adsbygoogle.js^
 ! 주요 분석 및 통계 (광고 차단 감지용으로 자주 쓰임)(제미니)
 ||amplitude.com^
 ||appsflyer.com^
@@ -90,6 +88,7 @@ youtube.com##.ytp-ce-element-show
 ! 네이버 앱에서 'N' 로고 깨짐 방지를 위한 예외 허용 (제미니)
 ||veta.naver.com^
 @@||veta.naver.com^$app=com.nhn.naver.searchapp
+@@||veta.naver.com^$app=com.nhn.naversearchapp
 ! 슬랙 완전 허용 (제미니)
 @@||slack.com^$important
 @@||slack-edge.com^$important
@@ -103,6 +102,8 @@ naver.com##.veta_ad, .veta_ad_wrapper, div[id*="veta"]
 #%#//scriptlet('prevent-fetch', 'google-analytics.com')
 ||connect.facebook.net^
 ||facebook.com/tr/
+||google-analytics.com/analytics.js^
+||pagead2.googlesyndication.com/pagead/js/adsbygoogle.js^
 ! 삼중잠금 (제미니)
 #%#//scriptlet('prevent-fetch', 'veta.naver.com')
 ##.adblock-msg, .adblock-overlay
