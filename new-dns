@@ -1,3 +1,25 @@
+! 카카오 비즈니스 및 광고 서버 차단 (제미니)
+||bizad-fe.kakao.com^
+||display.ad.daum.net^
+@@||kaikas.kakao.com^
+||kakaoad-fe.kakao.com^
+||ad-stat.kakao.com^
+@@||track.kakao.com^
+! 카카오톡 PC 및 앱 내부 광고 보완 (제미니)
+||mud-kage.kakao.co.kr/dn/^$app=KakaoTalk.exe
+||kakao.com/kakaotalk/ads/^
+||kakaotalk-ad.kakao.com^
+! 카카오 숏폼(숏츠) 및 불필요한 기능 숨기기 (제미니)
+! 카카오톡 숏폼 서비스(kamp) 차단 (기능 장애 시 삭제)
+||kamp.kakao.com^
+||vs*.play.kakao.com^
+! 웹페이지 카카오 광고 요소 숨기기 (제미니)
+kakao.com##.ad_unit
+kakao.com##iframe[src*="bizad"]
+daum.net##.p_ad
+daum.net##div[id^="ad_"]
+! 카카오톡 PC 하단 빈 광고 영역 숨기기 (선택 사항) (제미니)
+#kakao.com##.ad_area
 ! 안티-애드블록: 범용 엔진 및 감지 서버 (제미니)
 ||fundingchoicesmessages.google.com^
 ||adblock-analytics.com^
@@ -5,12 +27,12 @@
 ||admiral.cloud^
 ||blockadblock.com^
 ||detectadblock.com^
-||pagead2.googlesyndication.com^
+@@||pagead2.googlesyndication.com^
 ||securepubads.g.doubleclick.net^
 ||static.doubleclick.net^
 ||g.doubleclick.net^
 ! 주요 분석 및 통계 (광고 차단 감지용으로 자주 쓰임)(제미니)
-||google-analytics.com^
+@@||google-analytics.com^
 ||app-measurement.com^
 ||amplitude.com^
 ||appsflyer.com^
@@ -30,7 +52,6 @@
 ! 카카오 광고 및 분석 보완 (제미니)
 ||ad.kakao.com^
 ||display.ad.daum.net^
-||kaikas.kakao.com^
 ||talkchannel-api.kakao.com^
 ||talkchannel-log.kakao.com^
 ||tg.kakao.com^
@@ -97,6 +118,7 @@ m.dcinside.com###notice_list > li:not(:has(.ntc-line-pink))
 m.dcinside.com##.dna-group, .media-group, .layer-bottom-popup, .outside-search-box, .trend.cont
 m.cafe.naver.com###articleFeedList, .bottom.banner_add, .popular_toast_popup, .subscribe_layer_wrap
 fmkorea.com##.relevant_products_from_ad, .bd_mobile:matches-css(margin: /3px 0px/):remove()
+fmkorea.com#%#//scriptlet('set-constant', 'isAdBlockActive', false)
 quasarzone.com##.best-official-news, .new-official-news, .new-partner-saleinfo-container, .recommend-deal-wrap
 web.joongna.com##.pb-12, div:has([alt='ad']):not(:has(h2))
 ! --- [4. 안티-애드블록 및 스크립트 우회 (#%#)] ---
