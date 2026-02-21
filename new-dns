@@ -104,12 +104,28 @@ youtube.com##.ytp-ce-element-show
 @@||veta.naver.com^$app=com.nhn.naversearchapp
 ! 구글 광고 서비스 및 전환 추적 차단 (제미니)
 ||googleadservices.com^
+! 쿠키/개인정보 동의 배너 숨기기 (제미니)
+##.cookie-banner
+##.cookie-consent
+##[id*="cookie-notification"]
+##div[class*="CookieConsent"]
+! 모바일 웹 '앱 열기' 배너 숨기기 (제미니)
+naver.com##.u_cbox_ico_app
+m.cafe.naver.com##.banner_app_top
+m.dcinside.com##.app_banner_wrap
+youtube.com##.mobile-app-banner
 ! URL 추적 파라미터 자동 제거 (제미니)
 $removeparam=utm_source
 $removeparam=utm_medium
 $removeparam=utm_campaign
 $removeparam=fbclid
 $removeparam=gclid
+! URL 추적 파라미터 추가 (제미니)
+$removeparam=ref
+$removeparam=_hsenc
+$removeparam=_hsmi
+$removeparam=mc_cid
+$removeparam=mc_eid
 ! 슬랙 완전 허용 (제미니)
 @@||slack.com^$important
 @@||slack-edge.com^$important
@@ -117,6 +133,9 @@ $removeparam=gclid
 @@||slack-files.com^$important
 @@||slack-imgs.com^$important
 @@||slack-redir.net^$important
+! 쇼핑몰 리다이렉트 추적은 막되 페이지 연결은 보장 (제미니)
+@@||link.coupang.com^$important
+@@||ad.search.naver.com^$important
 ! 이중잠금 (제미니)
 naver.com##.veta_ad, .veta_ad_wrapper, div[id*="veta"]
 #%#//scriptlet('set-constant', 'yt.config_.GOOGLE_ANALYTICS_ID', '')
