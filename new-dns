@@ -79,8 +79,6 @@ daum.net##div[id^="ad_"]
 ||talkchannel-api.kakao.com^
 ||talkchannel-log.kakao.com^
 ||tg.kakao.com^
-! 스포티파이 추적 및 분석기 (제미니)
-||spclient.wg.spotify.com^$app=Spotify
 ! 광고 차단 감지 (제미니)
 ||fundingchoicesmessages.google.com^
 @@||google-analytics.com/analytics.js^
