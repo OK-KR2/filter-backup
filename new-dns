@@ -50,14 +50,14 @@ daum.net##div[id^="ad_"]
 ||admiral.cloud^
 ||blockadblock.com^
 ||detectadblock.com^
-@@||pagead2.googlesyndication.com^
+||pagead2.googlesyndication.com^
 ||securepubads.g.doubleclick.net^
 ||static.doubleclick.net^
 ||g.doubleclick.net^
-@@||google-analytics.com/analytics.js^
+||google-analytics.com/analytics.js^
 ||pagead2.googlesyndication.com/pagead/js/adsbygoogle.js^
 ! 주요 분석 및 통계 (광고 차단 감지용으로 자주 쓰임)(제미니)
-@@||google-analytics.com^
+||google-analytics.com^
 ||app-measurement.com^
 ||amplitude.com^
 ||appsflyer.com^
