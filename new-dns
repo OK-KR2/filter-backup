@@ -50,14 +50,14 @@ daum.net##div[id^="ad_"]
 ||admiral.cloud^
 ||blockadblock.com^
 ||detectadblock.com^
-||pagead2.googlesyndication.com^
 ||securepubads.g.doubleclick.net^
 ||static.doubleclick.net^
 ||g.doubleclick.net^
+||google-analytics.com^
 ||google-analytics.com/analytics.js^
+||pagead2.googlesyndication.com^
 ||pagead2.googlesyndication.com/pagead/js/adsbygoogle.js^
 ! 주요 분석 및 통계 (광고 차단 감지용으로 자주 쓰임)(제미니)
-||google-analytics.com^
 ||amplitude.com^
 ||appsflyer.com^
 ||hotjar.com^
@@ -91,12 +91,6 @@ youtube.com##.ytp-ce-element-show
 ||veta.naver.com^
 @@||veta.naver.com^$app=com.nhn.naver.searchapp
 ! 슬랙 완전 허용 (제미니)
-@@||slack.com^
-@@||slack-edge.com^
-@@||slack-msgs.com^
-@@||slack-files.com^
-@@||slack-imgs.com^
-@@||slack-redir.net^
 @@||slack.com^$important
 @@||slack-edge.com^$important
 @@||slack-msgs.com^$important
@@ -104,15 +98,12 @@ youtube.com##.ytp-ce-element-show
 @@||slack-imgs.com^$important
 @@||slack-redir.net^$important
 ! 이중잠금 (제미니)
-naver.com##.veta_ad
-naver.com##.veta_ad_wrapper
-naver.com##div[id*="veta"]
+naver.com##.veta_ad, .veta_ad_wrapper, div[id*="veta"]
 #%#//scriptlet('set-constant', 'yt.config_.GOOGLE_ANALYTICS_ID', '')
 #%#//scriptlet('prevent-fetch', 'google-analytics.com')
 ||connect.facebook.net^
 ||facebook.com/tr/
 ! 삼중잠금 (제미니)
-naver.com##.veta_ad, .veta_ad_wrapper, div[id*="veta"]
 #%#//scriptlet('prevent-fetch', 'veta.naver.com')
 ##.adblock-msg, .adblock-overlay
 #%#//scriptlet('abort-current-inline-script', 'isAdBlockActive')
