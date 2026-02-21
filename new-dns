@@ -1,3 +1,32 @@
+! 안티-애드블록: 범용 엔진 및 감지 서버 (제미니)
+||fundingchoicesmessages.google.com^
+||adblock-analytics.com^
+||blockthrough.com^
+||admiral.cloud^
+||blockadblock.com^
+||detectadblock.com^
+||pagead2.googlesyndication.com^
+||securepubads.g.doubleclick.net^
+||static.doubleclick.net^
+||g.doubleclick.net^
+! 주요 분석 및 통계 (광고 차단 감지용으로 자주 쓰임)(제미니)
+||google-analytics.com^
+||app-measurement.com^
+||amplitude.com^
+||appsflyer.com^
+||hotjar.com^
+||clarity.ms^
+||segment.com^
+||permutive.com^
+||tealiumiq.com^
+||ensighten.com^
+||krux.com^
+! 해외 대형 사이트 안티-애드블록 우회 보완 (제미니)
+||adnxs.com^
+||outbrain.com^
+||taboola.com^
+||carbonads.net^
+||buysellads.com^
 ! 카카오 광고 및 분석 보완 (제미니)
 ||ad.kakao.com^
 ||display.ad.daum.net^
