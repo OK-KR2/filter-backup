@@ -4,3 +4,59 @@
 ||pagead2.googlesyndication.com/pagead/js/adsbygoogle.js^
 ||appsflyer.com^
 ||amplitude.com^
+! 슬랙추가(완전허용)
+@@||slack.com^
+@@||slack-edge.com^
+@@||slack-msgs.com^
+@@||slack-files.com^
+@@||slack-imgs.com^
+@@||slack-redir.net^
+! 개인추가
+||pstatic.net.topo.gscdn.net^
+||nrc.naver.com^
+||nam.veta.naver.com^
+! [통합 필터: 도메인 차단 + 내부 광고 요소 숨기기]
+! 버전: 2026.01.11 (기존 필터 기반 최적화)
+! --- [1. 접속 차단 및 광고 서버 (DNS/Domain)] ---
+||veta.naver.com^
+||adcr.naver.com^
+||ader.naver.com^
+||ads.adoffice.11st.co.kr^
+||digitalcamp.co.kr^
+||targetpush.co.kr^
+||dctrend.ai^
+||link.coupang.com^
+||onelink.me^
+||kamp.kakao.com^
+||shortformstats.kakao.com^
+||vs*.play.kakao.com^
+@@||adcr.naver.com^$important
+
+! --- [2. 불법 사이트: 사이트 차단 및 내부 광고 정리] ---
+[$domain=/^(booktoki|toki|tkor|hoohootv|tvmon|tvroom|tvwiki|yako|torrentsee|torrentbot)\d*/]###novel_content:style(-webkit-touch-callout: default !important; -webkit-user-select: text !important; user-select: text !important;)
+[$domain=/^(booktoki|toki|tkor|hoohootv|tvmon|tvroom|tvwiki|yako|torrentsee|torrentbot)\d*/]##.ad-view, .banner_list, .at-banner, .banner_wrap2, [src*='/AD/'], [src*='/banner/'], ###bannerList, ###viewCover
+[$domain=/^tvroom\d+/]###mq-notice, ###n_b_2, .banners_area, .iziModal-overlay, .supermarquee-item, [id^='modal-anc-'], div.banner_l, body,html:style(overflow:auto!important)
+
+! --- [3. 웹사이트 내부 광고 요소 숨기기 (CSS/Element Hiding)] ---
+##.ad-view, .happy-under-player-mobile, .textwidget, [alt$='xn--299aqd'], [class*='basic-banner'][id], [class^='happy-header'], [id*='powerLink'], [id*='powerlink'], [id^='hd_pop'], div.banner_m, div[class^='AD'][style], ins.adsbyaiinad
+naver.com,daum.net,ppomppu.co.kr,ruliweb.com##[id$='_ad']
+m.dcinside.com###notice_list > li:not(:has(.ntc-line-pink))
+m.dcinside.com##.dna-group, .media-group, .layer-bottom-popup, .outside-search-box, .trend.cont
+m.cafe.naver.com###articleFeedList, .bottom.banner_add, .popular_toast_popup, .subscribe_layer_wrap
+fmkorea.com##.relevant_products_from_ad, .bd_mobile:matches-css(margin: /3px 0px/):remove()
+quasarzone.com##.best-official-news, .new-official-news, .new-partner-saleinfo-container, .recommend-deal-wrap
+web.joongna.com##.pb-12, div:has([alt='ad']):not(:has(h2))
+
+! --- [4. 안티-애드블록 및 스크립트 우회 (#%#)] ---
+#%#//scriptlet('prevent-fetch', 'doubleclick.net')
+#%#//scriptlet('prevent-fetch', 'pagead2.googlesyndication.com')
+#%#//scriptlet('abort-current-inline-script', 'oncontextmenu')
+fmkorea.com##+js(set, link_url, )
+m.fmkorea.com##+js(set, board_block_check, noopFunc)
+etoland.co.kr#%#//scriptlet('trusted-click-element', '[data-cookie-key]', '', '300')
+! --- [슬랙 앱 정상 작동을 위한 허용 규칙] ---
+@@||slack.com^$important
+@@||slack-edge.com^$important
+@@||slack-msgs.com^$important
+@@||slack-imgs.com^$important
+@@||slack-redir.net^$important
