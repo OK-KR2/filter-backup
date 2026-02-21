@@ -22,6 +22,19 @@ namu.wiki##.veta-ad-wrapper
 namu.wiki##div[class^="veta-"]
 namu.wiki##div:has(> span:has-text(/^파워링크$/))
 namu.wiki##div:has(> a > span:contains(파워링크))
+! 나무위키 내 네이버 광고 링크가 포함된 모든 요소 숨기기 (제미니)
+namu.wiki##div:has(a[href*="adcr.naver.com"])
+namu.wiki##a[href*="adcr.naver.com"]:xpath(..)
+! 소셜 미디어 추적 위젯 차단 (제미니)
+||platform.twitter.com^
+||static.ak.facebook.com^
+||linkedin.com/px/
+! 국내 타겟팅 및 리마케팅 광고 서버 차단 (제미니)
+||widerplanet.com^
+||mobon.net^
+||criteo.com^
+||toast.com^
+||cauly.co.kr^
 ! 카카오 비즈니스 및 광고 서버 차단 (제미니)
 ||bizad-fe.kakao.com^
 ||display.ad.daum.net^
