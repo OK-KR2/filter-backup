@@ -16,7 +16,6 @@ namu.wiki##div[style*="height: 180px"]
 namu.wiki##div:has-text(/^광고$/)
 namu.wiki##article > div:nth-child(2):empty
 namu.wiki##article + div:not([class])
-namu.wiki##div.veta-ad-container:empty
 ! 나무위키 모바일 하단 파워링크 보완 (제미니)
 namu.wiki##.veta-ad-wrapper
 namu.wiki##div[class^="veta-"]
@@ -138,10 +137,15 @@ $removeparam=mc_eid
 @@||slack-imgs.com^$important
 @@||slack-redir.net^$important
 ! 쇼핑몰 리다이렉트 추적은 막되 페이지 연결은 보장 (제미니)
+||link.coupang.com^
 @@||link.coupang.com^$important
 @@||ad.search.naver.com^$important
+! 네이버 앱 카페 접속 등 로그인 인식 못하는 현상 허용 (제미니)
+||adcr.naver.com^
+@@||adcr.naver.com^$important
 ! 이중잠금 (제미니)
 naver.com##.veta_ad, .veta_ad_wrapper, div[id*="veta"]
+namu.wiki##div.veta-ad-container:empty
 #%#//scriptlet('set-constant', 'yt.config_.GOOGLE_ANALYTICS_ID', '')
 #%#//scriptlet('prevent-fetch', 'google-analytics.com')
 ||connect.facebook.net^
@@ -163,11 +167,8 @@ naver.com##.veta_ad, .veta_ad_wrapper, div[id*="veta"]
 ||digitalcamp.co.kr^
 ||targetpush.co.kr^
 ||dctrend.ai^
-||link.coupang.com^
 ||onelink.me^
 ||shortformstats.kakao.com^
-||adcr.naver.com^
-@@||adcr.naver.com^$important
 ! 2. 사이트 차단 및 내부 광고 정리
 [$domain=/^(booktoki|toki|tkor|hoohootv|tvmon|tvroom|tvwiki|yako|torrentsee|torrentbot)\d*/]###novel_content:style(-webkit-touch-callout: default !important; -webkit-user-select: text !important; user-select: text !important;)
 [$domain=/^(booktoki|toki|tkor|hoohootv|tvmon|tvroom|tvwiki|yako|torrentsee|torrentbot)\d*/]##.ad-view, .banner_list, .at-banner, .banner_wrap2, [src*='/AD/'], [src*='/banner/'], ###bannerList, ###viewCover
