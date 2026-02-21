@@ -40,7 +40,7 @@
 ||dealer.spotify.com^
 ! 광고 차단 감지 (제미니)
 ||fundingchoicesmessages.google.com^
-||google-analytics.com/analytics.js^
+@@||google-analytics.com/analytics.js^
 ||pagead2.googlesyndication.com/pagead/js/adsbygoogle.js^
 ||appsflyer.com^
 ||amplitude.com^
@@ -53,13 +53,19 @@
 youtube.com##.ytp-ce-element
 youtube.com##.ytp-ce-video
 youtube.com##.ytp-ce-element-show
-! 슬랙추가(완전허용)
+! 슬랙추가(제미니)
 @@||slack.com^
 @@||slack-edge.com^
 @@||slack-msgs.com^
 @@||slack-files.com^
 @@||slack-imgs.com^
 @@||slack-redir.net^
+@@||slack.com^$important
+@@||slack-edge.com^$important
+@@||slack-msgs.com^$important
+@@||slack-files.com^$important
+@@||slack-imgs.com^$important
+@@||slack-redir.net^$important
 ! 개인추가
 ||pstatic.net.topo.gscdn.net^
 ||nrc.naver.com^
@@ -100,10 +106,3 @@ web.joongna.com##.pb-12, div:has([alt='ad']):not(:has(h2))
 fmkorea.com##+js(set, link_url, )
 m.fmkorea.com##+js(set, board_block_check, noopFunc)
 etoland.co.kr#%#//scriptlet('trusted-click-element', '[data-cookie-key]', '', '300')
-! --- [슬랙 앱 정상 작동을 위한 허용 규칙] ---
-@@||slack.com^$important
-@@||slack-edge.com^$important
-@@||slack-msgs.com^$important
-@@||slack-files.com^$important
-@@||slack-imgs.com^$important
-@@||slack-redir.net^$important
