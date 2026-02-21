@@ -34,7 +34,6 @@ namu.wiki##div:has(> a > span:contains(파워링크))
 ||kakao.com/kakaotalk/ads/^
 ||kakaotalk-ad.kakao.com^
 ! 카카오 숏폼(숏츠) 및 불필요한 기능 숨기기 (제미니)
-! 카카오톡 숏폼 서비스(kamp) 차단 (기능 장애 시 삭제)
 ||kamp.kakao.com^
 ||vs*.play.kakao.com^
 ! 웹페이지 카카오 광고 요소 숨기기 (제미니)
@@ -55,6 +54,8 @@ daum.net##div[id^="ad_"]
 ||securepubads.g.doubleclick.net^
 ||static.doubleclick.net^
 ||g.doubleclick.net^
+@@||google-analytics.com/analytics.js^
+||pagead2.googlesyndication.com/pagead/js/adsbygoogle.js^
 ! 주요 분석 및 통계 (광고 차단 감지용으로 자주 쓰임)(제미니)
 @@||google-analytics.com^
 ||app-measurement.com^
@@ -78,10 +79,6 @@ daum.net##div[id^="ad_"]
 ||talkchannel-api.kakao.com^
 ||talkchannel-log.kakao.com^
 ||tg.kakao.com^
-! 광고 차단 감지 (제미니)
-||fundingchoicesmessages.google.com^
-@@||google-analytics.com/analytics.js^
-||pagead2.googlesyndication.com/pagead/js/adsbygoogle.js^
 ! 범용 추적 및 분석기 보완 (제미니)
 ||log.byteoversea.com^ (틱톡 등 중국계 앱 추적)
 ||graph.facebook.com^ (메타 계열 앱 추적)
@@ -110,9 +107,8 @@ youtube.com##.ytp-ce-element-show
 ||nam.veta.naver.com^
 ! [통합 필터: 도메인 차단 + 내부 광고 요소 숨기기]
 ! 버전: 2026.01.11 (기존 필터 기반 최적화)
-! --- [1. 접속 차단 및 광고 서버 (DNS/Domain)] ---
+! 1. 접속 차단 및 광고 서버 (DNS/Domain)
 ||veta.naver.com^
-||adcr.naver.com^
 ||ader.naver.com^
 ||ads.adoffice.11st.co.kr^
 ||digitalcamp.co.kr^
@@ -120,15 +116,14 @@ youtube.com##.ytp-ce-element-show
 ||dctrend.ai^
 ||link.coupang.com^
 ||onelink.me^
-||kamp.kakao.com^
 ||shortformstats.kakao.com^
-||vs*.play.kakao.com^
+||adcr.naver.com^
 @@||adcr.naver.com^$important
-! --- [2. 사이트 차단 및 내부 광고 정리] ---
+! 2. 사이트 차단 및 내부 광고 정리
 [$domain=/^(booktoki|toki|tkor|hoohootv|tvmon|tvroom|tvwiki|yako|torrentsee|torrentbot)\d*/]###novel_content:style(-webkit-touch-callout: default !important; -webkit-user-select: text !important; user-select: text !important;)
 [$domain=/^(booktoki|toki|tkor|hoohootv|tvmon|tvroom|tvwiki|yako|torrentsee|torrentbot)\d*/]##.ad-view, .banner_list, .at-banner, .banner_wrap2, [src*='/AD/'], [src*='/banner/'], ###bannerList, ###viewCover
 [$domain=/^tvroom\d+/]###mq-notice, ###n_b_2, .banners_area, .iziModal-overlay, .supermarquee-item, [id^='modal-anc-'], div.banner_l, body,html:style(overflow:auto!important)
-! --- [3. 웹사이트 내부 광고 요소 숨기기 (CSS/Element Hiding)] ---
+! 3. 웹사이트 내부 광고 요소 숨기기 (CSS/Element Hiding)
 ##.ad-view, .happy-under-player-mobile, .textwidget, [alt$='xn--299aqd'], [class*='basic-banner'][id], [class^='happy-header'], [id*='powerLink'], [id*='powerlink'], [id^='hd_pop'], div.banner_m, div[class^='AD'][style], ins.adsbyaiinad
 naver.com,daum.net,ppomppu.co.kr,ruliweb.com##[id$='_ad']
 m.dcinside.com###notice_list > li:not(:has(.ntc-line-pink))
@@ -138,7 +133,7 @@ fmkorea.com##.relevant_products_from_ad, .bd_mobile:matches-css(margin: /3px 0px
 fmkorea.com#%#//scriptlet('set-constant', 'isAdBlockActive', false)
 quasarzone.com##.best-official-news, .new-official-news, .new-partner-saleinfo-container, .recommend-deal-wrap
 web.joongna.com##.pb-12, div:has([alt='ad']):not(:has(h2))
-! --- [4. 안티-애드블록 및 스크립트 우회 (#%#)] ---
+! 4. 안티-애드블록 및 스크립트 우회 (#%#)
 #%#//scriptlet('prevent-fetch', 'doubleclick.net')
 #%#//scriptlet('prevent-fetch', 'pagead2.googlesyndication.com')
 #%#//scriptlet('abort-current-inline-script', 'oncontextmenu')
