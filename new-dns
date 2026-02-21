@@ -87,7 +87,10 @@ daum.net##div[id^="ad_"]
 youtube.com##.ytp-ce-element
 youtube.com##.ytp-ce-video
 youtube.com##.ytp-ce-element-show
-! 슬랙추가(제미니)
+! 네이버 앱에서 'N' 로고 깨짐 방지를 위한 예외 허용 (제미니)
+||veta.naver.com^
+@@||veta.naver.com^$app=com.nhn.naver.searchapp
+! 슬랙 완전 허용 (제미니)
 @@||slack.com^
 @@||slack-edge.com^
 @@||slack-msgs.com^
@@ -108,15 +111,17 @@ naver.com##div[id*="veta"]
 #%#//scriptlet('prevent-fetch', 'google-analytics.com')
 ||connect.facebook.net^
 ||facebook.com/tr/
-! 네이버 앱에서 'N' 로고 깨짐 방지를 위한 예외 허용 (제미니)
-@@||veta.naver.com^$app=com.nhn.naver.searchapp
+! 삼중잠금 (제미니)
+naver.com##.veta_ad, .veta_ad_wrapper, div[id*="veta"]
+#%#//scriptlet('prevent-fetch', 'veta.naver.com')
+##.adblock-msg, .adblock-overlay
+#%#//scriptlet('abort-current-inline-script', 'isAdBlockActive')
 ! [통합 필터: 도메인 차단 + 내부 광고 요소 숨기기]
 ! 버전: 2026.01.11 (기존 필터 기반 최적화)
 ! 0. 개인추가
 ||pstatic.net.topo.gscdn.net^
 ||nrc.naver.com^
 ! 1. 접속 차단 및 광고 서버 (DNS/Domain)
-||veta.naver.com^
 ||ader.naver.com^
 ||ads.adoffice.11st.co.kr^
 ||digitalcamp.co.kr^
