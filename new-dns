@@ -31,12 +31,10 @@
 ||shortformstats.kakao.com^
 ||vs*.play.kakao.com^
 @@||adcr.naver.com^$important
-
 ! --- [2. 불법 사이트: 사이트 차단 및 내부 광고 정리] ---
 [$domain=/^(booktoki|toki|tkor|hoohootv|tvmon|tvroom|tvwiki|yako|torrentsee|torrentbot)\d*/]###novel_content:style(-webkit-touch-callout: default !important; -webkit-user-select: text !important; user-select: text !important;)
 [$domain=/^(booktoki|toki|tkor|hoohootv|tvmon|tvroom|tvwiki|yako|torrentsee|torrentbot)\d*/]##.ad-view, .banner_list, .at-banner, .banner_wrap2, [src*='/AD/'], [src*='/banner/'], ###bannerList, ###viewCover
 [$domain=/^tvroom\d+/]###mq-notice, ###n_b_2, .banners_area, .iziModal-overlay, .supermarquee-item, [id^='modal-anc-'], div.banner_l, body,html:style(overflow:auto!important)
-
 ! --- [3. 웹사이트 내부 광고 요소 숨기기 (CSS/Element Hiding)] ---
 ##.ad-view, .happy-under-player-mobile, .textwidget, [alt$='xn--299aqd'], [class*='basic-banner'][id], [class^='happy-header'], [id*='powerLink'], [id*='powerlink'], [id^='hd_pop'], div.banner_m, div[class^='AD'][style], ins.adsbyaiinad
 naver.com,daum.net,ppomppu.co.kr,ruliweb.com##[id$='_ad']
@@ -46,7 +44,6 @@ m.cafe.naver.com###articleFeedList, .bottom.banner_add, .popular_toast_popup, .s
 fmkorea.com##.relevant_products_from_ad, .bd_mobile:matches-css(margin: /3px 0px/):remove()
 quasarzone.com##.best-official-news, .new-official-news, .new-partner-saleinfo-container, .recommend-deal-wrap
 web.joongna.com##.pb-12, div:has([alt='ad']):not(:has(h2))
-
 ! --- [4. 안티-애드블록 및 스크립트 우회 (#%#)] ---
 #%#//scriptlet('prevent-fetch', 'doubleclick.net')
 #%#//scriptlet('prevent-fetch', 'pagead2.googlesyndication.com')
