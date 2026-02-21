@@ -83,8 +83,6 @@ daum.net##div[id^="ad_"]
 ||fundingchoicesmessages.google.com^
 @@||google-analytics.com/analytics.js^
 ||pagead2.googlesyndication.com/pagead/js/adsbygoogle.js^
-||appsflyer.com^
-||amplitude.com^
 ! 범용 추적 및 분석기 보완 (제미니)
 ||log.byteoversea.com^ (틱톡 등 중국계 앱 추적)
 ||graph.facebook.com^ (메타 계열 앱 추적)
