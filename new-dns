@@ -102,6 +102,14 @@ youtube.com##.ytp-ce-element-show
 ||veta.naver.com^
 @@||veta.naver.com^$app=com.nhn.naver.searchapp
 @@||veta.naver.com^$app=com.nhn.naversearchapp
+! 구글 광고 서비스 및 전환 추적 차단 (제미니)
+||googleadservices.com^
+! URL 추적 파라미터 자동 제거 (제미니)
+$removeparam=utm_source
+$removeparam=utm_medium
+$removeparam=utm_campaign
+$removeparam=fbclid
+$removeparam=gclid
 ! 슬랙 완전 허용 (제미니)
 @@||slack.com^$important
 @@||slack-edge.com^$important
