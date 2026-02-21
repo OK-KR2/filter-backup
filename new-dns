@@ -35,6 +35,10 @@ namu.wiki##a[href*="adcr.naver.com"]:xpath(..)
 ||criteo.com^
 ||toast.com^
 ||cauly.co.kr^
+! 국내 리마케팅 광고 서버 보강 (제미니)
+||nasmedia.co.kr^
+||mezzomedia.co.kr^
+||ad-m.naver.com^
 ! 카카오 비즈니스 및 광고 서버 차단 (제미니)
 ||bizad-fe.kakao.com^
 ||display.ad.daum.net^
