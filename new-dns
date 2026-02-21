@@ -58,7 +58,6 @@ daum.net##div[id^="ad_"]
 ||pagead2.googlesyndication.com/pagead/js/adsbygoogle.js^
 ! 주요 분석 및 통계 (광고 차단 감지용으로 자주 쓰임)(제미니)
 ||google-analytics.com^
-||app-measurement.com^
 ||amplitude.com^
 ||appsflyer.com^
 ||hotjar.com^
