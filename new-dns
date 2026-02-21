@@ -80,7 +80,7 @@ youtube.com##.ytp-ce-element-show
 ||shortformstats.kakao.com^
 ||vs*.play.kakao.com^
 @@||adcr.naver.com^$important
-! --- [2. 불법 사이트: 사이트 차단 및 내부 광고 정리] ---
+! --- [2. 사이트 차단 및 내부 광고 정리] ---
 [$domain=/^(booktoki|toki|tkor|hoohootv|tvmon|tvroom|tvwiki|yako|torrentsee|torrentbot)\d*/]###novel_content:style(-webkit-touch-callout: default !important; -webkit-user-select: text !important; user-select: text !important;)
 [$domain=/^(booktoki|toki|tkor|hoohootv|tvmon|tvroom|tvwiki|yako|torrentsee|torrentbot)\d*/]##.ad-view, .banner_list, .at-banner, .banner_wrap2, [src*='/AD/'], [src*='/banner/'], ###bannerList, ###viewCover
 [$domain=/^tvroom\d+/]###mq-notice, ###n_b_2, .banners_area, .iziModal-overlay, .supermarquee-item, [id^='modal-anc-'], div.banner_l, body,html:style(overflow:auto!important)
