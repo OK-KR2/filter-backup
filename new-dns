@@ -101,6 +101,10 @@ daum.net##div[id^="ad_"]
 youtube.com##.ytp-ce-element
 youtube.com##.ytp-ce-video
 youtube.com##.ytp-ce-element-show
+! 유튜브 홈 및 검색 결과 스폰서 섹션 숨기기 (제미니)
+youtube.com##ytd-ad-slot-renderer
+youtube.com##ytd-rich-item-renderer:has(> ytd-ad-slot-renderer)
+youtube.com##ytd-banner-promo-renderer
 ! 네이버 앱에서 'N' 로고 깨짐 방지를 위한 예외 허용 (제미니)
 ||veta.naver.com^
 @@||veta.naver.com^$app=com.nhn.naver.searchapp
@@ -129,9 +133,16 @@ $removeparam=_hsenc
 $removeparam=_hsmi
 $removeparam=mc_cid
 $removeparam=mc_eid
+! 검색 엔진 내 추적 비컨 차단 (제미니)
+||google.com/gen_204?*
+||google.co.kr/gen_204?*
+||sa.naver.com/be?*
 ! 광고 서버 사전 연결 시도 차단 (제미니)
 #%#//scriptlet('abort-current-inline-script', 'dns-prefetch')
 #%#//scriptlet('abort-current-inline-script', 'preconnect')
+! 최하단 사이트 차단의 그레이 영역 사이트 팝업 및 리다이렉트 방지 (제미니)
+[$domain=/^(booktoki|toki|tkor|hoohootv|tvmon|tvroom|tvwiki|yako|torrentsee|torrentbot)\d*/]#%#//scriptlet('prevent-window-open')
+[$domain=/^(booktoki|toki|tkor|hoohootv|tvmon|tvroom|tvwiki|yako|torrentsee|torrentbot)\d*/]#%#//scriptlet('prevent-popads')
 ! 슬랙 완전 허용 (제미니)
 @@||slack.com^$important
 @@||slack-edge.com^$important
