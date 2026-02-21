@@ -1,7 +1,10 @@
-! 카카오 광고 및 분석 보완
+! 카카오 광고 및 분석 보완 (제미니)
 ||ad.kakao.com^
 ||display.ad.daum.net^
 ||kaikas.kakao.com^
+||talkchannel-api.kakao.com^
+||talkchannel-log.kakao.com^
+||tg.kakao.com^
 ! 스포티파이 추적 및 분석기 (제미니)
 ||spclient.wg.spotify.com^
 ||apresolve.spotify.com^
@@ -17,6 +20,10 @@
 ||graph.facebook.com^ (메타 계열 앱 추적)
 ||telemetry.sdk.unityads.unity3d.com^ (모바일 게임 광고 SDK)
 ||app-measurement.com^ (구글 파이어베이스 분석)
+! 유튜브 영상 종료 후 카드 숨기기 (제미니)
+youtube.com##.ytp-ce-element
+youtube.com##.ytp-ce-video
+youtube.com##.ytp-ce-element-show
 ! 슬랙추가(완전허용)
 @@||slack.com^
 @@||slack-edge.com^
