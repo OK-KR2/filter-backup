@@ -100,6 +100,10 @@ youtube.com##.ytp-ce-element-show
 @@||slack-files.com^$important
 @@||slack-imgs.com^$important
 @@||slack-redir.net^$important
+! 이중잠금 (제미니)
+naver.com##.veta_ad
+naver.com##.veta_ad_wrapper
+naver.com##div[id*="veta"]
 ! 개인추가
 ||pstatic.net.topo.gscdn.net^
 ||nrc.naver.com^
