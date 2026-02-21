@@ -104,6 +104,8 @@ youtube.com##.ytp-ce-element-show
 naver.com##.veta_ad
 naver.com##.veta_ad_wrapper
 naver.com##div[id*="veta"]
+#%#//scriptlet('set-constant', 'yt.config_.GOOGLE_ANALYTICS_ID', '')
+#%#//scriptlet('prevent-fetch', 'google-analytics.com')
 ! 개인추가
 ||pstatic.net.topo.gscdn.net^
 ||nrc.naver.com^
