@@ -21,6 +21,7 @@ namu.wiki##div.veta-ad-container:empty
 namu.wiki##.veta-ad-wrapper
 namu.wiki##div[class^="veta-"]
 namu.wiki##div:has(> span:has-text(/^파워링크$/))
+namu.wiki##div:has(> a > span:contains(파워링크))
 ! 카카오 비즈니스 및 광고 서버 차단 (제미니)
 ||bizad-fe.kakao.com^
 ||display.ad.daum.net^
