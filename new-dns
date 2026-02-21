@@ -1,3 +1,22 @@
+! 나무위키 기본 광고 레이아웃 및 요소 숨기기 (제미니)
+namu.wiki##.ad-wrapper
+namu.wiki##[class*="ad-"]
+namu.wiki##div[id^="ad-"]
+namu.wiki##div[id^="ad-"]:not(.normal-content)
+namu.wiki##div[class$="-ad"]
+namu.wiki##.veta-ad-container
+! 나무위키 광고 서버 기반 차단 (네이버 시스템 연동 대응) (제미니)
+namu.wiki##div:has(> iframe[src*="adcr.naver.com"])
+namu.wiki##div:has(> iframe[src*="veta.naver.com"])
+namu.wiki##div:has(> div > a[href*="adcr.naver.com"])
+namu.wiki##div.search-item:has(a[href*="adcr.naver.com"])
+! 나무위키 빈 공간 및 잔여 텍스트 제거 (제미니)
+namu.wiki##div[style*="height: 160px"]
+namu.wiki##div[style*="height: 180px"]
+namu.wiki##div:has-text(/^광고$/)
+namu.wiki##article > div:nth-child(2):empty
+namu.wiki##article + div:not([class])
+namu.wiki##div.veta-ad-container:empty
 ! 카카오 비즈니스 및 광고 서버 차단 (제미니)
 ||bizad-fe.kakao.com^
 ||display.ad.daum.net^
