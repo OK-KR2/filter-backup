@@ -144,7 +144,9 @@ $removeparam=mc_eid
 ||adcr.naver.com^
 @@||adcr.naver.com^$important
 ! 이중잠금 (제미니)
-naver.com##.veta_ad, .veta_ad_wrapper, div[id*="veta"]
+naver.com##.veta_ad
+naver.com##.veta_ad_wrapper
+naver.com##div[id*="veta"]
 namu.wiki##div.veta-ad-container:empty
 #%#//scriptlet('set-constant', 'yt.config_.GOOGLE_ANALYTICS_ID', '')
 #%#//scriptlet('prevent-fetch', 'google-analytics.com')
