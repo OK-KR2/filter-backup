@@ -80,7 +80,7 @@ daum.net##div[id^="ad_"]
 ||talkchannel-log.kakao.com^
 ||tg.kakao.com^
 ! 스포티파이 추적 및 분석기 (제미니)
-||spclient.wg.spotify.com^
+@@||spclient.wg.spotify.com^
 ||apresolve.spotify.com^
 ||dealer.spotify.com^
 ! 광고 차단 감지 (제미니)
