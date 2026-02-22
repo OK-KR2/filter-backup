@@ -64,7 +64,6 @@ youtube.com##ytd-banner-promo-renderer
 !## 중국
 ! 로보락/샤오미 데이터 수집 및 중국 서버 차단 (제미니)
 ||ot.io.mi.com^
-@@||api.io.mi.com^
 ||log.ad.xiaomi.com^
 ||tracking.miui.com^
 ||data.mistat.xiaomi.com^
@@ -72,13 +71,14 @@ youtube.com##ytd-banner-promo-renderer
 ||api-pt.roborock.com^
 ||log.roborock.com^
 ! 알리익스프레스 및 중국 앱 범용 트래커 차단 (제미니)
+||acs.aliexpress.com^
 ||log.mmstat.com^
 ||amdc.m.taobao.com^
 ||ynuf.alipay.com^
 ||is.snssdk.com^
 ||mon.snssdk.com^
 ! 중국 지역 기반 분석 도구 차단 - IP추가필요 (제미니)
-@@||*.cn^$client=Roborock-Device-IP
+! ||*.cn^$client=Roborock-Device-IP
 
 ! ## 추척
 ! 소셜 미디어 추적 위젯 차단 (제미니)
@@ -212,6 +212,8 @@ web.joongna.com##.pb-12, div:has([alt='ad']):not(:has(h2))
 ! 네이버 앱 카페 접속 등 로그인 인식 못하는 현상 허용 (제미니)
 ||adcr.naver.com^
 @@||adcr.naver.com^$important
+! 로보락/샤오미 로봇청소기 작동 허용 (제미니)
+@@||api.io.mi.com^
 
 ! ## 방어선
 ! 이중잠금 (제미니)
