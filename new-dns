@@ -32,7 +32,6 @@ namu.wiki##a[href*="adcr.naver.com"]:xpath(..)
 @@||kaikas.kakao.com^
 ||kakaoad-fe.kakao.com^
 ||ad-stat.kakao.com^
-@@||track.kakao.com^
 ! 카카오 광고 및 분석 보완 (제미니)
 ||ad.kakao.com^
 ||talkchannel-api.kakao.com^
