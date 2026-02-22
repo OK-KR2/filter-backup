@@ -1,3 +1,4 @@
+! ## 나무위키
 ! 나무위키 기본 광고 레이아웃 및 요소 숨기기 (제미니)
 namu.wiki##.ad-wrapper
 namu.wiki##[class*="ad-"]
@@ -24,20 +25,7 @@ namu.wiki##div:has(> a > span:contains(파워링크))
 ! 나무위키 내 네이버 광고 링크가 포함된 모든 요소 숨기기 (제미니)
 namu.wiki##div:has(a[href*="adcr.naver.com"])
 namu.wiki##a[href*="adcr.naver.com"]:xpath(..)
-! 소셜 미디어 추적 위젯 차단 (제미니)
-||platform.twitter.com^
-||static.ak.facebook.com^
-||linkedin.com/px/
-! 국내 타겟팅 및 리마케팅 광고 서버 차단 (제미니)
-||widerplanet.com^
-||mobon.net^
-||criteo.com^
-||toast.com^
-||cauly.co.kr^
-! 국내 리마케팅 광고 서버 보강 (제미니)
-||nasmedia.co.kr^
-||mezzomedia.co.kr^
-||ad-m.naver.com^
+! ## 카카오
 ! 카카오 비즈니스 및 광고 서버 차단 (제미니)
 ||bizad-fe.kakao.com^
 ||display.ad.daum.net^
@@ -45,6 +33,11 @@ namu.wiki##a[href*="adcr.naver.com"]:xpath(..)
 ||kakaoad-fe.kakao.com^
 ||ad-stat.kakao.com^
 @@||track.kakao.com^
+! 카카오 광고 및 분석 보완 (제미니)
+||ad.kakao.com^
+||talkchannel-api.kakao.com^
+||talkchannel-log.kakao.com^
+||tg.kakao.com^
 ! 카카오톡 PC 및 앱 내부 광고 보완 (제미니)
 ||mud-kage.kakao.co.kr/dn/^$app=KakaoTalk.exe
 ||kakao.com/kakaotalk/ads/^
@@ -59,44 +52,7 @@ daum.net##.p_ad
 daum.net##div[id^="ad_"]
 ! 카카오톡 PC 하단 빈 광고 영역 숨기기 (선택 사항) (제미니)
 #kakao.com##.ad_area
-! 안티-애드블록: 범용 엔진 및 감지 서버 (제미니)
-||fundingchoicesmessages.google.com^
-||adblock-analytics.com^
-||blockthrough.com^
-||admiral.cloud^
-||blockadblock.com^
-||detectadblock.com^
-||securepubads.g.doubleclick.net^
-||static.doubleclick.net^
-||g.doubleclick.net^
-||google-analytics.com^
-||pagead2.googlesyndication.com^
-! 주요 분석 및 통계 (광고 차단 감지용으로 자주 쓰임)(제미니)
-||amplitude.com^
-||appsflyer.com^
-||hotjar.com^
-||clarity.ms^
-||segment.com^
-||permutive.com^
-||tealiumiq.com^
-||ensighten.com^
-||krux.com^
-! 해외 대형 사이트 안티-애드블록 우회 보완 (제미니)
-||adnxs.com^
-||outbrain.com^
-||taboola.com^
-||carbonads.net^
-||buysellads.com^
-! 카카오 광고 및 분석 보완 (제미니)
-||ad.kakao.com^
-||talkchannel-api.kakao.com^
-||talkchannel-log.kakao.com^
-||tg.kakao.com^
-! 범용 추적 및 분석기 보완 (제미니)
-||log.byteoversea.com^ (틱톡 등 중국계 앱 추적)
-||graph.facebook.com^ (메타 계열 앱 추적)
-||telemetry.sdk.unityads.unity3d.com^ (모바일 게임 광고 SDK)
-||app-measurement.com^ (구글 파이어베이스 분석)
+! ## 유튜브
 ! 유튜브 영상 종료 후 카드 숨기기 (제미니)
 youtube.com##.ytp-ce-element
 youtube.com##.ytp-ce-video
@@ -105,22 +61,19 @@ youtube.com##.ytp-ce-element-show
 youtube.com##ytd-ad-slot-renderer
 youtube.com##ytd-rich-item-renderer:has(> ytd-ad-slot-renderer)
 youtube.com##ytd-banner-promo-renderer
-! 네이버 앱에서 'N' 로고 깨짐 방지를 위한 예외 허용 (제미니)
-||veta.naver.com^
-@@||veta.naver.com^$app=com.nhn.naver.searchapp
-@@||veta.naver.com^$app=com.nhn.naversearchapp
+
+! ## 추척
+! 소셜 미디어 추적 위젯 차단 (제미니)
+||platform.twitter.com^
+||static.ak.facebook.com^
+||linkedin.com/px/
+! 범용 추적 및 분석기 보완 (제미니)
+||log.byteoversea.com^ (틱톡 등 중국계 앱 추적)
+||graph.facebook.com^ (메타 계열 앱 추적)
+||telemetry.sdk.unityads.unity3d.com^ (모바일 게임 광고 SDK)
+||app-measurement.com^ (구글 파이어베이스 분석)
 ! 구글 광고 서비스 및 전환 추적 차단 (제미니)
 ||googleadservices.com^
-! 쿠키/개인정보 동의 배너 숨기기 (제미니)
-##.cookie-banner
-##.cookie-consent
-##[id*="cookie-notification"]
-##div[class*="CookieConsent"]
-! 모바일 웹 '앱 열기' 배너 숨기기 (제미니)
-naver.com##.u_cbox_ico_app
-m.cafe.naver.com##.banner_app_top
-m.dcinside.com##.app_banner_wrap
-youtube.com##.mobile-app-banner
 ! URL 추적 파라미터 자동 제거 (제미니)
 $removeparam=utm_source
 $removeparam=utm_medium
@@ -137,12 +90,96 @@ $removeparam=mc_eid
 ||google.com/gen_204?*
 ||google.co.kr/gen_204?*
 ||sa.naver.com/be?*
+! ## 안티
+! 주요 분석 및 통계 (광고 차단 감지용으로 자주 쓰임)(제미니)
+||amplitude.com^
+||appsflyer.com^
+||hotjar.com^
+||clarity.ms^
+||segment.com^
+||permutive.com^
+||tealiumiq.com^
+||ensighten.com^
+||krux.com^
+! 안티-애드블록: 범용 엔진 및 감지 서버 (제미니)
+||fundingchoicesmessages.google.com^
+||adblock-analytics.com^
+||blockthrough.com^
+||admiral.cloud^
+||blockadblock.com^
+||detectadblock.com^
+||securepubads.g.doubleclick.net^
+||static.doubleclick.net^
+||g.doubleclick.net^
+||google-analytics.com^
+||pagead2.googlesyndication.com^
+! 해외 대형 사이트 안티-애드블록 우회 보완 (제미니)
+||adnxs.com^
+||outbrain.com^
+||taboola.com^
+||carbonads.net^
+||buysellads.com^
+! 안티-애드블록 및 스크립트 우회 (#%#)
+#%#//scriptlet('prevent-fetch', 'doubleclick.net')
+#%#//scriptlet('prevent-fetch', 'pagead2.googlesyndication.com')
+#%#//scriptlet('abort-current-inline-script', 'oncontextmenu')
+fmkorea.com##+js(set, link_url, )
+m.fmkorea.com##+js(set, board_block_check, noopFunc)
+etoland.co.kr#%#//scriptlet('trusted-click-element', '[data-cookie-key]', '', '300')
+! ## 광고
+! 접속 차단 및 광고 서버 (DNS/Domain)
+||veta.naver.com^
+||ader.naver.com^
+||ads.adoffice.11st.co.kr^
+||digitalcamp.co.kr^
+||targetpush.co.kr^
+||dctrend.ai^
+||onelink.me^
+||shortformstats.kakao.com^
+||pstatic.net.topo.gscdn.net^
+||nrc.naver.com^
 ! 광고 서버 사전 연결 시도 차단 (제미니)
 #%#//scriptlet('abort-current-inline-script', 'dns-prefetch')
 #%#//scriptlet('abort-current-inline-script', 'preconnect')
+! 국내 타겟팅 및 리마케팅 광고 서버 차단 (제미니)
+||widerplanet.com^
+||mobon.net^
+||criteo.com^
+||toast.com^
+||cauly.co.kr^
+! 국내 리마케팅 광고 서버 보강 (제미니)
+||nasmedia.co.kr^
+||mezzomedia.co.kr^
+||ad-m.naver.com^
+! ## 숨기기
+! 쿠키/개인정보 동의 배너 숨기기 (제미니)
+##.cookie-banner
+##.cookie-consent
+##[id*="cookie-notification"]
+##div[class*="CookieConsent"]
+! 모바일 웹 '앱 열기' 배너 숨기기 (제미니)
+naver.com##.u_cbox_ico_app
+m.cafe.naver.com##.banner_app_top
+m.dcinside.com##.app_banner_wrap
+youtube.com##.mobile-app-banner
+! 웹사이트 내부 광고 요소 숨기기 (CSS/Element Hiding)
+##.ad-view, .happy-under-player-mobile, .textwidget, [alt$='xn--299aqd'], [class*='basic-banner'][id], [class^='happy-header'], [id*='powerLink'], [id*='powerlink'], [id^='hd_pop'], div.banner_m, div[class^='AD'][style], ins.adsbyaiinad
+naver.com,daum.net,ppomppu.co.kr,ruliweb.com##[id$='_ad']
+m.dcinside.com###notice_list > li:not(:has(.ntc-line-pink))
+m.dcinside.com##.dna-group, .media-group, .layer-bottom-popup, .outside-search-box, .trend.cont
+m.cafe.naver.com###articleFeedList, .bottom.banner_add, .popular_toast_popup, .subscribe_layer_wrap
+fmkorea.com##.relevant_products_from_ad, .bd_mobile:matches-css(margin: /3px 0px/):remove()
+fmkorea.com#%#//scriptlet('set-constant', 'isAdBlockActive', false)
+quasarzone.com##.best-official-news, .new-official-news, .new-partner-saleinfo-container, .recommend-deal-wrap
+web.joongna.com##.pb-12, div:has([alt='ad']):not(:has(h2))
 ! 최하단 사이트 차단의 그레이 영역 사이트 팝업 및 리다이렉트 방지 (제미니)
 [$domain=/^(booktoki|toki|tkor|hoohootv|tvmon|tvroom|tvwiki|yako|torrentsee|torrentbot)\d*/]#%#//scriptlet('prevent-window-open')
 [$domain=/^(booktoki|toki|tkor|hoohootv|tvmon|tvroom|tvwiki|yako|torrentsee|torrentbot)\d*/]#%#//scriptlet('prevent-popads')
+! 사이트 차단 및 내부 광고 정리
+[$domain=/^(booktoki|toki|tkor|hoohootv|tvmon|tvroom|tvwiki|yako|torrentsee|torrentbot)\d*/]###novel_content:style(-webkit-touch-callout: default !important; -webkit-user-select: text !important; user-select: text !important;)
+[$domain=/^(booktoki|toki|tkor|hoohootv|tvmon|tvroom|tvwiki|yako|torrentsee|torrentbot)\d*/]##.ad-view, .banner_list, .at-banner, .banner_wrap2, [src*='/AD/'], [src*='/banner/'], ###bannerList, ###viewCover
+[$domain=/^tvroom\d+/]###mq-notice, ###n_b_2, .banners_area, .iziModal-overlay, .supermarquee-item, [id^='modal-anc-'], div.banner_l, body,html:style(overflow:auto!important)
+! ## 허용
 ! 슬랙 완전 허용 (제미니)
 @@||slack.com^$important
 @@||slack-edge.com^$important
@@ -157,6 +194,7 @@ $removeparam=mc_eid
 ! 네이버 앱 카페 접속 등 로그인 인식 못하는 현상 허용 (제미니)
 ||adcr.naver.com^
 @@||adcr.naver.com^$important
+! ## 방어선
 ! 이중잠금 (제미니)
 naver.com##.veta_ad
 naver.com##.veta_ad_wrapper
@@ -172,37 +210,3 @@ namu.wiki##div.veta-ad-container:empty
 #%#//scriptlet('prevent-fetch', 'veta.naver.com')
 ##.adblock-msg, .adblock-overlay
 #%#//scriptlet('abort-current-inline-script', 'isAdBlockActive')
-! [통합 필터: 도메인 차단 + 내부 광고 요소 숨기기]
-! 버전: 2026.01.11 (기존 필터 기반 최적화)
-! 0. 개인추가
-||pstatic.net.topo.gscdn.net^
-||nrc.naver.com^
-! 1. 접속 차단 및 광고 서버 (DNS/Domain)
-||ader.naver.com^
-||ads.adoffice.11st.co.kr^
-||digitalcamp.co.kr^
-||targetpush.co.kr^
-||dctrend.ai^
-||onelink.me^
-||shortformstats.kakao.com^
-! 2. 사이트 차단 및 내부 광고 정리
-[$domain=/^(booktoki|toki|tkor|hoohootv|tvmon|tvroom|tvwiki|yako|torrentsee|torrentbot)\d*/]###novel_content:style(-webkit-touch-callout: default !important; -webkit-user-select: text !important; user-select: text !important;)
-[$domain=/^(booktoki|toki|tkor|hoohootv|tvmon|tvroom|tvwiki|yako|torrentsee|torrentbot)\d*/]##.ad-view, .banner_list, .at-banner, .banner_wrap2, [src*='/AD/'], [src*='/banner/'], ###bannerList, ###viewCover
-[$domain=/^tvroom\d+/]###mq-notice, ###n_b_2, .banners_area, .iziModal-overlay, .supermarquee-item, [id^='modal-anc-'], div.banner_l, body,html:style(overflow:auto!important)
-! 3. 웹사이트 내부 광고 요소 숨기기 (CSS/Element Hiding)
-##.ad-view, .happy-under-player-mobile, .textwidget, [alt$='xn--299aqd'], [class*='basic-banner'][id], [class^='happy-header'], [id*='powerLink'], [id*='powerlink'], [id^='hd_pop'], div.banner_m, div[class^='AD'][style], ins.adsbyaiinad
-naver.com,daum.net,ppomppu.co.kr,ruliweb.com##[id$='_ad']
-m.dcinside.com###notice_list > li:not(:has(.ntc-line-pink))
-m.dcinside.com##.dna-group, .media-group, .layer-bottom-popup, .outside-search-box, .trend.cont
-m.cafe.naver.com###articleFeedList, .bottom.banner_add, .popular_toast_popup, .subscribe_layer_wrap
-fmkorea.com##.relevant_products_from_ad, .bd_mobile:matches-css(margin: /3px 0px/):remove()
-fmkorea.com#%#//scriptlet('set-constant', 'isAdBlockActive', false)
-quasarzone.com##.best-official-news, .new-official-news, .new-partner-saleinfo-container, .recommend-deal-wrap
-web.joongna.com##.pb-12, div:has([alt='ad']):not(:has(h2))
-! 4. 안티-애드블록 및 스크립트 우회 (#%#)
-#%#//scriptlet('prevent-fetch', 'doubleclick.net')
-#%#//scriptlet('prevent-fetch', 'pagead2.googlesyndication.com')
-#%#//scriptlet('abort-current-inline-script', 'oncontextmenu')
-fmkorea.com##+js(set, link_url, )
-m.fmkorea.com##+js(set, board_block_check, noopFunc)
-etoland.co.kr#%#//scriptlet('trusted-click-element', '[data-cookie-key]', '', '300')
