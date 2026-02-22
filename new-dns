@@ -106,6 +106,9 @@ $removeparam=mc_eid
 ||google.com/gen_204?*
 ||google.co.kr/gen_204?*
 ||sa.naver.com/be?*
+! 동영상 분석 및 광고용 영상 서버 차단 (재생은 허용) (제미니)
+||vids.tapjoy.com^
+||video-stats.video.kakao.com^
 ! ## 안티
 ! 주요 분석 및 통계 (광고 차단 감지용으로 자주 쓰임)(제미니)
 ||amplitude.com^
@@ -178,6 +181,11 @@ naver.com##.u_cbox_ico_app
 m.cafe.naver.com##.banner_app_top
 m.dcinside.com##.app_banner_wrap
 youtube.com##.mobile-app-banner
+! 광고 제거 후 잔여 빈 상자 박멸 (제미니)
+##.ad-unit, .ad-box, .ad-container
+##div[class*="AdSlot"]
+##div[id^="ad-wrapper"]
+##.ad_box:empty, .ad_area:empty
 ! 웹사이트 내부 광고 요소 숨기기 (CSS/Element Hiding)
 ##.ad-view, .happy-under-player-mobile, .textwidget, [alt$='xn--299aqd'], [class*='basic-banner'][id], [class^='happy-header'], [id*='powerLink'], [id*='powerlink'], [id^='hd_pop'], div.banner_m, div[class^='AD'][style], ins.adsbyaiinad
 naver.com,daum.net,ppomppu.co.kr,ruliweb.com##[id$='_ad']
