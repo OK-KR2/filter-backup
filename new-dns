@@ -29,9 +29,10 @@ namu.wiki##a[href*="adcr.naver.com"]:xpath(..)
 ! 카카오 비즈니스 및 광고 서버 차단 (제미니)
 ||bizad-fe.kakao.com^
 ||display.ad.daum.net^
-@@||kaikas.kakao.com^
+||kaikas.kakao.com^
 ||kakaoad-fe.kakao.com^
 ||ad-stat.kakao.com^
+||track.kakao.com^
 ! 카카오 광고 및 분석 보완 (제미니)
 ||ad.kakao.com^
 ||talkchannel-api.kakao.com^
