@@ -77,8 +77,6 @@ youtube.com##ytd-banner-promo-renderer
 ||ynuf.alipay.com^
 ||is.snssdk.com^
 ||mon.snssdk.com^
-! 중국 지역 기반 분석 도구 차단 - IP추가필요 (제미니)
-! ||*.cn^$client=Roborock-Device-IP
 
 ! ## 추척
 ! 소셜 미디어 추적 위젯 차단 (제미니)
@@ -213,7 +211,8 @@ web.joongna.com##.pb-12, div:has([alt='ad']):not(:has(h2))
 ||adcr.naver.com^
 @@||adcr.naver.com^$important
 ! 로보락/샤오미 로봇청소기 작동 허용 (제미니)
-@@||api.io.mi.com^
+@@||api.io.mi.com^$client=Roborock-Device-IP
+@@||*.cn^$client=Roborock-Device-IP
 
 ! ## 방어선
 ! 이중잠금 (제미니)
