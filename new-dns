@@ -36,7 +36,7 @@
 ||api.mixpanel.com^$important
 ||logs.adjust.com^$important
 
-! ## 추척
+! ## 추적
 ! 소셜 미디어 추적 위젯 차단 (제미니)
 ||platform.twitter.com^
 ||static.ak.facebook.com^
@@ -131,7 +131,7 @@ etoland.co.kr#%#//scriptlet('trusted-click-element', '[data-cookie-key]', '', '3
 ||mezzomedia.co.kr^
 ||ad-m.naver.com^
 
-!## 중국
+! ## 중국
 ! 로보락/샤오미 데이터 수집 및 중국 서버 차단 (제미니)
 ||ot.io.mi.com^
 ||log.ad.xiaomi.com^
