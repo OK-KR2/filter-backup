@@ -14,7 +14,6 @@
 ||log.coupang.com^
 ||analytics.coupang.com^
 ! 글로벌 추적 SDK - 앱 내 행동 분석 및 캡처 로그 (제미니)
-||app-measurement.com^
 ||firebase-settings.crashlytics.com^
 ||firebaselogging-pa.googleapis.com^
 ||api.amplitude.com^
