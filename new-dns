@@ -25,7 +25,7 @@
 ||sdk.iad-01.braze.com^
 ||collect.tealiumiq.com^
 ||logs.adjust.com^
-! 보강 (제미니)
+! 보강 - 중복이지만 보강으로 한번 더 필터링 (제미니)
 ||veta.naver.com^$important
 ||log.naver.com^$important
 ||analytics.naver.com^$important
@@ -34,6 +34,7 @@
 ||api.amplitude.com^$important
 ||api.mixpanel.com^$important
 ||logs.adjust.com^$important
+||cr.naver.com^$important
 
 ! ## 추적
 ! 소셜 미디어 추적 위젯 차단 (제미니)
@@ -129,6 +130,9 @@ etoland.co.kr#%#//scriptlet('trusted-click-element', '[data-cookie-key]', '', '3
 ||nasmedia.co.kr^
 ||mezzomedia.co.kr^
 ||ad-m.naver.com^
+! 모바일 앱 광고의 대부: InMobi 차단 (제미니)
+||inmobi.com^
+||*.inmobi.com^
 
 ! ## 중국
 ! 로보락/샤오미 데이터 수집 및 중국 서버 차단 (제미니)
@@ -287,6 +291,8 @@ namu.wiki##div.veta-ad-container:empty
 #%#//scriptlet('abort-on-property-read', 'mixpanel')
 #%#//scriptlet('abort-on-property-read', 'Adjust')
 #%#//scriptlet('abort-on-property-read', 'firebase')
+! 2026년형 백그라운드 추적 비컨 사살 (제미니)
+#%#//scriptlet('prevent-beacon')
 ! 삼중잠금 (제미니)
 #%#//scriptlet('prevent-fetch', 'veta.naver.com')
 ##.adblock-msg, .adblock-overlay
