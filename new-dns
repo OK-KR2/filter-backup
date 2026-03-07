@@ -1,82 +1,40 @@
-! ## 나무위키
-! 나무위키 기본 광고 레이아웃 및 요소 숨기기 (제미니)
-namu.wiki##.ad-wrapper
-namu.wiki##[class*="ad-"]
-namu.wiki##div[id^="ad-"]
-namu.wiki##div[id^="ad-"]:not(.normal-content)
-namu.wiki##div[class$="-ad"]
-namu.wiki##.veta-ad-container
-! 나무위키 광고 서버 기반 차단 (네이버 시스템 연동 대응) (제미니)
-namu.wiki##div:has(> iframe[src*="adcr.naver.com"])
-namu.wiki##div:has(> iframe[src*="veta.naver.com"])
-namu.wiki##div:has(> div > a[href*="adcr.naver.com"])
-namu.wiki##div.search-item:has(a[href*="adcr.naver.com"])
-! 나무위키 빈 공간 및 잔여 텍스트 제거 (제미니)
-namu.wiki##div[style*="height: 160px"]
-namu.wiki##div[style*="height: 180px"]
-namu.wiki##div:has-text(/^광고$/)
-namu.wiki##article > div:nth-child(2):empty
-namu.wiki##article + div:not([class])
-! 나무위키 모바일 하단 파워링크 보완 (제미니)
-namu.wiki##.veta-ad-wrapper
-namu.wiki##div[class^="veta-"]
-namu.wiki##div:has(> span:has-text(/^파워링크$/))
-namu.wiki##div:has(> a > span:contains(파워링크))
-! 나무위키 내 네이버 광고 링크가 포함된 모든 요소 숨기기 (제미니)
-namu.wiki##div:has(a[href*="adcr.naver.com"])
-namu.wiki##a[href*="adcr.naver.com"]:xpath(..)
-! ## 카카오
-! 카카오 비즈니스 및 광고 서버 차단 (제미니)
-||bizad-fe.kakao.com^
-||display.ad.daum.net^
-||kaikas.kakao.com^
-||kakaoad-fe.kakao.com^
-||ad-stat.kakao.com^
-||track.kakao.com^
-! 카카오 광고 및 분석 보완 (제미니)
+! ## 통합 추적 방지 리스트
+! 국내 기업 전용 - 네이버, 카카오, 쿠팡 등 (제미니)
+||veta.naver.com^
+||analytics.naver.com^
+||log.naver.com^
+||cc.naver.com^
+||tiara.kakao.com^
+||clog.kakao.com^
+||clog-aggregator.kakao.com^
 ||ad.kakao.com^
-||talkchannel-api.kakao.com^
-||talkchannel-log.kakao.com^
-||tg.kakao.com^
-! 카카오톡 PC 및 앱 내부 광고 보완 (제미니)
-||mud-kage.kakao.co.kr/dn/^$app=KakaoTalk.exe
-||kakao.com/kakaotalk/ads/^
-||kakaotalk-ad.kakao.com^
-! 카카오 숏폼(숏츠) 및 불필요한 기능 숨기기 (제미니)
-||kamp.kakao.com^
-||vs*.play.kakao.com^
-! 웹페이지 카카오 광고 요소 숨기기 (제미니)
-kakao.com##.ad_unit
-kakao.com##iframe[src*="bizad"]
-daum.net##.p_ad
-daum.net##div[id^="ad_"]
-! 카카오톡 PC 하단 빈 광고 영역 숨기기 (선택 사항) (제미니)
-#kakao.com##.ad_area
-! ## 유튜브
-! 유튜브 영상 종료 후 카드 숨기기 (제미니)
-youtube.com##.ytp-ce-element
-youtube.com##.ytp-ce-video
-youtube.com##.ytp-ce-element-show
-! 유튜브 홈 및 검색 결과 스폰서 섹션 숨기기 (제미니)
-youtube.com##ytd-ad-slot-renderer
-youtube.com##ytd-rich-item-renderer:has(> ytd-ad-slot-renderer)
-youtube.com##ytd-banner-promo-renderer
-!## 중국
-! 로보락/샤오미 데이터 수집 및 중국 서버 차단 (제미니)
-||ot.io.mi.com^
-||log.ad.xiaomi.com^
-||tracking.miui.com^
-||data.mistat.xiaomi.com^
-||roborock.com.cn^
-||api-pt.roborock.com^
-||log.roborock.com^
-! 알리익스프레스 및 중국 앱 범용 트래커 차단 (제미니)
-||acs.aliexpress.com^
-||log.mmstat.com^
-||amdc.m.taobao.com^
-||ynuf.alipay.com^
-||is.snssdk.com^
-||mon.snssdk.com^
+||ad.kakaocorp.com^
+||samsungads.com^
+||samsungadhub.com^
+||log.coupang.com^
+||analytics.coupang.com^
+! 글로벌 추적 SDK - 앱 내 행동 분석 및 캡처 로그 (제미니)
+||app-measurement.com^
+||firebase-settings.crashlytics.com^
+||firebaselogging-pa.googleapis.com^
+||api.amplitude.com^
+||api.mixpanel.com^
+||api.segment.io^
+||telemetry.sdk.io^
+||t.appsflyer.com^
+||events.appsflyer.com^
+||sdk.iad-01.braze.com^
+||collect.tealiumiq.com^
+||logs.adjust.com^
+! 보강 (제미니)
+||veta.naver.com^$important
+||log.naver.com^$important
+||analytics.naver.com^$important
+||tiara.kakao.com^$important
+||clog.kakao.com^$important
+||api.amplitude.com^$important
+||api.mixpanel.com^$important
+||logs.adjust.com^$important
 
 ! ## 추척
 ! 소셜 미디어 추적 위젯 차단 (제미니)
@@ -109,6 +67,7 @@ $removeparam=mc_eid
 ! 동영상 분석 및 광고용 영상 서버 차단 (재생은 허용) (제미니)
 ||vids.tapjoy.com^
 ||video-stats.video.kakao.com^
+
 ! ## 안티
 ! 주요 분석 및 통계 (광고 차단 감지용으로 자주 쓰임)(제미니)
 ||amplitude.com^
@@ -145,6 +104,7 @@ $removeparam=mc_eid
 fmkorea.com##+js(set, link_url, )
 m.fmkorea.com##+js(set, board_block_check, noopFunc)
 etoland.co.kr#%#//scriptlet('trusted-click-element', '[data-cookie-key]', '', '300')
+
 ! ## 광고
 ! 접속 차단 및 광고 서버 (DNS/Domain)
 ||veta.naver.com^
@@ -170,6 +130,90 @@ etoland.co.kr#%#//scriptlet('trusted-click-element', '[data-cookie-key]', '', '3
 ||nasmedia.co.kr^
 ||mezzomedia.co.kr^
 ||ad-m.naver.com^
+
+!## 중국
+! 로보락/샤오미 데이터 수집 및 중국 서버 차단 (제미니)
+||ot.io.mi.com^
+||log.ad.xiaomi.com^
+||tracking.miui.com^
+||data.mistat.xiaomi.com^
+||roborock.com.cn^
+||api-pt.roborock.com^
+||log.roborock.com^
+! 알리익스프레스 및 중국 앱 범용 트래커 차단 (제미니)
+||acs.aliexpress.com^
+||log.mmstat.com^
+||amdc.m.taobao.com^
+||ynuf.alipay.com^
+||is.snssdk.com^
+||mon.snssdk.com^
+
+! ## 카카오
+! 카카오 비즈니스 및 광고 서버 차단 (제미니)
+||bizad-fe.kakao.com^
+||display.ad.daum.net^
+||kaikas.kakao.com^
+||kakaoad-fe.kakao.com^
+||ad-stat.kakao.com^
+||track.kakao.com^
+! 카카오 광고 및 분석 보완 (제미니)
+||ad.kakao.com^
+||talkchannel-api.kakao.com^
+||talkchannel-log.kakao.com^
+||tg.kakao.com^
+! 카카오톡 PC 및 앱 내부 광고 보완 (제미니)
+||mud-kage.kakao.co.kr/dn/^$app=KakaoTalk.exe
+||kakao.com/kakaotalk/ads/^
+||kakaotalk-ad.kakao.com^
+! 카카오 숏폼(숏츠) 및 불필요한 기능 숨기기 (제미니)
+||kamp.kakao.com^
+||vs*.play.kakao.com^
+! 웹페이지 카카오 광고 요소 숨기기 (제미니)
+kakao.com##.ad_unit
+kakao.com##iframe[src*="bizad"]
+daum.net##.p_ad
+daum.net##div[id^="ad_"]
+! 카카오톡 PC 하단 빈 광고 영역 숨기기 (선택 사항) (제미니)
+#kakao.com##.ad_area
+
+! ## 나무위키
+! 나무위키 기본 광고 레이아웃 및 요소 숨기기 (제미니)
+namu.wiki##.ad-wrapper
+namu.wiki##[class*="ad-"]
+namu.wiki##div[id^="ad-"]
+namu.wiki##div[id^="ad-"]:not(.normal-content)
+namu.wiki##div[class$="-ad"]
+namu.wiki##.veta-ad-container
+! 나무위키 광고 서버 기반 차단 (네이버 시스템 연동 대응) (제미니)
+namu.wiki##div:has(> iframe[src*="adcr.naver.com"])
+namu.wiki##div:has(> iframe[src*="veta.naver.com"])
+namu.wiki##div:has(> div > a[href*="adcr.naver.com"])
+namu.wiki##div.search-item:has(a[href*="adcr.naver.com"])
+! 나무위키 빈 공간 및 잔여 텍스트 제거 (제미니)
+namu.wiki##div[style*="height: 160px"]
+namu.wiki##div[style*="height: 180px"]
+namu.wiki##div:has-text(/^광고$/)
+namu.wiki##article > div:nth-child(2):empty
+namu.wiki##article + div:not([class])
+! 나무위키 모바일 하단 파워링크 보완 (제미니)
+namu.wiki##.veta-ad-wrapper
+namu.wiki##div[class^="veta-"]
+namu.wiki##div:has(> span:has-text(/^파워링크$/))
+namu.wiki##div:has(> a > span:contains(파워링크))
+! 나무위키 내 네이버 광고 링크가 포함된 모든 요소 숨기기 (제미니)
+namu.wiki##div:has(a[href*="adcr.naver.com"])
+namu.wiki##a[href*="adcr.naver.com"]:xpath(..)
+
+! ## 유튜브
+! 유튜브 영상 종료 후 카드 숨기기 (제미니)
+youtube.com##.ytp-ce-element
+youtube.com##.ytp-ce-video
+youtube.com##.ytp-ce-element-show
+! 유튜브 홈 및 검색 결과 스폰서 섹션 숨기기 (제미니)
+youtube.com##ytd-ad-slot-renderer
+youtube.com##ytd-rich-item-renderer:has(> ytd-ad-slot-renderer)
+youtube.com##ytd-banner-promo-renderer
+
 ! ## 숨기기
 ! 쿠키/개인정보 동의 배너 숨기기 (제미니)
 ##.cookie-banner
@@ -203,6 +247,7 @@ web.joongna.com##.pb-12, div:has([alt='ad']):not(:has(h2))
 [$domain=/^(booktoki|toki|tkor|hoohootv|tvmon|tvroom|tvwiki|yako|torrentsee|torrentbot)\d*/]###novel_content:style(-webkit-touch-callout: default !important; -webkit-user-select: text !important; user-select: text !important;)
 [$domain=/^(booktoki|toki|tkor|hoohootv|tvmon|tvroom|tvwiki|yako|torrentsee|torrentbot)\d*/]##.ad-view, .banner_list, .at-banner, .banner_wrap2, [src*='/AD/'], [src*='/banner/'], ###bannerList, ###viewCover
 [$domain=/^tvroom\d+/]###mq-notice, ###n_b_2, .banners_area, .iziModal-overlay, .supermarquee-item, [id^='modal-anc-'], div.banner_l, body,html:style(overflow:auto!important)
+
 ! ## 허용
 ! 슬랙 완전 허용 (제미니)
 @@||slack.com^$important
@@ -236,6 +281,13 @@ namu.wiki##div.veta-ad-container:empty
 ||facebook.com/tr/
 ||google-analytics.com/analytics.js^
 ||pagead2.googlesyndication.com/pagead/js/adsbygoogle.js^
+! 통합 추적 이중 방어 - 스크립트 실행 차단 (제미니)
+#%#//scriptlet('prevent-fetch', 'log.naver.com')
+#%#//scriptlet('prevent-fetch', 'tiara.kakao.com')
+#%#//scriptlet('abort-on-property-read', 'amplitude')
+#%#//scriptlet('abort-on-property-read', 'mixpanel')
+#%#//scriptlet('abort-on-property-read', 'Adjust')
+#%#//scriptlet('abort-on-property-read', 'firebase')
 ! 삼중잠금 (제미니)
 #%#//scriptlet('prevent-fetch', 'veta.naver.com')
 ##.adblock-msg, .adblock-overlay
