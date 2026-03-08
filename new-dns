@@ -1,4 +1,4 @@
-! ## 통합 추적 방지 리스트
+! ## [01] 통합 추적 방지 리스트
 ! 국내 기업 전용 - 네이버, 카카오, 쿠팡 등 (제미니)
 ||veta.naver.com^
 ||analytics.naver.com^
@@ -36,7 +36,7 @@
 ||logs.adjust.com^$important
 ||cr.naver.com^$important
 
-! ## 추적
+! ## [02] 추적
 ! 소셜 미디어 추적 위젯 차단 (제미니)
 ||platform.twitter.com^
 ||static.ak.facebook.com^
@@ -68,7 +68,7 @@ $removeparam=mc_eid
 ||vids.tapjoy.com^
 ||video-stats.video.kakao.com^
 
-! ## 안티
+! ## [03] 안티
 ! 주요 분석 및 통계 (광고 차단 감지용으로 자주 쓰임)(제미니)
 ||amplitude.com^
 ||appsflyer.com^
@@ -105,7 +105,7 @@ fmkorea.com##+js(set, link_url, )
 m.fmkorea.com##+js(set, board_block_check, noopFunc)
 etoland.co.kr#%#//scriptlet('trusted-click-element', '[data-cookie-key]', '', '300')
 
-! ## 광고
+! ## [04] 광고
 ! 접속 차단 및 광고 서버 (DNS/Domain)
 ||veta.naver.com^
 ||ader.naver.com^
@@ -134,7 +134,7 @@ etoland.co.kr#%#//scriptlet('trusted-click-element', '[data-cookie-key]', '', '3
 ||inmobi.com^
 ||*.inmobi.com^
 
-! ## 중국
+! ## [05] 중국
 ! 로보락/샤오미 데이터 수집 및 중국 서버 차단 (제미니)
 ||ot.io.mi.com^
 ||log.ad.xiaomi.com^
@@ -151,7 +151,7 @@ etoland.co.kr#%#//scriptlet('trusted-click-element', '[data-cookie-key]', '', '3
 ||is.snssdk.com^
 ||mon.snssdk.com^
 
-! ## 카카오
+! ## [06] 카카오
 ! 카카오 비즈니스 및 광고 서버 차단 (제미니)
 ||bizad-fe.kakao.com^
 ||display.ad.daum.net^
@@ -179,7 +179,7 @@ daum.net##div[id^="ad_"]
 ! 카카오톡 PC 하단 빈 광고 영역 숨기기 (선택 사항) (제미니)
 #kakao.com##.ad_area
 
-! ## 나무위키
+! ## [07] 나무위키
 ! 나무위키 기본 광고 레이아웃 및 요소 숨기기 (제미니)
 namu.wiki##.ad-wrapper
 namu.wiki##[class*="ad-"]
@@ -207,7 +207,7 @@ namu.wiki##div:has(> a > span:contains(파워링크))
 namu.wiki##div:has(a[href*="adcr.naver.com"])
 namu.wiki##a[href*="adcr.naver.com"]:xpath(..)
 
-! ## 유튜브
+! ## [08] 유튜브
 ! 유튜브 영상 종료 후 카드 숨기기 (제미니)
 youtube.com##.ytp-ce-element
 youtube.com##.ytp-ce-video
@@ -217,7 +217,7 @@ youtube.com##ytd-ad-slot-renderer
 youtube.com##ytd-rich-item-renderer:has(> ytd-ad-slot-renderer)
 youtube.com##ytd-banner-promo-renderer
 
-! ## 숨기기
+! ## [09] 숨기기
 ! 쿠키/개인정보 동의 배너 숨기기 (제미니)
 ##.cookie-banner
 ##.cookie-consent
@@ -251,7 +251,7 @@ web.joongna.com##.pb-12, div:has([alt='ad']):not(:has(h2))
 [$domain=/^(booktoki|toki|tkor|hoohootv|tvmon|tvroom|tvwiki|yako|torrentsee|torrentbot)\d*/]##.ad-view, .banner_list, .at-banner, .banner_wrap2, [src*='/AD/'], [src*='/banner/'], ###bannerList, ###viewCover
 [$domain=/^tvroom\d+/]###mq-notice, ###n_b_2, .banners_area, .iziModal-overlay, .supermarquee-item, [id^='modal-anc-'], div.banner_l, body,html:style(overflow:auto!important)
 
-! ## 허용
+! ## [10] 허용
 ! 슬랙 완전 허용 (제미니)
 @@||slack.com^$important
 @@||slack-edge.com^$important
@@ -272,7 +272,24 @@ web.joongna.com##.pb-12, div:has([alt='ad']):not(:has(h2))
 @@||api.io.mi.com^$client=Roborock-Device-IP
 @@||*.cn^$client=Roborock-Device-IP
 
-! ## 방어선
+! ## [11] 악성 레이어 및 투명 팝업 원천 차단
+! 악성 도메인 변종 및 서브도메인 광역 차단 (제미니)
+||acceptancedishearten.com^$important
+||*.acceptancedishearten.com^$important
+! 화면 전체 투명 링크(Anchor) 가로채기 방지 (변종 대응) (제미니)
+! 위치 고정(fixed) + 화면 꽉 채움 + 투명도 0인 악질 링크들만 정밀 타격
+##a[style*="position:fixed"][style*="width:100%"][style*="height:100%"]:not(:has-text)
+##a[style*="position: fixed"][style*="width: 100%"][style*="height: 100%"]:not(:has-text)
+! 클릭 가로채기용 초고층(z-index) 레이어 폭파 (제미니)
+! 투명도가 거의 없고 z-index가 최대치인 광고 전용 div 저격
+##div[style*="opacity:0.01"][style*="z-index:2147483647"]
+##div[style*="opacity: 0.01"][style*="z-index: 2147483647"]
+##div[style*="opacity:0"][style*="z-index:2147483647"]
+! 보이지 않는 상태로 클릭만 기다리는 팝업 스크립트 실행 방지 (이중 잠금) (제미니)
+#%#//scriptlet('prevent-window-open', 'acceptancedishearten.com')
+#%#//scriptlet('abort-on-property-read', 'openPopup')
+
+! ## [12] 방어선
 ! 이중잠금 (제미니)
 naver.com##.veta_ad
 naver.com##.veta_ad_wrapper
