@@ -251,7 +251,19 @@ web.joongna.com##.pb-12, div:has([alt='ad']):not(:has(h2))
 [$domain=/^(booktoki|toki|tkor|hoohootv|tvmon|tvroom|tvwiki|yako|torrentsee|torrentbot)\d*/]##.ad-view, .banner_list, .at-banner, .banner_wrap2, [src*='/AD/'], [src*='/banner/'], ###bannerList, ###viewCover
 [$domain=/^tvroom\d+/]###mq-notice, ###n_b_2, .banners_area, .iziModal-overlay, .supermarquee-item, [id^='modal-anc-'], div.banner_l, body,html:style(overflow:auto!important)
 
-! ## [10] 허용
+! ## [10] 지능형 추적 및 핑거프린팅 방어 (제미니)
+! 기기 고유 정보를 조합해 신분을 특정하는 핑거프린팅 방지 (제미니)
+##+js(fp-protection)
+##+js(nowebrtc)
+! CNAME 클로킹(트래커가 1차 도메인인 척 위장) 방어 보강 (제미니)
+||criteo.net^$important
+||casalemedia.com^$important
+||rubiconproject.com^$important
+! 구글/메타의 보이지 않는 픽셀(Pixel) 추적 원천 차단 (제미니)
+||google.com/ads/ga-audiences^
+||facebook.com/tr/
+
+! ## [11] 허용
 ! 슬랙 완전 허용 (제미니)
 @@||slack.com^$important
 @@||slack-edge.com^$important
@@ -272,7 +284,7 @@ web.joongna.com##.pb-12, div:has([alt='ad']):not(:has(h2))
 @@||api.io.mi.com^$client=Roborock-Device-IP
 @@||*.cn^$client=Roborock-Device-IP
 
-! ## [11] 악성 레이어 및 투명 팝업 원천 차단
+! ## [12] 악성 레이어 및 투명 팝업 원천 차단
 ! 악성 도메인 변종 및 서브도메인 광역 차단 (제미니)
 ||acceptancedishearten.com^$important
 ||*.acceptancedishearten.com^$important
@@ -289,7 +301,7 @@ web.joongna.com##.pb-12, div:has([alt='ad']):not(:has(h2))
 #%#//scriptlet('prevent-window-open', 'acceptancedishearten.com')
 #%#//scriptlet('abort-on-property-read', 'openPopup')
 
-! ## [12] 방어선
+! ## [13] 방어선
 ! 이중잠금 (제미니)
 naver.com##.veta_ad
 naver.com##.veta_ad_wrapper
