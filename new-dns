@@ -42,10 +42,10 @@
 ||static.ak.facebook.com^
 ||linkedin.com/px/
 ! 범용 추적 및 분석기 보완 (제미니)
-||log.byteoversea.com^ (틱톡 등 중국계 앱 추적)
-||graph.facebook.com^ (메타 계열 앱 추적)
-||telemetry.sdk.unityads.unity3d.com^ (모바일 게임 광고 SDK)
-||app-measurement.com^ (구글 파이어베이스 분석)
+||log.byteoversea.com^
+||graph.facebook.com^
+||telemetry.sdk.unityads.unity3d.com^
+||app-measurement.com^
 ! 구글 광고 서비스 및 전환 추적 차단 (제미니)
 ||googleadservices.com^
 ! URL 추적 파라미터 자동 제거 (제미니)
@@ -298,7 +298,109 @@ web.joongna.com##.pb-12, div:has([alt='ad']):not(:has(h2))
 ! 복사할 때 몰래 '출처: OOO' 문구를 클립보드에 끼워 넣는 행위 차단 (제미니)
 ##+js(prevent-clipboard-write)
 
-! ## [14] 허용
+! ## [14] 검색 엔진 프라이버시 및 누수 방지
+! 검색어 자동 완성 및 검색 결과 미리 불러오기(Leak) 차단 (제미니)
+||google.com/complete/search?*
+||naver.com/ac?*
+||daum.net/suggest?*
+! 검색 결과 클릭 시 리다이렉트를 통한 추적 방지 보강 (제미니)
+||google.com/url?*
+||daum.net/clkt?*
+! 브라우저의 '다음 페이지 미리 로드' 기능을 통한 데이터 누수 차단 (제미니)
+#%#//scriptlet('abort-current-inline-script', 'dns-prefetch')
+#%#//scriptlet('abort-current-inline-script', 'prerender')
+
+! ## [15] 앱 스토어 강제 전환 및 시스템 텔레메트리
+! 앱 스토어(App Store) 강제 리다이렉트 및 팝업 유도 차단 (제미니)
+||itunes.apple.com^$important
+||apps.apple.com^$important
+||play.google.com/store/apps/details?*
+! 애플/구글 시스템 레벨의 최소한의 텔레메트리 차단 보강 (제미니)
+||is.apple.com^
+||api.smoot.apple.com^ (스포트라이트/시리 추적)
+||telemetry.google.com^
+||location.google.com^
+
+! ## [16] 리퍼러 및 정보 누수 차단
+! 다른 사이트로 넘어갈 때 '내가 어디서 왔는지' 숨기기 (Referer 정책 강화) (제미니)
+#%#//scriptlet('set-constant', 'document.referrer', '')
+! 브라우저 창의 이름(window.name)을 이용한 사이트 간 추적 방지 (제미니)
+#%#//scriptlet('set-constant', 'window.name', '')
+! 특정 앱/사이트가 내 폰의 '검색 히스토리'에 접근하려는 시도 차단 (제미니)
+||history.google.com^
+||myactivity.google.com^
+
+! ## [17] 소셜 로그인 및 공유 버튼 청소
+! 웹사이트 곳곳에 박힌 '소셜 로그인' 위젯 및 통신 차단 (제미니)
+||facebook.net/en_US/sdk.js^
+||connect.facebook.net^
+||accounts.google.com/gsi/*
+||kauth.kakao.com^
+||api.twitter.com/widgets.js^
+! 화면을 가리는 '소셜 공유' 레이어 숨기기 (CSS 타격) (제미니)
+##.social-share, .share-buttons, .sns-share
+##div[class*="share-layer"]
+##[id*="login-with-"]
+
+! ## [18] 글로벌 개인정보 제어 및 오류 로깅 차단
+! 모든 웹사이트에 "개인정보 수집 거부(GPC)" 신호 강제 전송 (제미니)
+##+js(set-constant, navigator.globalPrivacyControl, true)
+! 오류 보고를 가장한 세션 및 기기 정보 수집 차단 (Sentry, Bugsnag 등) (제미니)
+||sentry.io^$important
+||browser.sentry-cdn.com^$important
+||bugsnag.com^$important
+||rollbar.com^$important
+||logrocket.com^$important (사용자 화면 녹화 및 세션 리플레이 방지)
+
+! ## [19] 하이퍼링크 오디팅 및 미디어 분석 차단
+! 링크 클릭 시 백그라운드에서 몰래 전송되는 클릭 신호(Ping) 차단 (제미니)
+$ping,important
+! HTML5 비디오 플레이어의 시청 습관 분석 및 통계 전송 차단 (제미니)
+||telemetry.video.naver.com^
+||stats.video.kakao.com^
+||p-events-delivery.vimeo.com^
+||v.shopify.com/storefront/internal/video_stats^
+
+! ## [20] 로컬 스토리지 및 캐시 기반 추적 방어
+! 브라우저 로컬 스토리지를 이용한 광고 식별자(ID) 저장 차단 (제미니)
+##+js(set-constant, localStorage.ad_tracking_id, undefined)
+##+js(set-constant, localStorage.f_cap, undefined)
+! 캐시(ETag)를 이용한 사용자 식별용 '슈퍼 쿠키' 생성 방지 (제미니)
+##+js(set-constant, navigator.serviceWorker, undefined)
+
+! ## [21] 오디오 및 폰트 핑거프린팅 세밀 방어
+! 기기 고유의 오디오 재생 특성으로 신분을 식별하는 행위 차단 (제미니)
+##+js(set-constant, AudioContext, undefined)
+##+js(set-constant, webkitAudioContext, undefined)
+! 폰트 리스트 수집을 통한 기기 식별 방지 보강 (제미니)
+##+js(set-constant, document.fonts, undefined)
+
+! ## [22] 구글 Privacy Sandbox 및 Topics API 저격
+! 구글의 새로운 추적 기술인 Topics API 및 FLoC 비활성화 (제미니)
+##+js(set-constant, document.browsingTopics, undefined)
+##+js(set-constant, navigator.scheduling, undefined)
+##+js(set-constant, navigator.userActivation, undefined)
+
+! ## [23] 하드웨어 자원 및 센서 무단 점유 방어
+! 웹 채굴(Cryptojacking) 스크립트 및 높은 CPU 점유 차단 (제미니)
+||coin-hive.com^$important
+||coinhive.com^$important
+||crypto-loot.com^$important
+! 근거리 통신(NFC/USB/Bluetooth)을 통한 기기 식별 방지 (제미니)
+##+js(set-constant, navigator.bluetooth, undefined)
+##+js(set-constant, navigator.nfc, undefined)
+##+js(set-constant, navigator.usb, undefined)
+
+! ## [24] 글로벌 미디어 자동 재생 및 트래픽 낭비 차단 (제미니)
+! 웹사이트 진입 시 비디오/오디오 자동 재생 강제 중지
+#%#//scriptlet('prevent-autoplay')
+! 보이지 않는 곳에서 데이터를 갉아먹는 비디오 로딩 방지
+##video[autoplay]
+##video[muted][autoplay]
+! 유튜브/포털의 넥스트 비디오 미리 로드(Preload) 차단
+#%#//scriptlet('abort-current-inline-script', 'next-video-preload')
+
+! ## [25] 허용
 ! 슬랙 완전 허용 (제미니)
 @@||slack.com^$important
 @@||slack-edge.com^$important
@@ -319,7 +421,7 @@ web.joongna.com##.pb-12, div:has([alt='ad']):not(:has(h2))
 @@||api.io.mi.com^$client=Roborock-Device-IP
 @@||*.cn^$client=Roborock-Device-IP
 
-! ## [15] 방어선
+! ## [26] 방어선
 ! 이중잠금 (제미니)
 naver.com##.veta_ad
 naver.com##.veta_ad_wrapper
