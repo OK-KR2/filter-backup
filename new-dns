@@ -263,7 +263,42 @@ web.joongna.com##.pb-12, div:has([alt='ad']):not(:has(h2))
 ||google.com/ads/ga-audiences^
 ||facebook.com/tr/
 
-! ## [11] 허용
+! ## [11] 악성 레이어 및 투명 팝업 원천 차단
+! 악성 도메인 변종 및 서브도메인 광역 차단 (제미니)
+||acceptancedishearten.com^$important
+||*.acceptancedishearten.com^$important
+! 화면 전체 투명 링크(Anchor) 가로채기 방지 (변종 대응) (제미니)
+! 위치 고정(fixed) + 화면 꽉 채움 + 투명도 0인 악질 링크들만 정밀 타격
+##a[style*="position:fixed"][style*="width:100%"][style*="height:100%"]:not(:has-text)
+##a[style*="position: fixed"][style*="width: 100%"][style*="height: 100%"]:not(:has-text)
+! 클릭 가로채기용 초고층(z-index) 레이어 폭파 (제미니)
+! 투명도가 거의 없고 z-index가 최대치인 광고 전용 div 저격
+##div[style*="opacity:0.01"][style*="z-index:2147483647"]
+##div[style*="opacity: 0.01"][style*="z-index: 2147483647"]
+##div[style*="opacity:0"][style*="z-index:2147483647"]
+! 보이지 않는 상태로 클릭만 기다리는 팝업 스크립트 실행 방지 (이중 잠금) (제미니)
+#%#//scriptlet('prevent-window-open', 'acceptancedishearten.com')
+#%#//scriptlet('abort-on-property-read', 'openPopup')
+
+! ## [12] 하드웨어 센서 및 AI 스크래핑 방어
+! 배터리 상태/네트워크 정보로 기기를 식별하는 '사이드 채널' 차단 (제미니)
+#%#//scriptlet('set-constant', 'navigator.getBattery', 'undefined')
+#%#//scriptlet('set-constant', 'navigator.connection', 'undefined')
+! 비정상적인 마우스 움직임 감지(Bot 감지용) 스크립트 무력화
+##+js(ra-mouse-move)
+! 무단 AI 크롤러 및 데이터 수집 봇 차단 보강 (제미니)
+||gptbot.ai^$important
+||anthropic.com/robots.txt^$important
+||claudebot.com^$important
+
+! ## [13] 브라우저 기능 제약 및 강제 해제
+! 우클릭 차단, 드래그 방지, 복사 방지 스크립트 강제 무력화 (제미니)
+##+js(阻止右键)
+##+js(allow-contextmenu)
+! 복사할 때 몰래 '출처: OOO' 문구를 클립보드에 끼워 넣는 행위 차단 (제미니)
+##+js(prevent-clipboard-write)
+
+! ## [14] 허용
 ! 슬랙 완전 허용 (제미니)
 @@||slack.com^$important
 @@||slack-edge.com^$important
@@ -284,24 +319,7 @@ web.joongna.com##.pb-12, div:has([alt='ad']):not(:has(h2))
 @@||api.io.mi.com^$client=Roborock-Device-IP
 @@||*.cn^$client=Roborock-Device-IP
 
-! ## [12] 악성 레이어 및 투명 팝업 원천 차단
-! 악성 도메인 변종 및 서브도메인 광역 차단 (제미니)
-||acceptancedishearten.com^$important
-||*.acceptancedishearten.com^$important
-! 화면 전체 투명 링크(Anchor) 가로채기 방지 (변종 대응) (제미니)
-! 위치 고정(fixed) + 화면 꽉 채움 + 투명도 0인 악질 링크들만 정밀 타격
-##a[style*="position:fixed"][style*="width:100%"][style*="height:100%"]:not(:has-text)
-##a[style*="position: fixed"][style*="width: 100%"][style*="height: 100%"]:not(:has-text)
-! 클릭 가로채기용 초고층(z-index) 레이어 폭파 (제미니)
-! 투명도가 거의 없고 z-index가 최대치인 광고 전용 div 저격
-##div[style*="opacity:0.01"][style*="z-index:2147483647"]
-##div[style*="opacity: 0.01"][style*="z-index: 2147483647"]
-##div[style*="opacity:0"][style*="z-index:2147483647"]
-! 보이지 않는 상태로 클릭만 기다리는 팝업 스크립트 실행 방지 (이중 잠금) (제미니)
-#%#//scriptlet('prevent-window-open', 'acceptancedishearten.com')
-#%#//scriptlet('abort-on-property-read', 'openPopup')
-
-! ## [13] 방어선
+! ## [15] 방어선
 ! 이중잠금 (제미니)
 naver.com##.veta_ad
 naver.com##.veta_ad_wrapper
