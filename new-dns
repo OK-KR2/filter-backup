@@ -279,6 +279,9 @@ web.joongna.com##.pb-12, div:has([alt='ad']):not(:has(h2))
 ! 보이지 않는 상태로 클릭만 기다리는 팝업 스크립트 실행 방지 (이중 잠금) (제미니)
 #%#//scriptlet('prevent-window-open', 'acceptancedishearten.com')
 #%#//scriptlet('abort-on-property-read', 'openPopup')
+! 앱스토어 자동 실행(Deep Link) 시도 차단 (도메인은 살려둠) (제미니)
+#%#//scriptlet('prevent-window-open', 'itunes.apple.com')
+#%#//scriptlet('prevent-window-open', 'apps.apple.com')
 
 ! ## [12] 하드웨어 센서 및 AI 스크래핑 방어
 ! 배터리 상태/네트워크 정보로 기기를 식별하는 '사이드 채널' 차단 (제미니)
@@ -313,7 +316,7 @@ web.joongna.com##.pb-12, div:has([alt='ad']):not(:has(h2))
 ! ## [15] 시스템 텔레메트리
 ! 애플/구글 시스템 레벨의 최소한의 텔레메트리 차단 보강 (제미니)
 ||is.apple.com^
-||api.smoot.apple.com^ (스포트라이트/시리 추적)
+||api.smoot.apple.com^
 ||telemetry.google.com^
 ||location.google.com^
 
