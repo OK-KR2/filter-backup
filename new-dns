@@ -369,7 +369,7 @@ $ping,important
 
 ! ## [21] 오디오 및 폰트 핑거프린팅 세밀 방어
 ! 기기 고유의 오디오 재생 특성으로 신분을 식별하는 행위 차단 (제미니)
-##+js(set-constant, AudioContext, undefined)
+! 웹재생 허용 주석처리: ##+js(set-constant, AudioContext, undefined)
 ##+js(set-constant, webkitAudioContext, undefined)
 ! 폰트 리스트 수집을 통한 기기 식별 방지 보강 (제미니)
 ##+js(set-constant, document.fonts, undefined)
@@ -386,9 +386,9 @@ $ping,important
 ||coinhive.com^$important
 ||crypto-loot.com^$important
 ! 근거리 통신(NFC/USB/Bluetooth)을 통한 기기 식별 방지 (제미니)
-##+js(set-constant, navigator.bluetooth, undefined)
-##+js(set-constant, navigator.nfc, undefined)
-##+js(set-constant, navigator.usb, undefined)
+! 블루투스/NFC 연결불 허용 주석처리: ##+js(set-constant, navigator.bluetooth, undefined)
+! 블루투스/NFC 연결불 허용 주석처리: ##+js(set-constant, navigator.nfc, undefined)
+! 블루투스/NFC 연결불 허용 주석처리: ##+js(set-constant, navigator.usb, undefined)
 
 ! ## [24] 글로벌 미디어 자동 재생 및 트래픽 낭비 차단 (제미니)
 ! 웹사이트 진입 시 비디오/오디오 자동 재생 강제 중지
