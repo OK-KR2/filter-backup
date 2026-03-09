@@ -310,11 +310,7 @@ web.joongna.com##.pb-12, div:has([alt='ad']):not(:has(h2))
 #%#//scriptlet('abort-current-inline-script', 'dns-prefetch')
 #%#//scriptlet('abort-current-inline-script', 'prerender')
 
-! ## [15] 앱 스토어 강제 전환 및 시스템 텔레메트리
-! 앱 스토어(App Store) 강제 리다이렉트 및 팝업 유도 차단 (제미니)
-||itunes.apple.com^$important
-||apps.apple.com^$important
-||play.google.com/store/apps/details?*
+! ## [15] 시스템 텔레메트리
 ! 애플/구글 시스템 레벨의 최소한의 텔레메트리 차단 보강 (제미니)
 ||is.apple.com^
 ||api.smoot.apple.com^ (스포트라이트/시리 추적)
