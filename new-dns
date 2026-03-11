@@ -421,7 +421,7 @@ $ping,important
 @@||*.cn^$client=Roborock-Device-IP
 ! 사내망 시스템 완전 허용 (제미니)
 @@||play.doingcns.co.kr^$important
-@@||mailplug.co.kr
+@@||mailplug.co.kr^$important
 
 ! ## [26] 방어선
 ! 이중잠금 (제미니)
