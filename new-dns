@@ -217,25 +217,25 @@ youtube.com##ytd-ad-slot-renderer
 youtube.com##ytd-rich-item-renderer:has(> ytd-ad-slot-renderer)
 youtube.com##ytd-banner-promo-renderer
 
-! ## [09] 디시인사이드 (정밀 타격 & 루프 파괴)
-! 1. 리다이렉트 루프 방지 및 필수 요소 예외 처리 (정밀 타격) (제미니)
-@@||dcinside.com^$badfilter
-@@||m.dcinside.com^$badfilter
-@@||dcinside.com^$generichide
-@@||dcinside.com^$ghide
-@@||dcinside.com^$shide
-! 2. 연타 현상 해결을 위한 핵심 통로만 개방 (제미니)
-! 전체 JS/XHR을 열지 않고, 게시글 로딩에 필수인 서버만 콕 집어 허용합니다.
-@@||ndash.net^$important
-@@||dcimg.dcinside.co.kr^$important
-! 3. 광고 차단 탐지 변수 무력화 (가짜 신호 전송) (제미니)
+! ## [09] 디시인사이드 (연타/루프/429 에러 종결)
+! 1. 디시의 안티-애드블록 검사관을 '허용'하되 '속이기'
+! 물리적 차단(||)을 풀고, 대신 결과값만 거짓으로 보고합니다. (제미니)
+@@||dcinside.com/js/ad_check.js
+@@||dcinside.com/js/ads.js
+! 2. 광고 차단 탐지 변수 가짜 신호 전송 (기존보다 강화) (제미니)
 dcinside.com##+js(set-constant, is_adblock, false)
 dcinside.com##+js(set-constant, dc_adblock, false)
 dcinside.com##+js(set-constant, _is_adblock, false)
 dcinside.com##+js(set-constant, canRunAds, true)
-dcinside.com##+js(set-constant, canRunAd, true)
 dcinside.com##+js(set-constant, isAdblock, false)
-dcinside.com#%#//scriptlet(set-constant, AdBlock, false)
+dcinside.com##+js(set-constant, dc_is_adblock, false)
+! 3. 루프 방지 및 필수 콘텐츠 서버 개방 (로그 반영) (제미니)
+@@||dcinside.com^$badfilter
+@@||m.dcinside.com^$badfilter
+@@||dcinside.com^$generichide
+@@||ndash.net^$important
+@@||dcimg*.dcinside.co.kr^$important
+@@||*.cdnga.net^$important
 
 ! ## [10] 숨기기
 ! 쿠키/개인정보 동의 배너 숨기기 (제미니)
