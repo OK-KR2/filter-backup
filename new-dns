@@ -217,22 +217,27 @@ youtube.com##ytd-ad-slot-renderer
 youtube.com##ytd-rich-item-renderer:has(> ytd-ad-slot-renderer)
 youtube.com##ytd-banner-promo-renderer
 
-! ## [09] 디시인사이드 (연타/루프/429 에러 종결)
-! 1. 디시의 안티-애드블록 검사관을 '허용'하되 '속이기'
-! 물리적 차단(||)을 풀고, 대신 결과값만 거짓으로 보고합니다. (제미니)
+! ## [09] 디시인사이드 (비공릴 대응 & 원클릭 진입)
+! 1. 디시의 탐지 스크립트를 '물리적으로 차단'하지 않고 로딩 허용 (의심 회피) (제미니)
+! 파일 자체가 없으면 디시 서버가 바로 사용자님을 차단 리스트에 올립니다.
 @@||dcinside.com/js/ad_check.js
 @@||dcinside.com/js/ads.js
-! 2. 광고 차단 탐지 변수 가짜 신호 전송 (기존보다 강화) (제미니)
+! 2. 로딩된 스크립트가 내놓는 결과값만 '가짜'로 변조 (핵심 전략) (제미니)
 dcinside.com##+js(set-constant, is_adblock, false)
 dcinside.com##+js(set-constant, dc_adblock, false)
 dcinside.com##+js(set-constant, _is_adblock, false)
 dcinside.com##+js(set-constant, canRunAds, true)
 dcinside.com##+js(set-constant, isAdblock, false)
 dcinside.com##+js(set-constant, dc_is_adblock, false)
-! 3. 루프 방지 및 필수 콘텐츠 서버 개방 (로그 반영) (제미니)
+dcinside.com#%#//scriptlet(set-constant, AdBlock, false)
+! 3. 루프 발생 원인인 기본 필터 충돌 제거 (제미니)
 @@||dcinside.com^$badfilter
 @@||m.dcinside.com^$badfilter
 @@||dcinside.com^$generichide
+@@||dcinside.com^$ghide
+@@||dcinside.com^$shide
+! 4. 로그 기반: 이미지 및 콘텐츠 전달 서버 완전 개방 (429 에러 방지) (제미니)
+! 여기서 통신이 하나라도 끊기면 디시는 '비정상 접근'으로 간주하고 연타를 요구합니다.
 @@||ndash.net^$important
 @@||dcimg*.dcinside.co.kr^$important
 @@||*.cdnga.net^$important
