@@ -422,6 +422,17 @@ $ping,important
 ! 사내망 시스템 완전 허용 (제미니)
 @@||play.doingcns.co.kr^$important
 @@||mailplug.co.kr^$important
+! iOS 업데이트 확인 및 소프트웨어 다운로드 허용 (제미니)
+@@||mesu.apple.com^$important
+@@||gdmf.apple.com^$important
+@@||updates.cdn-apple.com^$important
+@@||appldnld.apple.com^$important
+! 기기 활성화 및 소프트웨어 서명/인증 (업데이트 검증 필수) (제미니)
+@@||gs.apple.com^$important
+@@||albert.apple.com^$important
+! 인증서 유효성 확인 (애플 서비스 전반의 통로) (제미니)
+@@||ocsp.apple.com^$important
+@@||ocsp2.apple.com^$important
 
 ! ## [26] 방어선
 ! 이중잠금 (제미니)
