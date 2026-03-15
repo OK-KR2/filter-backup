@@ -247,11 +247,6 @@ m.dcinside.com#%#//scriptlet('set-constant', 'is_adblock', 'false')
 @@||*.cdnga.net^$important
 @@||dcimg*.dcinside.co.kr^$important
 
-
-
-
-
-
 ! ## [10] 숨기기
 ! 쿠키/개인정보 동의 배너 숨기기 (제미니)
 ##.cookie-banner
