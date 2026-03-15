@@ -217,16 +217,21 @@ youtube.com##ytd-ad-slot-renderer
 youtube.com##ytd-rich-item-renderer:has(> ytd-ad-slot-renderer)
 youtube.com##ytd-banner-promo-renderer
 
-! ## [09] 디시인사이드 (사파리 핑거프린팅 & 탐지 무력화)
-! 1. 탐지 스크립트 실행 자체를 공중 분해 (Fetch 단계 차단) (제미니)
-! 파일을 읽게 하되, 안티-애드블록 함수가 호출되는 순간 가로챕니다.
-#%#//scriptlet('abort-on-property-read', 'is_adblock')
-#%#//scriptlet('abort-on-property-read', 'canRunAds')
-#%#//scriptlet('prevent-fetch', 'ad_check.js')
-! 2. 사파리 특화: 특정 API를 이용한 차단기 감지 무력화 (제미니)
-! 사파리의 'Privacy-Preserving Ad Measurement'를 흉내 냅니다.
-dcinside.com##+js(set-constant, navigator.userActivation, {isActive: true, hasBeenActive: true})
-! 3. 루프 파괴 및 통로 개방 (비공릴 IP 공유 대응) (제미니)
+! ## [09] 디시인사이드 (비공릴 전용 스텔스 완결판)
+! 1. 탐지 스크립트를 차단하지 않고 '정상 로딩' 허용 (의심 회피) (제미니)
+@@||dcinside.com/js/ad_check.js
+@@||dcinside.com/js/ads.js
+! 2. 로딩된 스크립트가 실행될 때 '광고 있음'으로 결과값 조작 (강화) (제미니)
+dcinside.com##+js(set-constant, is_adblock, false)
+dcinside.com##+js(set-constant, dc_adblock, false)
+dcinside.com##+js(set-constant, _is_adblock, false)
+dcinside.com##+js(set-constant, canRunAds, true)
+dcinside.com##+js(set-constant, isAdblock, false)
+dcinside.com##+js(set-constant, adsbygoogle, {})
+! 2026년형 사파리 엔진 대응 스크립틀릿 (제미니)
+dcinside.com#%#//scriptlet('set-constant', 'is_adblock', 'false')
+dcinside.com#%#//scriptlet('set-constant', 'canRunAds', 'true')
+! 3. 루프 방지 및 필수 콘텐츠 서버 개방 (429 에러 방어) (제미니)
 @@||dcinside.com^$badfilter
 @@||m.dcinside.com^$badfilter
 @@||dcinside.com^$generichide
