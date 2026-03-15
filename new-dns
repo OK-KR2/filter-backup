@@ -217,24 +217,29 @@ youtube.com##ytd-ad-slot-renderer
 youtube.com##ytd-rich-item-renderer:has(> ytd-ad-slot-renderer)
 youtube.com##ytd-banner-promo-renderer
 
-! ## [09] 디시인사이드 (비공릴 전용 스텔스 완결판)
-! 1. 탐지 스크립트를 차단하지 않고 '정상 로딩' 허용 (의심 회피) (제미니)
+! ## [09] 디시인사이드 (비공릴 대응 스텔스 완결판)
+! 1. [핵심] 탐지 스크립트 로딩 허용 (의심 회피) (제미니)
+! 차단(||)을 풀고 허용(@@)으로 바꿉니다. 파일을 읽게 해줘야 429 에러(Too Many Requests) 루프가 안 생깁니다.
 @@||dcinside.com/js/ad_check.js
 @@||dcinside.com/js/ads.js
-! 2. 로딩된 스크립트가 실행될 때 '광고 있음'으로 결과값 조작 (강화) (제미니)
+@@||m.dcinside.com/js/ad_check.js
+! 2. [핵심] 로딩된 스크립트의 결과값만 조작 (가짜 보고) (제미니)
+! 디시가 "너 차단기 써?"라고 물을 때 "아니, 광고 잘 나와"라고 답하게 만듭니다.
 dcinside.com##+js(set-constant, is_adblock, false)
 dcinside.com##+js(set-constant, dc_adblock, false)
-dcinside.com##+js(set-constant, _is_adblock, false)
 dcinside.com##+js(set-constant, canRunAds, true)
 dcinside.com##+js(set-constant, isAdblock, false)
-dcinside.com##+js(set-constant, adsbygoogle, {})
-! 2026년형 사파리 엔진 대응 스크립틀릿 (제미니)
-dcinside.com#%#//scriptlet('set-constant', 'is_adblock', 'false')
-dcinside.com#%#//scriptlet('set-constant', 'canRunAds', 'true')
-! 3. 루프 방지 및 필수 콘텐츠 서버 개방 (429 에러 방어) (제미니)
+! 사파리 전용 스크립틀릿 (더 깊은 곳에서 조작) (제미니)
+m.dcinside.com#%#//scriptlet('set-constant', 'is_adblock', 'false')
+m.dcinside.com#%#//scriptlet('set-constant', 'canRunAds', 'true')
+! 3. 루프 발생 원인인 기본 필터 충돌 제거 ($badfilter) (제미니)
 @@||dcinside.com^$badfilter
 @@||m.dcinside.com^$badfilter
 @@||dcinside.com^$generichide
+@@||dcinside.com^$ghide
+@@||dcinside.com^$shide
+! 4. [연타 방지] 로그에 찍힌 필수 콘텐츠 서버 완전 개방 (제미니)
+! 여기가 지연되면 클릭이 씹혀서 4번씩 눌러야 합니다.
 @@||ndash.net^$important
 @@||*.cdnga.net^$important
 @@||dcimg*.dcinside.co.kr^$important
