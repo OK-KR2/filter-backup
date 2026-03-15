@@ -217,30 +217,22 @@ youtube.com##ytd-ad-slot-renderer
 youtube.com##ytd-rich-item-renderer:has(> ytd-ad-slot-renderer)
 youtube.com##ytd-banner-promo-renderer
 
-! ## [09] 디시인사이드 (비공릴 대응 & 원클릭 진입)
-! 1. 디시의 탐지 스크립트를 '물리적으로 차단'하지 않고 로딩 허용 (의심 회피) (제미니)
-! 파일 자체가 없으면 디시 서버가 바로 사용자님을 차단 리스트에 올립니다.
-@@||dcinside.com/js/ad_check.js
-@@||dcinside.com/js/ads.js
-! 2. 로딩된 스크립트가 내놓는 결과값만 '가짜'로 변조 (핵심 전략) (제미니)
-dcinside.com##+js(set-constant, is_adblock, false)
-dcinside.com##+js(set-constant, dc_adblock, false)
-dcinside.com##+js(set-constant, _is_adblock, false)
-dcinside.com##+js(set-constant, canRunAds, true)
-dcinside.com##+js(set-constant, isAdblock, false)
-dcinside.com##+js(set-constant, dc_is_adblock, false)
-dcinside.com#%#//scriptlet(set-constant, AdBlock, false)
-! 3. 루프 발생 원인인 기본 필터 충돌 제거 (제미니)
+! ## [09] 디시인사이드 (사파리 핑거프린팅 & 탐지 무력화)
+! 1. 탐지 스크립트 실행 자체를 공중 분해 (Fetch 단계 차단) (제미니)
+! 파일을 읽게 하되, 안티-애드블록 함수가 호출되는 순간 가로챕니다.
+#%#//scriptlet('abort-on-property-read', 'is_adblock')
+#%#//scriptlet('abort-on-property-read', 'canRunAds')
+#%#//scriptlet('prevent-fetch', 'ad_check.js')
+! 2. 사파리 특화: 특정 API를 이용한 차단기 감지 무력화 (제미니)
+! 사파리의 'Privacy-Preserving Ad Measurement'를 흉내 냅니다.
+dcinside.com##+js(set-constant, navigator.userActivation, {isActive: true, hasBeenActive: true})
+! 3. 루프 파괴 및 통로 개방 (비공릴 IP 공유 대응) (제미니)
 @@||dcinside.com^$badfilter
 @@||m.dcinside.com^$badfilter
 @@||dcinside.com^$generichide
-@@||dcinside.com^$ghide
-@@||dcinside.com^$shide
-! 4. 로그 기반: 이미지 및 콘텐츠 전달 서버 완전 개방 (429 에러 방지) (제미니)
-! 여기서 통신이 하나라도 끊기면 디시는 '비정상 접근'으로 간주하고 연타를 요구합니다.
 @@||ndash.net^$important
-@@||dcimg*.dcinside.co.kr^$important
 @@||*.cdnga.net^$important
+@@||dcimg*.dcinside.co.kr^$important
 
 ! ## [10] 숨기기
 ! 쿠키/개인정보 동의 배너 숨기기 (제미니)
