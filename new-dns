@@ -217,35 +217,26 @@ youtube.com##ytd-ad-slot-renderer
 youtube.com##ytd-rich-item-renderer:has(> ytd-ad-slot-renderer)
 youtube.com##ytd-banner-promo-renderer
 
-! ## [09] 디시인사이드 (비공릴 대응 & 원클릭 통합본)
-! [1] 탐지 스크립트 '스텔스 허용' (429 에러 및 루프 원천 차단) (제미니)
-! 파일을 못 읽게 막으면 디시가 바로 공격으로 간주합니다. 로딩은 시켜주되 내용은 속입니다.
-@@||dcinside.com/js/ad_check.js
-@@||dcinside.com/js/ads.js
+! ## [09] 디시인사이드 (데스크탑 위장 & 모바일 UI 유지)
+! 1. 사파리 엔진을 '맥북 사파리'로 위장 (User-Agent Spoofing) (제미니)
+! 디시 서버가 사용자님을 '아이폰'이 아닌 '맥북 유저'로 착각하게 만듭니다.
+m.dcinside.com##+js(set-constant, navigator.userAgent, "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15")
+m.dcinside.com##+js(set-constant, navigator.platform, "MacIntel")
+m.dcinside.com##+js(set-constant, navigator.maxTouchPoints, 0)
+! 2. 모바일 특유의 감시 로직 무력화 (스텔스 유지) (제미니)
 @@||m.dcinside.com/js/ad_check.js
-! [2] 자바스크립트 변수 강제 변조 (디시의 '뇌'를 속임) (제미니)
-dcinside.com##+js(set-constant, is_adblock, false)
-dcinside.com##+js(set-constant, dc_adblock, false)
-dcinside.com##+js(set-constant, _is_adblock, false)
-dcinside.com##+js(set-constant, canRunAds, true)
-dcinside.com##+js(set-constant, canRunAd, true)
-dcinside.com##+js(set-constant, isAdblock, false)
-dcinside.com##+js(set-constant, dc_is_adblock, false)
-! 사파리 엔진 깊숙한 곳까지 가짜 신호 주입 (제미니)
-dcinside.com#%#//scriptlet('set-constant', 'is_adblock', 'false')
-dcinside.com#%#//scriptlet('set-constant', 'canRunAds', 'true')
-m.dcinside.com#%#//scriptlet('set-constant', 'is_adblock', 'false')
-! [3] 루프 방지 및 기본 필터 충돌 제거 (리다이렉션 파괴) (제미니)
+m.dcinside.com##+js(set-constant, is_adblock, false)
+m.dcinside.com##+js(set-constant, canRunAds, true)
+! 3. 루프 파괴 및 콘텐츠 고속도로 (비공릴 IP 대응 필수 통로) (제미니)
 @@||dcinside.com^$badfilter
 @@||m.dcinside.com^$badfilter
-@@||dcinside.com^$generichide
-@@||dcinside.com^$ghide
-@@||dcinside.com^$shide
-! [4] 연타 현상 해결을 위한 콘텐츠 통로 완전 개방 (원클릭 진입) (제미니)
-! 로그 분석 결과, 이 서버들이 지연되면 클릭이 씹히고 4번씩 눌러야 했습니다.
+@@||m.dcinside.com^$generichide
 @@||ndash.net^$important
 @@||*.cdnga.net^$important
 @@||dcimg*.dcinside.co.kr^$important
+! 4. 사파리 엔진 전용 3중 잠금 (제미니)
+m.dcinside.com#%#//scriptlet('set-constant', 'is_adblock', 'false')
+m.dcinside.com#%#//scriptlet('set-constant', 'canRunAds', 'true')
 
 ! ## [10] 숨기기
 ! 쿠키/개인정보 동의 배너 숨기기 (제미니)
