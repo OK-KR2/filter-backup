@@ -226,10 +226,10 @@ youtube.com##ytd-banner-promo-renderer
 @@||m.dcinside.com^$badfilter
 ! 2. [핵심] 사파리 '클릭 가로채기' 및 '지문 인식' 박살 (제미니)
 ! 터치하는 순간 서버로 즉시 신호를 보냅니다. (연타 효과)
-#%#//scriptlet('prevent-addEventListener', 'click')
-#%#//scriptlet('set-constant', 'is_adblock', 'false')
-#%#//scriptlet('set-constant', 'canRunAds', 'true')
-#%#//scriptlet('abort-on-property-read', 'is_adblock')
+dcinside.com#%#//scriptlet('prevent-addEventListener', 'click')
+dcinside.com#%#//scriptlet('prevent-addEventListener', 'mousedown')
+dcinside.com#%#//scriptlet('abort-on-property-read', 'is_adblock')
+dcinside.com#%#//scriptlet('abort-current-inline-script', 'canRunAds')
 ! 3. [스텔스] 브라우저 헤더 및 식별 정보 세탁 (속이기) (제미니)
 ! 비공릴 IP라 하더라도 '신뢰할 수 있는 일반 기기'인 것처럼 정보를 변조합니다.
 m.dcinside.com##+js(set-constant, navigator.maxTouchPoints, 1)
@@ -292,13 +292,13 @@ web.joongna.com##.pb-12, div:has([alt='ad']):not(:has(h2))
 ||*.acceptancedishearten.com^$important
 ! 화면 전체 투명 링크(Anchor) 가로채기 방지 (변종 대응) (제미니)
 ! 위치 고정(fixed) + 화면 꽉 채움 + 투명도 0인 악질 링크들만 정밀 타격
-! ##a[style*="position:fixed"][style*="width:100%"][style*="height:100%"]:not(:has-text)
-! ##a[style*="position: fixed"][style*="width: 100%"][style*="height: 100%"]:not(:has-text)
+##a[style*="position:fixed"][style*="width:100%"][style*="height:100%"]:not(:has-text)
+##a[style*="position: fixed"][style*="width: 100%"][style*="height: 100%"]:not(:has-text)
 ! 클릭 가로채기용 초고층(z-index) 레이어 폭파 (제미니)
 ! 투명도가 거의 없고 z-index가 최대치인 광고 전용 div 저격
-! ##div[style*="opacity:0.01"][style*="z-index:2147483647"]
-! ##div[style*="opacity: 0.01"][style*="z-index: 2147483647"]
-! ##div[style*="opacity:0"][style*="z-index:2147483647"]
+##div[style*="opacity:0.01"][style*="z-index:2147483647"]
+##div[style*="opacity: 0.01"][style*="z-index: 2147483647"]
+##div[style*="opacity:0"][style*="z-index:2147483647"]
 ! 보이지 않는 상태로 클릭만 기다리는 팝업 스크립트 실행 방지 (이중 잠금) (제미니)
 #%#//scriptlet('prevent-window-open', 'acceptancedishearten.com')
 #%#//scriptlet('abort-on-property-read', 'openPopup')
