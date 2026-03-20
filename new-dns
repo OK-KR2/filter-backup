@@ -217,27 +217,25 @@ youtube.com##ytd-ad-slot-renderer
 youtube.com##ytd-rich-item-renderer:has(> ytd-ad-slot-renderer)
 youtube.com##ytd-banner-promo-renderer
 
-! ## [09] 디시인사이드 (비공릴 IP 차단 우회 및 원클릭)
-! 1. [핵심] 서버 검문용 통신(XHR) 및 쿠키 추적 원천 차단 (제미니)
-! 디시가 비공릴 유저를 식별하는 특정 통신들을 무력화합니다.
-||m.dcinside.com/js/ad_check.js$important
-||dcinside.com/js/ads.js$important
+! ## [09] 디시인사이드 (스크립트 엔진 무력화 최종 병기)
+! 1. 감시 함수의 뿌리를 뽑기 (Abort-on-property-read) (제미니)
+! 디시가 'is_adblock'을 읽으려고 시도하는 순간, 그 스크립트 실행을 즉시 강제 종료합니다.
+dcinside.com#%#//scriptlet('abort-on-property-read', 'is_adblock')
+dcinside.com#%#//scriptlet('abort-on-property-read', 'canRunAds')
+m.dcinside.com#%#//scriptlet('abort-on-property-read', 'is_adblock')
+! 2. 인라인 스크립트 실행 방해 (제미니)
+! 웹페이지 코드 안에 숨겨진 감시 로직을 실행 전 단계에서 사살합니다.
+dcinside.com#%#//scriptlet('abort-current-inline-script', 'is_adblock')
+m.dcinside.com#%#//scriptlet('abort-current-inline-script', 'is_adblock')
+! 3. 비공릴 IP를 위한 '정상 유저' 위장 (스텔스 유지) (제미니)
+@@||dcinside.com/js/ad_check.js
+@@||m.dcinside.com/js/ad_check.js
+dcinside.com##+js(set-constant, canRunAds, true)
+dcinside.com##+js(set-constant, adsbygoogle, {})
+! 4. 루프 방지 및 통로 개방 (필수) (제미니)
 @@||dcinside.com^$badfilter
 @@||m.dcinside.com^$badfilter
-! 2. [핵심] 사파리 '클릭 가로채기' 및 '지문 인식' 박살 (제미니)
-! 터치하는 순간 서버로 즉시 신호를 보냅니다. (연타 효과)
-dcinside.com#%#//scriptlet('prevent-addEventListener', 'click')
-dcinside.com#%#//scriptlet('prevent-addEventListener', 'mousedown')
-dcinside.com#%#//scriptlet('abort-on-property-read', 'is_adblock')
-dcinside.com#%#//scriptlet('abort-current-inline-script', 'canRunAds')
-! 3. [스텔스] 브라우저 헤더 및 식별 정보 세탁 (속이기) (제미니)
-! 비공릴 IP라 하더라도 '신뢰할 수 있는 일반 기기'인 것처럼 정보를 변조합니다.
-m.dcinside.com##+js(set-constant, navigator.maxTouchPoints, 1)
-m.dcinside.com##+js(set-constant, navigator.webdriver, false)
-! 4. [통로] 비공릴 유저를 위한 필수 콘텐츠 서버 강제 허용 (제미니)
-! 여기가 막히면 IP 차단과 맞물려 무조건 429 에러가 뜹니다.
 @@||ndash.net^$important
-@@||*.cdnga.net^$important
 @@||dcimg*.dcinside.co.kr^$important
 
 ! ## [10] 숨기기
