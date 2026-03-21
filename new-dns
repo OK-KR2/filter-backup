@@ -217,25 +217,25 @@ youtube.com##ytd-ad-slot-renderer
 youtube.com##ytd-rich-item-renderer:has(> ytd-ad-slot-renderer)
 youtube.com##ytd-banner-promo-renderer
 
-! ## [09] 디시인사이드 (스크립트 엔진 무력화 최종 병기)
-! 1. 감시 함수의 뿌리를 뽑기 (Abort-on-property-read) (제미니)
-! 디시가 'is_adblock'을 읽으려고 시도하는 순간, 그 스크립트 실행을 즉시 강제 종료합니다.
-dcinside.com#%#//scriptlet('abort-on-property-read', 'is_adblock')
-dcinside.com#%#//scriptlet('abort-on-property-read', 'canRunAds')
-m.dcinside.com#%#//scriptlet('abort-on-property-read', 'is_adblock')
-! 2. 인라인 스크립트 실행 방해 (제미니)
-! 웹페이지 코드 안에 숨겨진 감시 로직을 실행 전 단계에서 사살합니다.
-dcinside.com#%#//scriptlet('abort-current-inline-script', 'is_adblock')
-m.dcinside.com#%#//scriptlet('abort-current-inline-script', 'is_adblock')
-! 3. 비공릴 IP를 위한 '정상 유저' 위장 (스텔스 유지) (제미니)
-@@||dcinside.com/js/ad_check.js
-@@||m.dcinside.com/js/ad_check.js
+! ## [09] 디시인사이드 (유니콘 스타일 - 감시망 우회)
+! 1. [핵심] 디시가 감시하는 광고/분석 서버를 'DNS 차단'에서 예외 처리 (제미니)
+! 이 통로들을 열어줘야 디시 서버가 사용자님을 차단하지 않습니다.
+@@||log.naver.com^$domain=dcinside.com|m.dcinside.com
+@@||analytics.naver.com^$domain=dcinside.com|m.dcinside.com
+@@||google-analytics.com^$domain=dcinside.com|m.dcinside.com
+@@||doubleclick.net^$domain=dcinside.com|m.dcinside.com
+! 2. [스텔스] 통로는 열어두되, 실행 결과만 "성공"으로 속이기 (제미니)
+dcinside.com##+js(set-constant, is_adblock, false)
 dcinside.com##+js(set-constant, canRunAds, true)
-dcinside.com##+js(set-constant, adsbygoogle, {})
-! 4. 루프 방지 및 통로 개방 (필수) (제미니)
-@@||dcinside.com^$badfilter
-@@||m.dcinside.com^$badfilter
+dcinside.com#%#//scriptlet('set-constant', 'is_adblock', 'false')
+! 3. [시각적 제거] 통신은 허용하되, 우리 눈에 보이는 광고 레이어만 삭제 (제미니)
+! 유니콘처럼 통신은 하되, 화면만 깔끔하게 만듭니다.
+m.dcinside.com##.ad_box, .ad_area, .dna-group
+m.dcinside.com##div[id^="ad_"]
+m.dcinside.com##.app_banner_wrap
+! 4. 필수 콘텐츠 서버 개방 (기존 유지) (제미니)
 @@||ndash.net^$important
+@@||*.cdnga.net^$important
 @@||dcimg*.dcinside.co.kr^$important
 
 ! ## [10] 숨기기
