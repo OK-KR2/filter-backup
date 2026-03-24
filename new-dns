@@ -275,6 +275,18 @@ web.joongna.com##.pb-12, div:has([alt='ad']):not(:has(h2))
 [$domain=/^(booktoki|toki|tkor|hoohootv|tvmon|tvroom|tvwiki|yako|torrentsee|torrentbot)\d*/]###novel_content:style(-webkit-touch-callout: default !important; -webkit-user-select: text !important; user-select: text !important;)
 [$domain=/^(booktoki|toki|tkor|hoohootv|tvmon|tvroom|tvwiki|yako|torrentsee|torrentbot)\d*/]##.ad-view, .banner_list, .at-banner, .banner_wrap2, [src*='/AD/'], [src*='/banner/'], ###bannerList, ###viewCover
 [$domain=/^tvroom\d+/]###mq-notice, ###n_b_2, .banners_area, .iziModal-overlay, .supermarquee-item, [id^='modal-anc-'], div.banner_l, body,html:style(overflow:auto!important)
+! 네이버 시각적 광고 요소 정밀 타격 (제미니)
+naver.com##.veta_ad
+naver.com##.veta_ad_wrapper
+naver.com##div[id*="veta"]
+naver.com##div[class*="ad_box"]
+naver.com##.u_ad_item
+m.cafe.naver.com##.ad_post_top
+m.cafe.naver.com##.ad_post_bottom
+m.cafe.naver.com##.ad_area
+m.cafe.naver.com##.banner_ad
+m.cafe.naver.com###articleFeedList > .ad_item
+m.cafe.naver.com##.popular_ad_area
 
 ! ## [11] 지능형 추적 및 핑거프린팅 방어 (제미니)
 ! 기기 고유 정보를 조합해 신분을 특정하는 핑거프린팅 방지 (제미니)
@@ -437,8 +449,13 @@ $ping,important
 @@||link.coupang.com^$important
 @@||ad.search.naver.com^$important
 ! 네이버 앱 카페 접속 등 로그인 인식 못하는 현상 허용 (제미니)
-||adcr.naver.com^
-@@||adcr.naver.com^$important
+! ||adcr.naver.com^
+! 네이버 카페/메일 로그인 세션 유지 및 기능 복구 (제미니)
+@@||cc.naver.com^$domain=naver.com,important
+@@||log.naver.com^$domain=naver.com,important
+@@||veta.naver.com^$domain=naver.com,important
+@@||cr.naver.com^$domain=naver.com,important
+@@||adcr.naver.com^$domain=naver.com,important
 ! 로보락/샤오미 로봇청소기 작동만 허용 (제미니)
 ||api.io.mi.com^
 ||cn^
