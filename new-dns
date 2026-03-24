@@ -206,6 +206,13 @@ namu.wiki##div:has(> a > span:contains(파워링크))
 ! 나무위키 내 네이버 광고 링크가 포함된 모든 요소 숨기기 (제미니)
 namu.wiki##div:has(a[href*="adcr.naver.com"])
 namu.wiki##a[href*="adcr.naver.com"]:xpath(..)
+! 나무위키 하이브리드 광고 차단 (제미니)
+! 1단계: 50x15 사이즈 이미지를 포함한 배경 있는 박스 제거 (1번 코드 로직) (제미니)
+namu.wiki##div[style*="background-color"]:has(img[width="50"][height="15"])
+! 2단계: 나무위키 이미지 서버(i.namu.wiki)에서 오는 특정 패턴의 광고 박스 제거 (2번 코드의 타겟팅 로직) (제미니)
+namu.wiki##div:has(> a > img[src^="https://i.namu.wiki/i/"]):not(:has(a[href^="#rfn-"]))
+! 3단계: 광고 이미지 특유의 스타일이 적용된 컨테이너 제거 (제미니)
+namu.wiki##div[class*="v-"]:has(img[src*="ad"])
 
 ! ## [08] 유튜브
 ! 유튜브 영상 종료 후 카드 숨기기 (제미니)
