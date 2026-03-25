@@ -180,39 +180,26 @@ daum.net##div[id^="ad_"]
 #kakao.com##.ad_area
 
 ! ## [07] 나무위키
-! 나무위키 기본 광고 레이아웃 및 요소 숨기기 (제미니)
+! 1. [핵심] 50x15 이미지 기반 실시간 광고 사살 스크립트 (제미니)
+namu.wiki#%#(function() { const c = () => { document.querySelectorAll('img').forEach(i => { if (i.naturalWidth === 50 && i.naturalHeight === 15) { let p = i.closest('div[style*="background-color"]'); if (p && p.parentElement) { p.parentElement.remove(); } } }); }; new MutationObserver(c).observe(document.documentElement, {childList:true, subtree:true}); c(); })();
+! 2. 파워링크 및 네이버 연동 레이아웃 강제 삭제 (제미니)
+namu.wiki##div:has(> span:has-text(/^파워링크$/))
+namu.wiki##div:has(> a > span:contains(파워링크))
+namu.wiki##.veta-ad-wrapper
+namu.wiki##div[class^="veta-"]
+namu.wiki##div:has(> iframe[src*="adcr.naver.com"])
+namu.wiki##div:has(a[href*="adcr.naver.com"])
+! 3. 나무위키 기본 광고 틀 및 이미지 서버 타격 (제미니)
 namu.wiki##.ad-wrapper
 namu.wiki##[class*="ad-"]
 namu.wiki##div[id^="ad-"]
-namu.wiki##div[id^="ad-"]:not(.normal-content)
-namu.wiki##div[class$="-ad"]
-namu.wiki##.veta-ad-container
-! 나무위키 광고 서버 기반 차단 (네이버 시스템 연동 대응) (제미니)
-namu.wiki##div:has(> iframe[src*="adcr.naver.com"])
-namu.wiki##div:has(> iframe[src*="veta.naver.com"])
-namu.wiki##div:has(> div > a[href*="adcr.naver.com"])
-namu.wiki##div.search-item:has(a[href*="adcr.naver.com"])
-! 나무위키 빈 공간 및 잔여 텍스트 제거 (제미니)
+namu.wiki##div:has(> a > img[src^="https://i.namu.wiki/i/"]):not(:has(a[href^="#rfn-"]))
+! 4. 광고 제거 후 남는 빈 공간 및 텍스트 청소 (제미니)
 namu.wiki##div[style*="height: 160px"]
 namu.wiki##div[style*="height: 180px"]
 namu.wiki##div:has-text(/^광고$/)
 namu.wiki##article > div:nth-child(2):empty
 namu.wiki##article + div:not([class])
-! 나무위키 모바일 하단 파워링크 보완 (제미니)
-namu.wiki##.veta-ad-wrapper
-namu.wiki##div[class^="veta-"]
-namu.wiki##div:has(> span:has-text(/^파워링크$/))
-namu.wiki##div:has(> a > span:contains(파워링크))
-! 나무위키 내 네이버 광고 링크가 포함된 모든 요소 숨기기 (제미니)
-namu.wiki##div:has(a[href*="adcr.naver.com"])
-namu.wiki##a[href*="adcr.naver.com"]:xpath(..)
-! 나무위키 하이브리드 광고 차단 (제미니)
-! 1단계: 50x15 사이즈 이미지를 포함한 배경 있는 박스 제거 (1번 코드 로직) (제미니)
-namu.wiki##div[style*="background-color"]:has(img[width="50"][height="15"])
-! 2단계: 나무위키 이미지 서버(i.namu.wiki)에서 오는 특정 패턴의 광고 박스 제거 (2번 코드의 타겟팅 로직) (제미니)
-namu.wiki##div:has(> a > img[src^="https://i.namu.wiki/i/"]):not(:has(a[href^="#rfn-"]))
-! 3단계: 광고 이미지 특유의 스타일이 적용된 컨테이너 제거 (제미니)
-namu.wiki##div[class*="v-"]:has(img[src*="ad"])
 
 ! ## [08] 유튜브
 ! 유튜브 영상 종료 후 카드 숨기기 (제미니)
