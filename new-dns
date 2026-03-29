@@ -235,9 +235,9 @@ dcinside.com##div[id^="ad_"]
 @@||*.cdnga.net^$important
 @@||dcimg*.dcinside.co.kr^$important
 ! 디시인사이드 광고 감지 변수 추가 무력화 (Hooray804 참고) (제미니)
-dcinside.com#%#//scriptlet('set-constant', 'isAdBlockActive', false)
-dcinside.com#%#//scriptlet('set-constant', 'adblock_chk', false)
-dcinside.com#%#//scriptlet('set-constant', 'is_ad_block', 'N')
+! dcinside.com#%#//scriptlet('set-constant', 'isAdBlockActive', false)
+! dcinside.com#%#//scriptlet('set-constant', 'adblock_chk', false)
+! dcinside.com#%#//scriptlet('set-constant', 'is_ad_block', 'N')
 
 ! ## [10] 숨기기
 ! 쿠키/개인정보 동의 배너 숨기기 (제미니)
