@@ -179,25 +179,20 @@ daum.net##div[id^="ad_"]
 ! 카카오톡 PC 하단 빈 광고 영역 숨기기 (선택 사항) (제미니)
 #kakao.com##.ad_area
 
-! ## [07] 나무위키 (파워링크 & 네이버 변종 완전 박멸)
-! 1. [스크립트] 실시간 감시 및 강제 삭제 (MutationObserver) (제미니)
-! 이미지 크기(50x15)뿐만 아니라 '파워링크' 단어가 포함된 div까지 실시간으로 추적해 삭제합니다.
-namu.wiki#%#(function() { const c = () => { document.querySelectorAll('div, section').forEach(el => { const text = el.innerText || ""; if (text.includes("파워링크") && (text.includes("광고") || el.querySelector('img[src*="naver.com"]'))) { el.remove(); } }); document.querySelectorAll('img').forEach(i => { if (i.naturalWidth === 50 && i.naturalHeight === 15) { let p = i.closest('div[style*="background-color"]'); if (p) p.remove(); } }); }; new MutationObserver(c).observe(document.documentElement, {childList:true, subtree:true}); c(); })();
-! 2. [CSS] 파워링크 텍스트 및 레이아웃 정밀 타격 (제미니)
+! ## [07] 나무위키 (색상 저격 + 50x15 통합 섬멸 버전)
+! 1. [핵심] 사용자님이 가져오신 배경색(초록색) 기반 레이아웃 폭파 (제미니)
+! 파워링크 특유의 배경색(rgb 253, 255, 245)을 가진 박스를 찾아 상위 부모까지 제거합니다.
+namu.wiki##div:matches-css(background-color: /253, 255, 245/):xpath(parent::div/parent::div/parent::div/parent::div)
+namu.wiki##div:matches-css(background-color: /rgb\(253, 255, 245\)/):xpath(parent::div/parent::div/parent::div/parent::div)
+! 2. [보조] 50x15 이미지 기반 실시간 감시 (기존 유지) (제미니)
+namu.wiki#%#(function() { const c = () => { document.querySelectorAll('img').forEach(i => { if (i.naturalWidth === 50 && i.naturalHeight === 15) { let p = i.closest('div[style*="background-color"]'); if (p) p.remove(); } }); }; new MutationObserver(c).observe(document.documentElement, {childList:true, subtree:true}); c(); })();
+! 3. [텍스트] 파워링크 텍스트 기반 차단 (제미니)
 namu.wiki##div:has(> span:has-text(/^파워링크$/))
-namu.wiki##div:has(> a > span:contains(파워링크))
 namu.wiki##div:has(span:has-text("파워링크")):has(span:has-text("광고"))
-namu.wiki##.veta-ad-wrapper
-namu.wiki##div[class^="veta-"]
-! 3. [서버] 네이버 광고 시스템(Veta/Adcr) 연동 요소 차단 (제미니)
-namu.wiki##div:has(> iframe[src*="adcr.naver.com"])
+! 4. [정리] 잔여 빈 공간 및 네이버 광고 연동 차단 (제미니)
 namu.wiki##div:has(a[href*="adcr.naver.com"])
-namu.wiki##a[href*="adcr.naver.com"]:xpath(..)
-namu.wiki##div:has(a[href*="blog.naver.com"]):has-text(파워링크)
-! 4. [정리] 광고 제거 후 남는 유령 공간 및 텍스트 청소 (제미니)
 namu.wiki##div[style*="height: 160px"]
 namu.wiki##div[style*="height: 180px"]
-namu.wiki##div:has-text(/^광고$/)
 namu.wiki##article > div:nth-child(2):empty
 
 ! ## [08] 유튜브
