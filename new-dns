@@ -35,6 +35,12 @@
 ||api.mixpanel.com^$important
 ||logs.adjust.com^$important
 ||cr.naver.com^$important
+! 네이버와 다음의 최신 모바일 광고 서버 주소 (Hooray804 참고) (제미니)
+||ads-display.naver.com^
+||nv.veta.naver.com^
+||ad-m.daum.net^
+||display.ad.daum.net^
+||amapi.pstatic.net^
 
 ! ## [02] 추적
 ! 소셜 미디어 추적 위젯 차단 (제미니)
@@ -180,6 +186,10 @@ daum.net##div[id^="ad_"]
 #kakao.com##.ad_area
 
 ! ## [07] 나무위키 (색상 저격 + 50x15 통합 섬멸 버전)
+! 나무위키 파워링크 배경색(RGB/HEX) 및 레이아웃 정밀 타격 (Hooray804 참고) (제미니)
+namu.wiki##div:matches-css(background-color: /rgb\(253, 255, 245\)/):xpath(parent::div/parent::div/parent::div/parent::div)
+namu.wiki##div:matches-css(background-color: /#fdeff5/):xpath(parent::div/parent::div/parent::div/parent::div)
+namu.wiki##[class^="v-"]:has(img[src*="ad"])
 ! 1. [핵심] 사용자님이 가져오신 배경색(초록색) 기반 레이아웃 폭파 (제미니)
 ! 파워링크 특유의 배경색(rgb 253, 255, 245)을 가진 박스를 찾아 상위 부모까지 제거합니다.
 namu.wiki##div:matches-css(background-color: /253, 255, 245/):xpath(parent::div/parent::div/parent::div/parent::div)
@@ -224,6 +234,10 @@ dcinside.com##div[id^="ad_"]
 @@||ndash.net^$important
 @@||*.cdnga.net^$important
 @@||dcimg*.dcinside.co.kr^$important
+! 디시인사이드 광고 감지 변수 추가 무력화 (Hooray804 참고) (제미니)
+dcinside.com#%#//scriptlet('set-constant', 'isAdBlockActive', false)
+dcinside.com#%#//scriptlet('set-constant', 'adblock_chk', false)
+dcinside.com#%#//scriptlet('set-constant', 'is_ad_block', 'N')
 
 ! ## [10] 숨기기
 ! 쿠키/개인정보 동의 배너 숨기기 (제미니)
