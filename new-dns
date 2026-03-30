@@ -185,22 +185,24 @@ daum.net##div[id^="ad_"]
 ! 카카오톡 PC 하단 빈 광고 영역 숨기기 (선택 사항) (제미니)
 #kakao.com##.ad_area
 
-! ## [07] 나무위키 (지연 로딩 & 강제 노출 완전 봉쇄)
-! 1. [핵심] 실시간 감시 및 즉시 사살 (MutationObserver 강화) (제미니)
-! 텍스트에 '파워링크'가 포함되거나 특정 배경색을 가진 요소를 실시간으로 추적해 부모까지 폭파합니다.
-namu.wiki#%#(function() { const c = () => { document.querySelectorAll('div, section').forEach(el => { const text = el.innerText || ""; if (text.includes("파워링크") && (text.includes("광고") || el.querySelector('img[src*="naver.com"]'))) { let target = el.closest('div[style*="background-color"]') || el; if (target.parentElement) target.remove(); } }); }; new MutationObserver(c).observe(document.documentElement, {childList:true, subtree:true}); c(); })();
-! 2. [강제성] 스크립트가 강제로 보여주려 해도 무조건 숨김 (CSS !important) (제미니)
-! 하단으로 내려갔을 때 광고가 다시 활성화되는 것을 원천 차단합니다.
+! ## [07] 나무위키 (변종 파워링크 & 지연 로딩 섬멸)
+! 1. [핵심] 네이버 광고 링크(adcr)가 포함된 모든 컨테이너 폭파 (제미니)
+! 클래스나 구조가 바뀌어도, 클릭했을 때 네이버 광고로 가는 모든 박스를 지웁니다.
+namu.wiki##div:has(a[href*="adcr.naver.com"]):style(display: none !important;)
+namu.wiki##div:has(a[href*="veta.naver.com"]):style(display: none !important;)
+! 2. [텍스트] '파워링크' 단어 기반 광역 삭제 (강제성 부여) (제미니)
+! 특정 문구가 포함된 레이아웃은 부모의 깊이에 상관없이 무조건 숨깁니다.
 namu.wiki##div:has(span:has-text("파워링크")):style(display: none !important;)
-namu.wiki##.veta-ad-wrapper:style(display: none !important;)
-namu.wiki##div[class^="veta-"]:style(display: none !important;)
+namu.wiki##div:has-text(/^파워링크$/):style(display: none !important;)
+namu.wiki##div:has(span:has-text("광고")):has(a[href*="naver.com"]):style(display: none !important;)
+! 3. [색상] 사용자 제안 색상 및 변종 배경색 차단 (Hooray804 보강) (제미니)
+! 색상 코드가 조금만 섞여 있어도 해당 구역을 날려버립니다.
 namu.wiki##div:matches-css(background-color: /rgb\(253, 255, 245\)/):style(display: none !important;)
-! 3. [구조적] 사용자 제안 색상 및 레이아웃 저격 (Hooray804 응용) (제미니)
-namu.wiki##div:matches-css(background-color: /#fdeff5/):xpath(parent::div/parent::div/parent::div/parent::div)
-namu.wiki##div:matches-css(background-color: /rgb\(253, 255, 245\)/):xpath(parent::div/parent::div/parent::div/parent::div)
-namu.wiki##[class^="v-"]:has(img[src*="ad"])
-! 4. [정리] 광고 서버 통신 차단 및 빈 공간 청소 (제미니)
-namu.wiki##div:has(a[href*="adcr.naver.com"])
+namu.wiki##div:matches-css(background-color: /#fdeff5/):style(display: none !important;)
+namu.wiki##[class^="v-"]:has(img[src*="ad"]):style(display: none !important;)
+! 4. [스크립트] 실시간 재생성 방지 (MutationObserver 최적화) (제미니)
+namu.wiki#%#(function() { const c = () => { document.querySelectorAll('div:not([data-ad-checked])').forEach(el => { if (el.innerText && el.innerText.includes("파워링크")) { el.setAttribute('data-ad-checked', 'true'); el.style.setProperty('display', 'none', 'important'); } }); }; new MutationObserver(c).observe(document.documentElement, {childList:true, subtree:true}); c(); })();
+! 5. [정리] 광고 제거 후 남는 유령 공간 및 잔여물 청소 (제미니)
 namu.wiki##div[style*="height: 160px"]
 namu.wiki##div[style*="height: 180px"]
 namu.wiki##article > div:nth-child(2):empty
