@@ -1,3 +1,8 @@
+// @version      1.0
+// @updateURL    https://raw.githubusercontent.com/OK-KR2/filter-backup/refs/heads/main/dc_stealth.user.js
+// @downloadURL  https://raw.githubusercontent.com/OK-KR2/filter-backup/refs/heads/main/dc_stealth.user.js
+
+
 // ==UserScript==
 // @name        NamuWiki Ad-Slayer (Single-Script Mode)
 // @description 애드가드 설정 없이 스크립트 하나로 나무위키 파워링크를 완전 박멸합니다.
