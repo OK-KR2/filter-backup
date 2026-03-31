@@ -218,12 +218,6 @@ youtube.com##ytd-rich-item-renderer:has(> ytd-ad-slot-renderer)
 youtube.com##ytd-banner-promo-renderer
 
 ! ## [09] 디시인사이드 (완전 스텔스 - 박멸 버전)
-! 1. 디시 소스 코드에 절대 개입 금지 (감지 방어) (제미니)
-@@||dcinside.com^$jsinject,important
-@@||m.dcinside.com^$jsinject,important
-! 2. 필수 광고 통로 허용 (정상 유저 코스프레) (재미니)
-@@||log.naver.com^$domain=dcinside.com|m.dcinside.com,important
-@@||ad.dcinside.com^$important
 ! 3. 오직 시각적 요소(CSS)로만 광고 삭제 (서버는 모름) (제미니)
 m.dcinside.com##.ad_box, .ad_area, .dna-group
 m.dcinside.com##div[id^="ad_"]
