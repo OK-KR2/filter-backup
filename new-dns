@@ -185,23 +185,19 @@ daum.net##div[id^="ad_"]
 ! 카카오톡 PC 하단 빈 광고 영역 숨기기 (선택 사항) (제미니)
 #kakao.com##.ad_area
 
-! ## [07] 나무위키 (유저스크립트 협업 - 파워링크박멸) - 스크립트필수
-! 1. [강제 숨김] 파워링크 텍스트나 네이버 링크가 포함된 모든 구역 사살 (제미니)
+! ## [07] 나무위키 (유저스크립트 협업 - 5초 지연 로딩 완파 버전) - 스크립트필수
+! 1. [핵심] 광고가 들어갈 수 있는 빈 컨테이너 자체를 미리 폭파 (Mutation 대응) (제미니)
+namu.wiki##div[class*="veta-ad"]:style(display: none !important; visibility: hidden !important; height: 0px !important;)
+! 2. [강제 숨김] 파워링크 텍스트나 네이버 링크 포함 구역 사살 (기존 유지) (제미니)
 namu.wiki##div:has(a[href*="adcr.naver.com"]):style(display: none !important;)
 namu.wiki##div:has(span:has-text("파워링크")):style(display: none !important;)
 namu.wiki##div:has-text(/^파워링크$/):style(display: none !important;)
-! 2. [색상 저격] 사용자 제안 초록색/분홍색 배경색 즉시 소거 (제미니)
+! 3. [색상 저격] (기존 유지) (제미니)
 namu.wiki##div:matches-css(background-color: /rgb\(253, 255, 245\)/):style(display: none !important;)
 namu.wiki##div:matches-css(background-color: /#fdeff5/):style(display: none !important;)
-namu.wiki##div:matches-css(background-color: /#f9f9f9/):has(a[href*="naver"]):style(display: none !important;)
-! 3. [구조 파괴] 광고 레이아웃 및 빈 공간 강제 삭제 (Hooray804 참고) (제미니)
-namu.wiki##[class^="v-"]:has(img[src*="ad"]):style(display: none !important;)
-namu.wiki##div[style*="height: 160px"]:style(display: none !important;)
-namu.wiki##div[style*="height: 180px"]:style(display: none !important;)
-namu.wiki##article > div:nth-child(2):empty
-! 4. [보조] 네이버 광고 서버 DNS 차단 보강 (제미니)
-||adcr.naver.com^$domain=namu.wiki
-||veta.naver.com^$domain=namu.wiki
+! 4. [보조] 네이버 광고 서버 통신 원천 차단 (제미니)
+||adcr.naver.com^$domain=namu.wiki,important
+||veta.naver.com^$domain=namu.wiki,important
 
 ! ## [08] 유튜브
 ! 유튜브 영상 종료 후 카드 숨기기 (제미니)
