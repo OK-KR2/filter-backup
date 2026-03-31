@@ -1,3 +1,8 @@
+// @version      1.0
+// @updateURL    (깃허브 Raw 주소)
+// @downloadURL  (깃허브 Raw 주소)
+
+
 // ==UserScript==
 // @name        DCInside Stealth-Slayer (Single-Script)
 // @description 애드가드 설정 없이 스크립트 하나로 디시 광고와 개죽이를 동시에 잡습니다.
