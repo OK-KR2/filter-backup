@@ -1,6 +1,6 @@
 // @version      1.0
-// @updateURL    https://raw.githubusercontent.com/OK-KR2/filter-backup/refs/heads/main/dc_stealth.user.js
-// @downloadURL  https://raw.githubusercontent.com/OK-KR2/filter-backup/refs/heads/main/dc_stealth.user.js
+// @updateURL    https://raw.githubusercontent.com/OK-KR2/filter-backup/refs/heads/main/namu_kill.user.js
+// @downloadURL  https://raw.githubusercontent.com/OK-KR2/filter-backup/refs/heads/main/namu_kill.user.js
 
 
 // ==UserScript==
