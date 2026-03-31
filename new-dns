@@ -185,23 +185,28 @@ daum.net##div[id^="ad_"]
 ! 카카오톡 PC 하단 빈 광고 영역 숨기기 (선택 사항) (제미니)
 #kakao.com##.ad_area
 
-! ## [07] 나무위키 (유저스크립트 협업 - 파워링크 박멸) - 스크립트필수
-! 1. [강제 숨김] 파워링크 텍스트나 네이버 링크가 포함된 모든 구역 사살 (제미니)
-namu.wiki##div:has(a[href*="adcr.naver.com"]):style(display: none !important;)
-namu.wiki##div:has(span:has-text("파워링크")):style(display: none !important;)
-namu.wiki##div:has-text(/^파워링크$/):style(display: none !important;)
-! 2. [색상 저격] 사용자 제안 초록색/분홍색 배경색 즉시 소거 (제미니)
-namu.wiki##div:matches-css(background-color: /rgb\(253, 255, 245\)/):style(display: none !important;)
-namu.wiki##div:matches-css(background-color: /#fdeff5/):style(display: none !important;)
-namu.wiki##div:matches-css(background-color: /#f9f9f9/):has(a[href*="naver"]):style(display: none !important;)
-! 3. [구조 파괴] 광고 레이아웃 및 빈 공간 강제 삭제 (Hooray804 참고) (제미니)
-namu.wiki##[class^="v-"]:has(img[src*="ad"]):style(display: none !important;)
-namu.wiki##div[style*="height: 160px"]:style(display: none !important;)
-namu.wiki##div[style*="height: 180px"]:style(display: none !important;)
+! ## [07] 나무위키 (유저스크립트 협업 - Hooray804 원본 추출 기반) - 스크립트필수
+! 1. [Hooray804 원본 추출] 배경색 및 레이아웃 정밀 타격 (xpath 방식) (제미니)
+! 이 규칙들은 광고의 배경색을 감지하여 그 부모의 부모 div까지 통째로 날려버리는 방식입니다.
+namu.wiki##div:matches-css(background-color: /rgb\(253, 255, 245\)/):xpath(parent::div/parent::div/parent::div/parent::div)
+namu.wiki##div:matches-css(background-color: /#fdeff5/):xpath(parent::div/parent::div/parent::div/parent::div)
+namu.wiki##[class^="v-"]:has(img[src*="ad"])
+! 2. [Hooray804 원본 추출] 텍스트 및 주소 기반 차단 (제미니)
+namu.wiki##div:has(> span:has-text(/^파워링크$/))
+namu.wiki##div:has(span:has-text("파워링크")):has(span:has-text("광고"))
+namu.wiki##div:has(a[href*="adcr.naver.com"])
+! 3. [Hooray804 원본 추출] 잔여 빈 공간 및 레이아웃 정리 (제미니)
+namu.wiki##div[style*="height: 160px"]
+namu.wiki##div[style*="height: 180px"]
 namu.wiki##article > div:nth-child(2):empty
-! 4. [보조] 네이버 광고 서버 DNS 차단 보강 (제미니)
+! 4. [Gemini 보강] 유저스크립트와 시너지용 강제 숨김 (!important) (제미니)
+! 유저스크립트가 광고 로딩을 방해하는 동안, 혹시 모를 잔상을 0.1초 만에 지웁니다.
+namu.wiki##div:has(span:has-text("파워링크")):style(display: none !important;)
+namu.wiki##div:has(a[href*="adcr.naver.com"]):style(display: none !important;)
+! 5. [DNS] 나무위키 도메인 내 네이버 광고 서버 직접 차단 (제미니)
 ||adcr.naver.com^$domain=namu.wiki
 ||veta.naver.com^$domain=namu.wiki
+
 
 ! ## [08] 유튜브
 ! 유튜브 영상 종료 후 카드 숨기기 (제미니)
