@@ -1,7 +1,7 @@
 // ==UserScript==
-// @name         DC & Namu Combined (Nuclear Version 2.3)
+// @name         DC & Namu Combined Stealth
 // @version      2.3
-// @description  신규 MutationObserver 로직 + 디시 개죽이 방멸 스텔스
+// @description  비공개 릴레이 보호 + 디시 개죽이 방멸 + 나무위키 빈칸 없는 원천 차단
 // @match        *://*.dcinside.com/*
 // @match        *://*.namu.wiki/*
 // @updateURL    https://raw.githubusercontent.com/OK-KR2/filter-backup/main/dc_namu.user.js
@@ -25,7 +25,7 @@
         console.log("디시: 스텔스 신분 세탁 완료 🫡");
     }
 
-    /* [Part 2] 가져오신 고성능 광고 제거 로직 (나무위키 타격) */
+    /* [Part 2] 나무위키 정밀 타격 로직 */
     const blocked = new WeakSet();
     const READABLE_TEXT_REGEX = /[\p{L}\p{N}\p{P}\p{S}]/u;
 
@@ -71,13 +71,6 @@
             if (adContainer) removeClean(adContainer);
         });
 
-        root.querySelectorAll('table').forEach(table => {
-            if (!table.querySelector('a[href^="#s-"]')) return;
-            // 테이블 광고 제거 로직 간소화
-            collapseNode(table);
-        });
-
-        // 나무위키 파워링크 텍스트 기반 타격 추가
         root.querySelectorAll('div').forEach(el => {
             if (el.innerText?.includes("파워링크") || el.querySelector('a[href*="adcr.naver.com"]')) {
                 const target = el.closest('div[style*="background-color"]') || el;
