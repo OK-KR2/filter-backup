@@ -197,24 +197,7 @@ youtube.com##ytd-ad-slot-renderer
 youtube.com##ytd-rich-item-renderer:has(> ytd-ad-slot-renderer)
 youtube.com##ytd-banner-promo-renderer
 
-! ## [09] 디시인사이드 (유저스크립트 협업 - 스텔스 박멸) - 스크립트필수
-! 1. [신분 위장] 디시 소스 코드에 절대 개입 금지 (감지 방어) (제미니)
-@@||dcinside.com^$jsinject,important
-@@||m.dcinside.com^$jsinject,important
-! 2. [통로 확보] 필수 통신 및 광고 서버 속이기용 허용 (제미니)
-@@||log.naver.com^$domain=dcinside.com|m.dcinside.com,important
-@@||ad.dcinside.com^$important
-@@||ndash.net^$important
-@@||*.cdnga.net^$important
-@@||dcimg*.dcinside.co.kr^$important
-! 3. [시각적 제거] 유저스크립트가 입구를 통과시키면, 여기서 광고만 지움 (제미니)
-m.dcinside.com##.ad_box, .ad_area, .dna-group
-m.dcinside.com##div[id^="ad_"]
-m.dcinside.com##.app_banner_wrap
-m.dcinside.com##.media-group, .layer-bottom-popup, .outside-search-box
-dcinside.com##.ad_box, .ad_area
-dcinside.com##div[id^="ad_"]
-dcinside.com##.bottom_ad_box
+! ## [09] 디시인사이드 (제거) - 스크립트 대체
 
 ! ## [10] 숨기기
 ! 쿠키/개인정보 동의 배너 숨기기 (제미니)
