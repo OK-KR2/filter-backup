@@ -217,29 +217,20 @@ youtube.com##ytd-ad-slot-renderer
 youtube.com##ytd-rich-item-renderer:has(> ytd-ad-slot-renderer)
 youtube.com##ytd-banner-promo-renderer
 
-! ## [09] 디시인사이드 (스크립트 개입 제로 - 시각적 박멸 버전)
-! 1. [완전 허용] 디시의 모든 통신 통로를 열어줍니다 (에러 방지 1순위) (제미니)
-! 서버를 속이려 하지 않고, 그냥 통과시키되 광고만 우리 눈에서 지웁니다.
+! ## [09] 디시인사이드 (완전 스텔스 - 박멸 버전)
+! 1. 디시 소스 코드에 절대 개입 금지 (감지 방어) (제미니)
 @@||dcinside.com^$jsinject,important
 @@||m.dcinside.com^$jsinject,important
+! 2. 필수 광고 통로 허용 (정상 유저 코스프레) (재미니)
 @@||log.naver.com^$domain=dcinside.com|m.dcinside.com,important
 @@||ad.dcinside.com^$important
-! 2. [시각적 제거] 오직 CSS(눈에 보이는 요소)로만 광고를 가립니다. (제미니)
-! 이 방식은 디시 서버가 사용자님이 광고를 차단했는지 알아채기 매우 어렵습니다.
+! 3. 오직 시각적 요소(CSS)로만 광고 삭제 (서버는 모름) (제미니)
 m.dcinside.com##.ad_box, .ad_area, .dna-group
 m.dcinside.com##div[id^="ad_"]
 m.dcinside.com##.app_banner_wrap
 m.dcinside.com##.media-group, .layer-bottom-popup, .outside-search-box
 dcinside.com##.ad_box, .ad_area
 dcinside.com##div[id^="ad_"]
-! 3. 필수 콘텐츠 고속도로 (기존 유지) (제미니)
-@@||ndash.net^$important
-@@||*.cdnga.net^$important
-@@||dcimg*.dcinside.co.kr^$important
-! 디시인사이드 광고 감지 변수 추가 무력화 (Hooray804 참고) (제미니)
-! dcinside.com#%#//scriptlet('set-constant', 'isAdBlockActive', false)
-! dcinside.com#%#//scriptlet('set-constant', 'adblock_chk', false)
-! dcinside.com#%#//scriptlet('set-constant', 'is_ad_block', 'N')
 
 ! ## [10] 숨기기
 ! 쿠키/개인정보 동의 배너 숨기기 (제미니)
