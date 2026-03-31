@@ -1,14 +1,15 @@
 // ==UserScript==
-// @name         DC & Namu Combined Stealth (Hooray804 Based)
-// @version      2.0
-// @description  디시 개죽이 방지 + 나무위키 5초 지연 광고 실시간 사살
+// @name         DC & Namu Combined Stealth (Zero-Flicker)
+// @version      2.2
+// @description  비공개 릴레이 보호 + 디시 개죽이 방멸 + 나무위키 빈칸 없는 원천 차단
 // @match        *://*.dcinside.com/*
 // @match        *://*.namu.wiki/*
-// @updateURL    https://raw.githubusercontent.com/OK-KR2/filter-backup/refs/heads/main/dc_namu.user.js
-// @downloadURL  https://raw.githubusercontent.com/OK-KR2/filter-backup/refs/heads/main/dc_namu.user.js
+// @updateURL    https://raw.githubusercontent.com/OK-KR2/filter-backup/main/dc_namu.user.js
+// @downloadURL  https://raw.githubusercontent.com/OK-KR2/filter-backup/main/dc_namu.user.js
 // @run-at       document-start
 // @grant        none
 // ==/UserScript==
+
 
 (function() {
     'use strict';
