@@ -1,6 +1,6 @@
 // @version      1.0
-// @updateURL    (깃허브 Raw 주소)
-// @downloadURL  (깃허브 Raw 주소)
+// @updateURL    https://raw.githubusercontent.com/OK-KR2/filter-backup/refs/heads/main/dc_stealth.user.js
+// @downloadURL  https://raw.githubusercontent.com/OK-KR2/filter-backup/refs/heads/main/dc_stealth.user.js
 
 
 // ==UserScript==
