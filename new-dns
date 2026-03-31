@@ -185,18 +185,7 @@ daum.net##div[id^="ad_"]
 ! 카카오톡 PC 하단 빈 광고 영역 숨기기 (선택 사항) (제미니)
 #kakao.com##.ad_area
 
-! ## [07] 나무위키 (유저스크립트 협업 - 소스 레벨 차단 보강) -스크립트필수
-! 1. [DNS] 광고 서버로의 모든 연결 시도 강제 거부 (제미니)
-||adcr.naver.com^$domain=namu.wiki,important
-||veta.naver.com^$domain=namu.wiki,important
-! 2. [가리기] 광고 전용 컨테이너의 모든 속성을 '무(無)'로 설정 (제미니)
-namu.wiki##div[class*="veta-ad"]:style(display: none !important; height: 0px !important; opacity: 0 !important; pointer-events: none !important;)
-namu.wiki##div[id*="powerlink"]:style(display: none !important;)
-! 3. [텍스트] '파워링크'가 들어간 모든 부모 박스 정밀 타격 (제미니)
-namu.wiki##div:has-text(/^파워링크$/):style(display: none !important;)
-namu.wiki##div:has(span:has-text("광고등록")):style(display: none !important;)
-! 4. [보강] 분류(Category) 섹션 뒤에 생성되는 유동적 div 차단 (제미니)
-namu.wiki##article > div:nth-child(2):has(a[href*="naver.com"]):style(display: none !important;)
+! ## [07] 나무위키 (제거)
 
 ! ## [08] 유튜브
 ! 유튜브 영상 종료 후 카드 숨기기 (제미니)
