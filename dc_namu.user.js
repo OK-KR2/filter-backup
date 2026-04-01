@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         DC & Namu Combined Stealth
-// @version      2.7
-// @description  디시(v2.4 유지) + 나무위키(NamuLink 최신 엔진 + 핵폭탄급 원천 차단)
+// @version      2.8
+// @description  디시(v2.4 유지) + 나무위키(접속 오류 수정 및 NamuLink 엔진 이식)
 // @match        *://*.dcinside.com/*
 // @match        *://*.namu.wiki/*
 // @updateURL    https://raw.githubusercontent.com/OK-KR2/filter-backup/main/dc_namu.user.js
@@ -15,7 +15,7 @@
 
     /* [공통 유틸리티] */
     const blocked = new WeakSet();
-    const collapseNode = (node) => {
+    function collapseNode(node) {
         if (!node || blocked.has(node)) return;
         blocked.add(node);
         node.style.setProperty('display', 'none', 'important');
@@ -23,15 +23,16 @@
         node.style.setProperty('margin', '0', 'important');
         node.style.setProperty('padding', '0', 'important');
         node.setAttribute('data-blocked-by-script', 'true');
-    };
+    }
 
     /* --------------------------------------------------
-       PART 1: 디시인사이드 (사용자 만족도 최상 v2.4 로직 고정)
+       PART 1: 디시인사이드 (사용자 요청에 따라 v2.4 로직 100% 동일 유지)
     -------------------------------------------------- */
     if (location.hostname.includes('dcinside.com')) {
         const lock = (p, v) => {
             try { Object.defineProperty(window, p, { value: v, writable: false, configurable: false }); } catch (e) {}
         };
+        
         lock('is_adblock', false);
         lock('adblock_chk', false);
         lock('canRunAds', true);
@@ -48,71 +49,74 @@
                 }
             });
         };
+
         const dcObserver = new MutationObserver(killFloatingGaejuki);
         dcObserver.observe(document.documentElement, { childList: true, subtree: true });
         window.addEventListener('scroll', killFloatingGaejuki, { passive: true });
     }
 
     /* --------------------------------------------------
-       PART 2: 나무위키 (v2.7 핵폭탄급 강화 로직)
+       PART 2: 나무위키 (접속 오류 해결 및 NamuLink 엔진 이식)
     -------------------------------------------------- */
     if (location.hostname.includes('namu.wiki')) {
-        // 1. [네트워크 봉쇄] fetch 및 XMLHttpRequest 이중 가로채기
-        const adPatterns = ['adcr.naver.com', 'veta.naver.com', 'script.outbrain.com', 'doubleclick.net'];
-        
-        // Fetch 가로채기
+        // 1. [NamuLink 엔진] fetch 가로채기 - 사이트 충돌 방지를 위해 안전하게 구현
         const originalFetch = window.fetch;
         window.fetch = async function(...args) {
-            const url = typeof args[0] === 'string' ? args[0] : args[0]?.url;
-            if (url && adPatterns.some(p => url.includes(p))) {
-                return new Response(JSON.stringify({ ads: [], status: "success" }), { status: 200 });
-            }
+            try {
+                const url = typeof args[0] === 'string' ? args[0] : args[0]?.url;
+                if (url && (url.includes('adcr.naver.com') || url.includes('veta.naver.com'))) {
+                    return new Response(JSON.stringify({ ads: [], status: "success" }), { 
+                        status: 200,
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                }
+            } catch (e) {}
             return originalFetch.apply(this, args);
         };
 
-        // XHR 가로채기 (네이버 veta 최신 변종 대응)
-        const originalXHR = window.XMLHttpRequest.prototype.open;
-        window.XMLHttpRequest.prototype.open = function(method, url) {
-            if (typeof url === 'string' && adPatterns.some(p => url.includes(p))) {
-                console.log("나무위키: 변종 XHR 광고 요청 차단 ☢️");
-                return; 
-            }
-            return originalXHR.apply(this, arguments);
-        };
+        // 2. [사용자 제공 로직] 빈 껍데기 상자 고속 판별 (v2.4 원본 로직)
+        function isMobileAdWrapperFast(div) {
+            if (div.textContent.trim() !== '') return false;
+            if (div.children.length !== 1 || div.children[0].tagName !== 'DIV') return false;
+            const hasDataV = (el) => Array.from(el.attributes).some(a => a.name.startsWith('data-v-'));
+            if (!hasDataV(div) || !hasDataV(div.children[0])) return false;
+            if (div.children[0].children.length > 0) return false;
+            return true;
+        }
 
-        // 2. [엔진 무력화] window.veta 객체를 가짜(Proxy)로 교체하여 작동 불능화
-        const fakeVeta = new Proxy({}, {
-            get: (target, prop) => {
-                if (typeof target[prop] === 'function') return () => {};
-                return (prop === 'getAds') ? [] : undefined;
-            }
-        });
-        Object.defineProperty(window, 'veta', { value: fakeVeta, writable: false });
-        Object.defineProperty(window, 'ad_block_detected', { value: false, writable: false });
-
-        // 3. [시각적 사살] MutationObserver 강화 및 레이아웃 강제 교정
-        const namuCleaner = () => {
-            // 파워링크 상자 및 네이버 광고 컨테이너 정밀 타격
-            document.querySelectorAll('div, section, article').forEach(el => {
-                if (el.innerText?.includes("파워링크") || 
-                    el.querySelector('a[href*="adcr.naver.com"]') ||
-                    el.className?.includes('veta') || 
-                    el.id?.includes('veta')) {
-                    
+        function namuProcess(root = document) {
+            root.querySelectorAll('iframe[id^="google_ads_iframe_"]').forEach(iframe => {
+                const container = iframe.closest('div');
+                if (container) collapseNode(container);
+            });
+            root.querySelectorAll('div').forEach(el => {
+                if (el.innerText?.includes("파워링크") || el.querySelector('a[href*="adcr.naver.com"]')) {
                     const target = el.closest('div[style*="background-color"]') || el;
-                    if (target.parentNode) {
-                        target.style.setProperty('display', 'none', 'important');
-                        target.remove();
-                    }
+                    collapseNode(target);
                 }
             });
-        };
+        }
 
-        const namuObserver = new MutationObserver(namuCleaner);
+        const namuObserver = new MutationObserver(mutations => {
+            for (const m of mutations) {
+                for (const node of m.addedNodes) {
+                    if (node.nodeType === 1) {
+                        if (node.tagName === 'DIV' && isMobileAdWrapperFast(node)) {
+                            collapseNode(node);
+                        }
+                        if (node.querySelector) {
+                            node.querySelectorAll('div').forEach(child => {
+                                if (isMobileAdWrapperFast(child)) collapseNode(child);
+                            });
+                        }
+                    }
+                }
+            }
+            namuProcess();
+        });
+
         namuObserver.observe(document.documentElement, { childList: true, subtree: true });
-        
-        // 페이지 로드 후 끈질기게 되살아나는 놈들을 위해 주기적 청소 (1초 간격)
-        setInterval(namuCleaner, 1000);
+        namuProcess();
     }
 
 })();
