@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         DC & Namu Combined Stealth
 // @version      3.6
-// @description  디시(v2.4 고정) + 나무위키(하단 로딩 정상화 및 SPA 내부 이동 완벽 대응)
+// @description  디시(v2.4 고정) + 나무위키(사이트 마비 방지 + 광고 엔진 가짜 위장)
 // @match        *://*.dcinside.com/*
 // @match        *://*.namu.wiki/*
 // @updateURL    https://raw.githubusercontent.com/OK-KR2/filter-backup/main/dc_namu.user.js
@@ -15,10 +15,11 @@
 
     const blocked = new WeakSet();
     const collapseNode = (node) => {
-        if (!node || blocked.has(node) || node.id === 'app' || node.tagName === 'BODY') return;
+        if (!node || blocked.has(node) || node.id === 'app') return;
         blocked.add(node);
         node.style.setProperty('display', 'none', 'important');
         node.style.setProperty('height', '0', 'important');
+        node.style.setProperty('margin', '0', 'important');
         node.setAttribute('data-blocked-by-script', 'true');
     };
 
@@ -45,37 +46,46 @@
     }
 
     /* --------------------------------------------------
-       PART 2: 나무위키 (v3.6 하단 로딩 살리기 + SPA 이동 대응)
+       PART 2: 나무위키 (v3.6 엔진 무력화 및 강제 소거)
     -------------------------------------------------- */
     if (location.hostname.includes('namu.wiki')) {
-        // 1. [CSS 선제 차단] 본문(#app) 외부의 광고 컨테이너만 조준
+        // 1. [핵심] 광고 엔진 가짜 위장 (화이트스크린 방지용)
+        const mockFn = () => {};
+        const mockAdObj = {
+            loadAd: mockFn, init: mockFn, getAds: () => [], setTargeting: mockFn,
+            display: mockFn, enableServices: mockFn, pubads: () => mockAdObj,
+            addEventListener: mockFn, defineSlot: () => mockAdObj, addService: () => mockAdObj
+        };
+
+        // 객체를 삭제하지 않고, 속성만 '무반응'으로 고정
+        const safeLock = (name) => {
+            try {
+                Object.defineProperty(window, name, {
+                    get: () => mockAdObj,
+                    set: () => {},
+                    configurable: false
+                });
+            } catch (e) {}
+        };
+        safeLock('veta'); safeLock('googletag'); safeLock('adsbygoogle');
+
+        // 2. [강력 CSS] 파워링크 상자 및 변종 클래스 정밀 타격
         const style = document.createElement('style');
         style.textContent = `
             div[style*="#fffff6"], div[style*="rgb(255, 255, 246)"],
-            .veta_ad_wrapper, .gn4Z21wj, .VBwhMBUe,
-            div:has(> a[href*="adcr.naver.com"]),
+            .veta_ad_wrapper, .gn4Z21wj, .VBwhMBUe, 
+            div:has(a[href*="adcr.naver.com"]),
+            div[class*="veta-ad"],
             iframe[src*="doubleclick.net"] { display: none !important; height: 0px !important; }
         `;
         (document.head || document.documentElement).appendChild(style);
 
-        // 2. [네트워크 가로채기] 광고 데이터만 빈 값으로 응답
-        const adKeywords = ['adcr.naver.com', 'veta.naver.com', 'securepubads', 'gpt.js'];
-        const originalFetch = window.fetch;
-        window.fetch = async (...args) => {
-            const url = typeof args[0] === 'string' ? args[0] : args[0]?.url;
-            if (url && adKeywords.some(k => url.includes(k))) {
-                return new Response(JSON.stringify({ ads: [], status: "success" }), { status: 200 });
-            }
-            return originalFetch.apply(window, args);
-        };
-
-        // 3. [외과수술식 청소] 하단 데이터를 보존하며 광고 텍스트만 제거
-        const namuSurgicalCleaner = () => {
-            document.querySelectorAll('div, section, span').forEach(el => {
-                // "파워링크" 또는 "광고등록" 텍스트가 명확히 적힌 컨테이너만 타격
-                if (el.innerText === "파워링크" || el.innerText === "광고등록") {
+        // 3. [시각적 박멸] MutationObserver + 고속 청소
+        const namuCleaner = () => {
+            document.querySelectorAll('div, section').forEach(el => {
+                // 파워링크 텍스트 또는 네이버 광고 링크 포함 시 부모 노드 삭제
+                if (el.innerText === "파워링크" || el.innerText === "광고등록" || el.querySelector('a[href*="adcr.naver.com"]')) {
                     const target = el.closest('div[style*="#fffff6"]') || el.closest('div[style*="rgb(255, 255, 246)"]') || el.closest('.veta_ad_wrapper') || el;
-                    // 메인 레이아웃(#app)이나 전체 페이지(BODY)가 아니면 삭제
                     if (target && target.id !== 'app' && target.tagName !== 'BODY') {
                         collapseNode(target);
                     }
@@ -83,21 +93,16 @@
             });
         };
 
-        // 내부 검색 및 페이지 이동(SPA) 감지
-        let lastPath = location.pathname;
-        const spaObserver = new MutationObserver(() => {
-            if (location.pathname !== lastPath) {
-                lastPath = location.pathname;
-                console.log("나무위키: 내부 이동 감지 - 방어선 즉시 재가동 🎯");
-                setTimeout(namuSurgicalCleaner, 100); 
-                setTimeout(namuSurgicalCleaner, 500); // 렌더링 지연 대응
-            }
-        });
-        spaObserver.observe(document.body, { childList: true, subtree: true });
-
-        // 실시간 감시 및 주기적 청소 (데이터 로딩을 위해 간격 조정)
-        const namuObserver = new MutationObserver(namuSurgicalCleaner);
+        const namuObserver = new MutationObserver(namuCleaner);
         namuObserver.observe(document.documentElement, { childList: true, subtree: true });
-        setInterval(namuSurgicalCleaner, 800);
+        
+        // SPA 내부 이동 시 방어선 재구축
+        let lastUrl = location.href;
+        setInterval(() => {
+            if (location.href !== lastUrl) {
+                lastUrl = location.href;
+                namuCleaner();
+            }
+        }, 500);
     }
 })();
