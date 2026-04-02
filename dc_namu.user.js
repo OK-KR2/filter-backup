@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         DC & Namu Combined Stealth
-// @version      3.2
-// @description  디시(v2.4 고정) + 나무위키(NamuLink 네트워크 봉쇄 및 GPT 무력화)
+// @version      3.3
+// @description  디시(v2.4 고정) + 나무위키(본문 증발 방지 및 외과수술식 차단)
 // @match        *://*.dcinside.com/*
 // @match        *://*.namu.wiki/*
 // @updateURL    https://raw.githubusercontent.com/OK-KR2/filter-backup/main/dc_namu.user.js
@@ -15,11 +15,10 @@
 
     const blocked = new WeakSet();
     const collapseNode = (node) => {
-        if (!node || blocked.has(node)) return;
+        if (!node || blocked.has(node) || node.id === 'app') return; // 메인 앱 컨테이너 보호
         blocked.add(node);
         node.style.setProperty('display', 'none', 'important');
         node.style.setProperty('height', '0', 'important');
-        node.style.setProperty('visibility', 'hidden', 'important');
         node.setAttribute('data-blocked-by-script', 'true');
     };
 
@@ -46,61 +45,45 @@
     }
 
     /* --------------------------------------------------
-       PART 2: 나무위키 (v3.2 사파리 모바일 최강 방어)
+       PART 2: 나무위키 (v3.3 화이트스크린 방지 강화)
     -------------------------------------------------- */
     if (location.hostname.includes('namu.wiki')) {
-        // 1. [객체 스푸핑] 광고 엔진이 정의되기 전에 가짜 객체로 선점
-        const mockObj = { 
-            loadAd: () => {}, init: () => {}, getAds: () => [], 
-            display: () => {}, enableServices: () => {}, pubads: () => ({ setTargeting: () => {} }) 
-        };
-        const lockObj = (name) => {
-            try { Object.defineProperty(window, name, { value: mockObj, writable: false }); } catch(e) {}
-        };
-        lockObj('googletag'); lockObj('veta'); lockObj('adsbygoogle');
-
-        // 2. [네트워크 원천 봉쇄] fetch 및 XHR 가로채기 (NamuLink 방식 최적화)
-        const adPatterns = [/adcr\.naver\.com/, /veta\.naver\.com/, /securepubads/, /outbrain\.com/, /doubleclick\.net/];
-        const isAd = (url) => typeof url === 'string' && adPatterns.some(p => p.test(url));
-
-        const originalFetch = window.fetch;
-        window.fetch = async (...args) => {
-            const url = typeof args[0] === 'string' ? args[0] : args[0]?.url;
-            if (isAd(url)) return new Response(JSON.stringify({ ads: [], status: "success" }), { status: 200 });
-            return originalFetch.apply(window, args);
-        };
-
-        const originalXHR = window.XMLHttpRequest.prototype.open;
-        window.XMLHttpRequest.prototype.open = function(m, url) {
-            if (isAd(url)) return console.log("나무위키: 변종 광고 요청(XHR) 차단 완료 🫡");
-            return originalOpen.apply(this, arguments);
-        };
-
-        // 3. [시각적 청소] 선제적 CSS 주입 (색상 및 클래스 정밀 조준)
+        // 1. [선제 방어] 메인 구조를 건드리지 않는 정밀 CSS
         const style = document.createElement('style');
         style.textContent = `
-            /* 광고 상자 색상 및 구조적 소거 */
+            /* 광고 상자 특유의 클래스와 색상만 조준 (메인 #app 제외) */
             div[style*="#fffff6"], div[style*="rgb(255, 255, 246)"],
-            div[class*="veta-ad"], .veta_ad_wrapper, .gn4Z21wj, .VBwhMBUe,
-            div:has(> div[style*="background-color: #fffff6"]) { 
-                display: none !important; height: 0px !important; visibility: hidden !important; 
-            }
+            .gn4Z21wj, .VBwhMBUe, .veta_ad_wrapper,
+            iframe[src*="doubleclick.net"] { display: none !important; height: 0px !important; visibility: hidden !important; }
         `;
         (document.head || document.documentElement).appendChild(style);
 
+        // 2. [네트워크 가로채기] 사이트 중단 없는 안전한 데이터 필터링
+        const adKeywords = ['adcr.naver.com', 'veta.naver.com', 'securepubads', 'gpt.js'];
+        const originalFetch = window.fetch;
+        window.fetch = async (...args) => {
+            const url = typeof args[0] === 'string' ? args[0] : args[0]?.url;
+            if (url && adKeywords.some(k => url.includes(k))) {
+                return new Response(JSON.stringify({ ads: [], status: "success" }), { status: 200 });
+            }
+            return originalFetch.apply(window, args);
+        };
+
+        // 3. [시각적 사살] 본문을 보호하며 광고 텍스트만 솎아내기
         const namuCleaner = () => {
             document.querySelectorAll('div, section').forEach(el => {
-                // "파워링크" 또는 "광고등록" 텍스트 기반 타격
-                if (el.innerText === "파워링크" || el.innerText?.includes("광고등록") || el.querySelector('a[href*="adcr.naver.com"]')) {
+                // 본문 전체(#app)를 포함하지 않는 작은 단위의 광고 노드만 타격
+                if (el.innerText === "파워링크" || el.innerText === "광고등록") {
                     const target = el.closest('div[style*="#fffff6"]') || el.closest('div[style*="rgb(255, 255, 246)"]') || el;
-                    collapseNode(target);
-                    target.remove();
+                    if (target && target.id !== 'app' && target.tagName !== 'BODY') {
+                        collapseNode(target);
+                    }
                 }
             });
         };
 
         const namuObserver = new MutationObserver(namuCleaner);
         namuObserver.observe(document.documentElement, { childList: true, subtree: true });
-        setInterval(namuCleaner, 400); // 사파리 모바일의 비동기 렌더링에 0.4초 주기로 대응
+        setInterval(namuCleaner, 600);
     }
 })();
