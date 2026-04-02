@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         DC & Namu Combined Stealth
-// @version      4.5
-// @description  디시(페널티 회피형 개죽이 유령화) + 나무위키(v4.3 박멸 로직 고정)
+// @version      4.6
+// @description  디시(CSS 스텔스 유령화) + 나무위키(v4.3 성공 로직 고정)
 // @match        *://*.dcinside.com/*
 // @match        *://*.namu.wiki/*
 // @updateURL    https://raw.githubusercontent.com/OK-KR2/filter-backup/main/dc_namu.user.js
@@ -18,40 +18,29 @@
     };
 
     /* --------------------------------------------------
-       PART 1: 디시인사이드 (물리적 삭제 금지 -> '유령화'로 페널티 회피)
+       PART 1: 디시인사이드 (비침습적 CSS 스텔스 모드)
     -------------------------------------------------- */
     if (location.hostname.includes('dcinside.com')) {
-        // 1. 신분 세탁
+        // 1. 최소한의 신분 세탁 (서버 통신용 변수만 조작)
         lock('is_adblock', false); lock('adblock_chk', false); lock('canRunAds', true); lock('is_ad_block', 'N');
 
-        const ghostingProcess = () => {
-            // 소스에서 확인된 '날아다니는 개죽이' ID 및 광고 레이아웃 타격
-            const targets = document.querySelectorAll('#moveOverlay, #moveimg, .adv-group, ins.kakao_ad_area');
-            
-            targets.forEach(el => {
-                if (el.getAttribute('data-ghosted') === 'true') return;
-                
-                // [핵심] 요소를 삭제하지 않고 시각적으로만 소멸시킴 (서버 감시 우회)
-                el.style.setProperty('opacity', '0', 'important');
-                el.style.setProperty('pointer-events', 'none', 'important');
-                el.style.setProperty('visibility', 'hidden', 'important');
-                el.style.setProperty('height', '0px', 'important');
-                el.setAttribute('data-ghosted', 'true');
-            });
-
-            // 스크롤 시 나타나는 fixed 개죽이 추가 감시
-            document.querySelectorAll('div').forEach(el => {
-                const style = window.getComputedStyle(el);
-                if ((style.position === 'fixed' || style.position === 'sticky') && 
-                    (el.innerHTML.includes('error/adblock') || el.querySelector('img[src*="moveimg"]') || el.querySelector('img[src*="gaeju"]'))) {
-                    el.style.setProperty('opacity', '0', 'important');
-                    el.style.setProperty('pointer-events', 'none', 'important');
-                }
-            });
-        };
-
-        new MutationObserver(ghostingProcess).observe(document.documentElement, { childList: true, subtree: true });
-        window.addEventListener('scroll', ghostingProcess, { passive: true });
+        // 2. [핵심] 자바스크립트 대신 초강력 CSS 주입
+        // 서버 감시 스크립트가 DOM 요소를 찾아도 '삭제'되지 않았으므로 페널티를 피합니다.
+        const style = document.createElement('style');
+        style.textContent = `
+            #moveOverlay, #moveimg, .adv-group, .adv-groupin, .adv-grouptop, 
+            ins.kakao_ad_area, .power-lst, iframe[src*="netinsight"] {
+                opacity: 0 !important;
+                pointer-events: none !important;
+                visibility: hidden !important;
+                z-index: -9999 !important;
+                position: absolute !important;
+                left: -9999px !important;
+            }
+        `;
+        (document.head || document.documentElement).appendChild(style);
+        
+        console.log("디시: 스텔스 유령화 가동 중 🫡");
     }
 
     /* --------------------------------------------------
