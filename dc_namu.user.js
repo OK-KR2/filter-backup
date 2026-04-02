@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         DC & Namu Combined Stealth
-// @version      4.6
-// @description  디시(CSS 스텔스 유령화) + 나무위키(v4.3 성공 로직 고정)
+// @version      4.5
+// @description  나무위키(v4.3 성공로직 고정) + 디시(페널티 완전 회피형 좌표 격리)
 // @match        *://*.dcinside.com/*
 // @match        *://*.namu.wiki/*
 // @updateURL    https://raw.githubusercontent.com/OK-KR2/filter-backup/main/dc_namu.user.js
@@ -18,35 +18,48 @@
     };
 
     /* --------------------------------------------------
-       PART 1: 디시인사이드 (비침습적 CSS 스텔스 모드)
+       PART 1: 디시인사이드 (물리적 삭제 금지 -> '좌표 격리'로 페널티 완전 회피)
     -------------------------------------------------- */
     if (location.hostname.includes('dcinside.com')) {
-        // 1. 최소한의 신분 세탁 (서버 통신용 변수만 조작)
+        // 1. 신분 세탁 (서버에 광고가 노출되고 있다고 안심시킴)
         lock('is_adblock', false); lock('adblock_chk', false); lock('canRunAds', true); lock('is_ad_block', 'N');
 
-        // 2. [핵심] 자바스크립트 대신 초강력 CSS 주입
-        // 서버 감시 스크립트가 DOM 요소를 찾아도 '삭제'되지 않았으므로 페널티를 피합니다.
+        // 2. [핵심] 초강력 좌표 격리 CSS
+        // 요소를 삭제(remove)하면 서버가 즉시 알아채고 페널티(429)를 먹입니다.
+        // 대신 존재는 하되, 화면 밖(-9999px)으로 던져버려서 서버는 속이고 사용자 눈엔 안 보이게 합니다.
         const style = document.createElement('style');
         style.textContent = `
             #moveOverlay, #moveimg, .adv-group, .adv-groupin, .adv-grouptop, 
-            ins.kakao_ad_area, .power-lst, iframe[src*="netinsight"] {
+            ins.kakao_ad_area, .power-lst, iframe[src*="netinsight"], .pwlink,
+            div[class*="adv-"] {
+                display: block !important;
+                position: fixed !important;
+                left: -9999px !important;
+                top: -9999px !important;
+                width: 1px !important;
+                height: 1px !important;
                 opacity: 0 !important;
                 pointer-events: none !important;
-                visibility: hidden !important;
                 z-index: -9999 !important;
-                position: absolute !important;
-                left: -9999px !important;
             }
         `;
         (document.head || document.documentElement).appendChild(style);
-        
-        console.log("디시: 스텔스 유령화 가동 중 🫡");
+
+        const dcStealth = () => {
+            document.querySelectorAll('#moveOverlay, #moveimg, .adv-group').forEach(el => {
+                el.style.setProperty('left', '-9999px', 'important');
+                el.style.setProperty('opacity', '0', 'important');
+                el.style.setProperty('pointer-events', 'none', 'important');
+            });
+        };
+        new MutationObserver(dcStealth).observe(document.documentElement, { childList: true, subtree: true });
     }
 
     /* --------------------------------------------------
-       PART 2: 나무위키 (사용자 인증 v4.3 성공 로직 100% 고정)
+       PART 2: 나무위키 (사용자 인증 v4.3 성공 로직 100% 동일 유지)
     -------------------------------------------------- */
     if (location.hostname.includes('namu.wiki')) {
+        // [선제적 CSS] 사용자님이 만족하신 공간 소멸 방식 그대로
         const style = document.createElement('style');
         style.textContent = `
             [data-v-aed07d7a], .veta_ad_wrapper, .gn4Z21wj, .VBwhMBUe, ._3Dy97h7l,
@@ -58,12 +71,14 @@
         `;
         (document.head || document.documentElement).appendChild(style);
 
+        // [신분 세탁] v4.3의 가짜 엔진
         const mockAd = { loadAd: () => {}, init: () => {}, getAds: () => [], setTargeting: () => {}, display: () => {}, enableServices: () => {}, pubads: () => mockAd, addService: () => mockAd };
         window.veta = window.veta || mockAd;
         window.googletag = window.googletag || mockAd;
         window.ad_block_detected = false;
         window.canRunAds = true;
 
+        // [물리적 박멸] v4.3의 remove() 로직
         const namuCleaner = () => {
             document.querySelectorAll('div, section').forEach(el => {
                 if (el.hasAttribute('data-v-aed07d7a') || el.innerText === "파워링크" || el.querySelector('a[href*="adcr.naver.com"]')) {
@@ -75,7 +90,6 @@
                 }
             });
         };
-
         new MutationObserver(namuCleaner).observe(document.documentElement, { childList: true, subtree: true });
         let fastClean = setInterval(namuCleaner, 100);
         setTimeout(() => { clearInterval(fastClean); setInterval(namuCleaner, 600); }, 3000);
