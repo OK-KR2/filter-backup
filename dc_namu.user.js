@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         DC & Namu Combined Stealth
-// @version      3.6
-// @description  디시(v2.4 고정) + 나무위키(사이트 마비 방지 + 광고 엔진 가짜 위장)
+// @version      3.7
+// @description  디시(v2.4 고정) + 나무위키(사파리 렌더링 선점 및 파워링크 즉시 소멸)
 // @match        *://*.dcinside.com/*
 // @match        *://*.namu.wiki/*
 // @updateURL    https://raw.githubusercontent.com/OK-KR2/filter-backup/main/dc_namu.user.js
@@ -13,18 +13,17 @@
 (function () {
     'use strict';
 
-    const blocked = new WeakSet();
+    /* [공통 유틸리티] */
     const collapseNode = (node) => {
-        if (!node || blocked.has(node) || node.id === 'app') return;
-        blocked.add(node);
+        if (!node || node.id === 'app' || node.tagName === 'BODY') return;
         node.style.setProperty('display', 'none', 'important');
         node.style.setProperty('height', '0', 'important');
-        node.style.setProperty('margin', '0', 'important');
-        node.setAttribute('data-blocked-by-script', 'true');
+        node.style.setProperty('overflow', 'hidden', 'important');
+        node.setAttribute('data-blocked-by-ai', 'true');
     };
 
     /* --------------------------------------------------
-       PART 1: 디시인사이드 (검증된 v2.4 로직 100% 동일 유지)
+       PART 1: 디시인사이드 (사용자 만족 v2.4 로직 100% 동일 유지)
     -------------------------------------------------- */
     if (location.hostname.includes('dcinside.com')) {
         const lock = (p, v) => {
@@ -46,63 +45,56 @@
     }
 
     /* --------------------------------------------------
-       PART 2: 나무위키 (v3.6 엔진 무력화 및 강제 소거)
+       PART 2: 나무위키 (v3.7 사파리 최적화 박멸 로직)
     -------------------------------------------------- */
     if (location.hostname.includes('namu.wiki')) {
-        // 1. [핵심] 광고 엔진 가짜 위장 (화이트스크린 방지용)
-        const mockFn = () => {};
-        const mockAdObj = {
-            loadAd: mockFn, init: mockFn, getAds: () => [], setTargeting: mockFn,
-            display: mockFn, enableServices: mockFn, pubads: () => mockAdObj,
-            addEventListener: mockFn, defineSlot: () => mockAdObj, addService: () => mockAdObj
-        };
-
-        // 객체를 삭제하지 않고, 속성만 '무반응'으로 고정
-        const safeLock = (name) => {
-            try {
-                Object.defineProperty(window, name, {
-                    get: () => mockAdObj,
-                    set: () => {},
-                    configurable: false
-                });
-            } catch (e) {}
-        };
-        safeLock('veta'); safeLock('googletag'); safeLock('adsbygoogle');
-
-        // 2. [강력 CSS] 파워링크 상자 및 변종 클래스 정밀 타격
+        // 1. [선제 타격] 광고 상자가 들어올 '자리'를 미리 지워버리는 CSS
         const style = document.createElement('style');
         style.textContent = `
+            /* 연두색 배경 광고 및 변종 클래스 정조준 */
             div[style*="#fffff6"], div[style*="rgb(255, 255, 246)"],
-            .veta_ad_wrapper, .gn4Z21wj, .VBwhMBUe, 
-            div:has(a[href*="adcr.naver.com"]),
-            div[class*="veta-ad"],
-            iframe[src*="doubleclick.net"] { display: none !important; height: 0px !important; }
+            div:has(> a[href*="adcr.naver.com"]),
+            .veta_ad_wrapper, .gn4Z21wj, .VBwhMBUe, .veta-ad,
+            div:has(span:empty):has(iframe),
+            iframe[src*="doubleclick.net"] { 
+                display: none !important; height: 0px !important; opacity: 0 !important; pointer-events: none !important;
+            }
         `;
         (document.head || document.documentElement).appendChild(style);
 
-        // 3. [시각적 박멸] MutationObserver + 고속 청소
+        // 2. [데이터 필터] Fetch/XHR 가로채기 (NamuLink 방식 강화)
+        const adKeywords = ['adcr.naver.com', 'veta.naver.com', 'securepubads', 'gpt.js'];
+        const originalFetch = window.fetch;
+        window.fetch = async (...args) => {
+            const url = typeof args[0] === 'string' ? args[0] : args[0]?.url;
+            if (url && adKeywords.some(k => url.includes(k))) {
+                return new Response(JSON.stringify({ ads: [], status: "success" }), { status: 200 });
+            }
+            return originalFetch.apply(window, args);
+        };
+
+        // 3. [무차별 소거] 텍스트가 아닌 '구조'를 보고 솎아내기
         const namuCleaner = () => {
-            document.querySelectorAll('div, section').forEach(el => {
-                // 파워링크 텍스트 또는 네이버 광고 링크 포함 시 부모 노드 삭제
-                if (el.innerText === "파워링크" || el.innerText === "광고등록" || el.querySelector('a[href*="adcr.naver.com"]')) {
-                    const target = el.closest('div[style*="#fffff6"]') || el.closest('div[style*="rgb(255, 255, 246)"]') || el.closest('.veta_ad_wrapper') || el;
-                    if (target && target.id !== 'app' && target.tagName !== 'BODY') {
+            // "파워링크"라는 텍스트가 조금이라도 섞인 모든 레이아웃 추적
+            document.querySelectorAll('div, section, span').forEach(el => {
+                if (el.innerText === "파워링크" || el.innerText === "광고등록" || (el.tagName === 'A' && el.href.includes('adcr.naver.com'))) {
+                    const target = el.closest('div[style*="background-color"]') || el.closest('div[class]') || el;
+                    if (target && target.id !== 'app' && !target.contains(document.querySelector('article'))) {
                         collapseNode(target);
                     }
                 }
             });
         };
 
+        // 실시간 DOM 감시 및 고속 반복 (사파리 렌더링 속도 대응)
         const namuObserver = new MutationObserver(namuCleaner);
         namuObserver.observe(document.documentElement, { childList: true, subtree: true });
         
-        // SPA 내부 이동 시 방어선 재구축
-        let lastUrl = location.href;
-        setInterval(() => {
-            if (location.href !== lastUrl) {
-                lastUrl = location.href;
-                namuCleaner();
-            }
-        }, 500);
+        // 페이지 로드 직후 3초간은 0.1초 주기로 초고속 청소
+        let fastClean = setInterval(namuCleaner, 100);
+        setTimeout(() => {
+            clearInterval(fastClean);
+            setInterval(namuCleaner, 600); // 이후에는 평상시 속도로 전환
+        }, 3000);
     }
 })();
