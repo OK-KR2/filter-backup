@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         DC & Namu Combined Stealth
-// @version      4.3
-// @description  디시(v2.4 고정) + 나무위키(깜빡임 방지 및 공간 완전 소멸)
+// @version      4.4
+// @description  디시(페널티 회피형 유령화) + 나무위키(v4.3 성공 로직 고정)
 // @match        *://*.dcinside.com/*
 // @match        *://*.namu.wiki/*
 // @updateURL    https://raw.githubusercontent.com/OK-KR2/filter-backup/main/dc_namu.user.js
@@ -13,46 +13,42 @@
 (function () {
     'use strict';
 
-    /* [공통 유틸리티] */
-    const collapseNode = (node) => {
-        if (!node || node.id === 'app' || node.tagName === 'BODY') return;
-        node.style.setProperty('display', 'none', 'important');
-        node.style.setProperty('height', '0', 'important');
-        node.style.setProperty('margin', '0', 'important');
-        node.style.setProperty('padding', '0', 'important');
-        node.style.setProperty('opacity', '0', 'important');
-        node.setAttribute('data-blocked-by-stealth', 'true');
-    };
-
     const lock = (p, v) => {
         try { Object.defineProperty(window, p, { value: v, writable: false, configurable: false }); } catch (e) {}
     };
 
     /* --------------------------------------------------
-       PART 1: 디시인사이드 (검증된 v2.4 로직 100% 동일 유지)
+       PART 1: 디시인사이드 (페널티 회피를 위한 '유령화' 작전)
     -------------------------------------------------- */
     if (location.hostname.includes('dcinside.com')) {
+        // 1. 신분 세탁 (기존 v2.4 로직 유지)
         lock('is_adblock', false); lock('adblock_chk', false); lock('canRunAds', true); lock('is_ad_block', 'N');
-        const killFloatingGaejuki = () => {
+
+        const ghostingGaejuki = () => {
             document.querySelectorAll('div').forEach(el => {
                 const style = window.getComputedStyle(el);
+                // 개죽이 이미지나 광고 에러 레이어 감지
                 if ((style.position === 'fixed' || style.position === 'sticky') && (el.innerHTML.includes('error/adblock') || el.querySelector('img[src*="gaeju"]'))) {
-                    collapseNode(el); el.remove();
+                    // [핵심] 삭제(remove)하지 않고 투명하게만 만듦 (서버의 '노드 삭제 감지' 우회)
+                    el.style.setProperty('opacity', '0', 'important');
+                    el.style.setProperty('pointer-events', 'none', 'important');
+                    el.style.setProperty('visibility', 'hidden', 'important');
+                    el.setAttribute('data-ghosted', 'true');
                 }
             });
         };
-        new MutationObserver(killFloatingGaejuki).observe(document.documentElement, { childList: true, subtree: true });
-        window.addEventListener('scroll', killFloatingGaejuki, { passive: true });
+
+        new MutationObserver(ghostingGaejuki).observe(document.documentElement, { childList: true, subtree: true });
+        window.addEventListener('scroll', ghostingGaejuki, { passive: true });
     }
 
     /* --------------------------------------------------
-       PART 2: 나무위키 (v4.3 깜빡임 방지 및 진공 박멸)
+       PART 2: 나무위키 (사용자 인증 v4.3 성공 로직 100% 고정)
     -------------------------------------------------- */
     if (location.hostname.includes('namu.wiki')) {
-        // 1. [철권 CSS] 광고가 생기기도 전에 공간을 0으로 압축 (깜빡임 방지 핵심)
+        // 1. [철권 CSS] 광고 공간 선제적 소멸 (v4.3 동일)
         const style = document.createElement('style');
         style.textContent = `
-            /* 주민번호 data-v-aed07d7a가 붙은 모든 레이아웃 즉시 소멸 */
             [data-v-aed07d7a], .veta_ad_wrapper, .gn4Z21wj, .VBwhMBUe, ._3Dy97h7l,
             div:has(> a[href*="adcr.naver.com"]),
             div[style*="background-color: #fffff6"],
@@ -62,36 +58,28 @@
         `;
         (document.head || document.documentElement).appendChild(style);
 
-        // 2. [신분 세탁] "난 광고 차단 안 한다"고 계속 속임
+        // 2. [위장술] 가짜 엔진 주입 (v4.3 동일)
         const mockAd = { loadAd: () => {}, init: () => {}, getAds: () => [], setTargeting: () => {}, display: () => {}, enableServices: () => {}, pubads: () => mockAd, addService: () => mockAd };
         window.veta = window.veta || mockAd;
         window.googletag = window.googletag || mockAd;
         window.ad_block_detected = false;
         window.canRunAds = true;
 
-        // 3. [초고속 진공 청소] 0.1초 단위로 재생성 시도 자체를 박살
+        // 3. [진공 박멸] 0.1초 단위 뿌리 뽑기 (v4.3 동일)
         const namuCleaner = () => {
-            // 소스 분석 기반: 특정 속성 및 텍스트 포함 시 부모까지 소거
             document.querySelectorAll('div, section').forEach(el => {
                 if (el.hasAttribute('data-v-aed07d7a') || el.innerText === "파워링크" || el.querySelector('a[href*="adcr.naver.com"]')) {
-                    // 가장 바깥쪽 광고 컨테이너 찾기 (._3Dy97h7l 같은 클래스)
                     const target = el.closest('div[class*="_"]') || el;
                     if (target && target.id !== 'app') {
-                        collapseNode(target);
-                        if (target.parentNode) target.remove(); // 아예 뿌리(DOM)를 뽑아버림
+                        target.style.setProperty('display', 'none', 'important');
+                        if (target.parentNode) target.remove(); // 나무위키는 과감하게 삭제
                     }
                 }
             });
         };
 
-        // 실시간 감시 (SPA 내부 검색 및 렌더링 즉각 대응)
         new MutationObserver(namuCleaner).observe(document.documentElement, { childList: true, subtree: true });
-        
-        // 페이지 로드 직후 3초간은 0.1초 간격으로 '무자비 청소'
         let fastClean = setInterval(namuCleaner, 100);
-        setTimeout(() => {
-            clearInterval(fastClean);
-            setInterval(namuCleaner, 600); // 이후엔 배터리 절약을 위해 속도 조절
-        }, 3000);
+        setTimeout(() => { clearInterval(fastClean); setInterval(namuCleaner, 600); }, 3000);
     }
 })();
