@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         DC & Namu Combined Stealth
-// @version      3.7
-// @description  디시(v2.4 고정) + 나무위키(사파리 렌더링 선점 및 파워링크 즉시 소멸)
+// @version      3.8
+// @description  디시(v2.4 고정) + 나무위키(v3.4 기반 로딩 복구 및 위아래 파워링크 박멸)
 // @match        *://*.dcinside.com/*
 // @match        *://*.namu.wiki/*
 // @updateURL    https://raw.githubusercontent.com/OK-KR2/filter-backup/main/dc_namu.user.js
@@ -13,17 +13,17 @@
 (function () {
     'use strict';
 
-    /* [공통 유틸리티] */
+    const blocked = new WeakSet();
     const collapseNode = (node) => {
-        if (!node || node.id === 'app' || node.tagName === 'BODY') return;
+        if (!node || blocked.has(node) || node.id === 'app' || node.tagName === 'BODY') return;
+        blocked.add(node);
         node.style.setProperty('display', 'none', 'important');
         node.style.setProperty('height', '0', 'important');
-        node.style.setProperty('overflow', 'hidden', 'important');
-        node.setAttribute('data-blocked-by-ai', 'true');
+        node.style.setProperty('margin', '0', 'important');
     };
 
     /* --------------------------------------------------
-       PART 1: 디시인사이드 (사용자 만족 v2.4 로직 100% 동일 유지)
+       PART 1: 디시인사이드 (사용자 만족 v2.4 로직 100% 유지)
     -------------------------------------------------- */
     if (location.hostname.includes('dcinside.com')) {
         const lock = (p, v) => {
@@ -45,56 +45,58 @@
     }
 
     /* --------------------------------------------------
-       PART 2: 나무위키 (v3.7 사파리 최적화 박멸 로직)
+       PART 2: 나무위키 (v3.8 로딩 복구 및 정밀 타격)
     -------------------------------------------------- */
     if (location.hostname.includes('namu.wiki')) {
-        // 1. [선제 타격] 광고 상자가 들어올 '자리'를 미리 지워버리는 CSS
-        const style = document.createElement('style');
-        style.textContent = `
-            /* 연두색 배경 광고 및 변종 클래스 정조준 */
-            div[style*="#fffff6"], div[style*="rgb(255, 255, 246)"],
-            div:has(> a[href*="adcr.naver.com"]),
-            .veta_ad_wrapper, .gn4Z21wj, .VBwhMBUe, .veta-ad,
-            div:has(span:empty):has(iframe),
-            iframe[src*="doubleclick.net"] { 
-                display: none !important; height: 0px !important; opacity: 0 !important; pointer-events: none !important;
-            }
-        `;
-        (document.head || document.documentElement).appendChild(style);
+        // 1. [사용자 v2.4 로직] 빈 껍데기 상자 고속 판별 함수 (이게 제일 정확함)
+        function isMobileAdWrapperFast(div) {
+            if (div.textContent.trim() !== '') return false;
+            if (div.children.length !== 1 || div.children[0].tagName !== 'DIV') return false;
+            const hasDataV = (el) => Array.from(el.attributes).some(a => a.name.startsWith('data-v-'));
+            return hasDataV(div) && hasDataV(div.children[0]) && div.children[0].children.length === 0;
+        }
 
-        // 2. [데이터 필터] Fetch/XHR 가로채기 (NamuLink 방식 강화)
-        const adKeywords = ['adcr.naver.com', 'veta.naver.com', 'securepubads', 'gpt.js'];
+        // 2. [정밀 클리너] 로딩을 방해하지 않고 광고만 삭제
+        const namuProcess = () => {
+            document.querySelectorAll('div').forEach(el => {
+                // 상단/하단 파워링크 특유의 배경색과 텍스트 타격
+                if (el.innerText === "파워링크" || el.innerText === "광고등록" || el.querySelector('a[href*="adcr.naver.com"]')) {
+                    const target = el.closest('div[style*="#fffff6"]') || el.closest('div[style*="rgb(255, 255, 246)"]') || el;
+                    if (target.id !== 'app') collapseNode(target);
+                }
+                // 빈 광고 껍데기 삭제
+                if (isMobileAdWrapperFast(el)) {
+                    collapseNode(el);
+                }
+            });
+        };
+
+        // 3. [로딩 보호 감시] 사이트 기능(하단 로딩)은 살리면서 본문 광고만 추적
+        const namuObserver = new MutationObserver((mutations) => {
+            mutations.forEach(m => {
+                m.addedNodes.forEach(node => {
+                    if (node.nodeType === 1) {
+                        if (isMobileAdWrapperFast(node)) collapseNode(node);
+                        // 내부 이동 시 발생하는 본문 업데이트 대응
+                        if (node.innerText?.includes("파워링크")) namuProcess();
+                    }
+                });
+            });
+            namuProcess();
+        });
+
+        namuObserver.observe(document.documentElement, { childList: true, subtree: true });
+        
+        // 4. [네트워크 안전 필터] 광고 데이터만 걸러내고 나머지는 통과
         const originalFetch = window.fetch;
         window.fetch = async (...args) => {
             const url = typeof args[0] === 'string' ? args[0] : args[0]?.url;
-            if (url && adKeywords.some(k => url.includes(k))) {
+            if (url && (url.includes('adcr.naver.com') || url.includes('veta.naver.com'))) {
                 return new Response(JSON.stringify({ ads: [], status: "success" }), { status: 200 });
             }
             return originalFetch.apply(window, args);
         };
 
-        // 3. [무차별 소거] 텍스트가 아닌 '구조'를 보고 솎아내기
-        const namuCleaner = () => {
-            // "파워링크"라는 텍스트가 조금이라도 섞인 모든 레이아웃 추적
-            document.querySelectorAll('div, section, span').forEach(el => {
-                if (el.innerText === "파워링크" || el.innerText === "광고등록" || (el.tagName === 'A' && el.href.includes('adcr.naver.com'))) {
-                    const target = el.closest('div[style*="background-color"]') || el.closest('div[class]') || el;
-                    if (target && target.id !== 'app' && !target.contains(document.querySelector('article'))) {
-                        collapseNode(target);
-                    }
-                }
-            });
-        };
-
-        // 실시간 DOM 감시 및 고속 반복 (사파리 렌더링 속도 대응)
-        const namuObserver = new MutationObserver(namuCleaner);
-        namuObserver.observe(document.documentElement, { childList: true, subtree: true });
-        
-        // 페이지 로드 직후 3초간은 0.1초 주기로 초고속 청소
-        let fastClean = setInterval(namuCleaner, 100);
-        setTimeout(() => {
-            clearInterval(fastClean);
-            setInterval(namuCleaner, 600); // 이후에는 평상시 속도로 전환
-        }, 3000);
+        setInterval(namuProcess, 800); // 주기적 체크로 좀비 광고 대응
     }
 })();
