@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         DC & Namu Combined Stealth
-// @version      3.0
-// @description  디시(v2.4 고정) + 나무위키(JSON 도청 및 원천 봉쇄)
+// @version      3.1
+// @description  디시(v2.4 유지) + 나무위키(신규 색상 코드 및 구글 GPT 차단)
 // @match        *://*.dcinside.com/*
 // @match        *://*.namu.wiki/*
 // @updateURL    https://raw.githubusercontent.com/OK-KR2/filter-backup/main/dc_namu.user.js
@@ -23,7 +23,7 @@
     };
 
     /* --------------------------------------------------
-       PART 1: 디시인사이드 (v2.4 로직 유지)
+       PART 1: 디시인사이드 (v2.4 로직 100% 동일 유지)
     -------------------------------------------------- */
     if (location.hostname.includes('dcinside.com')) {
         const lock = (p, v) => {
@@ -45,48 +45,51 @@
     }
 
     /* --------------------------------------------------
-       PART 2: 나무위키 (데이터 오염 및 선제적 타격)
+       PART 2: 나무위키 (v3.1 신규 색상 및 GPT 대응)
     -------------------------------------------------- */
     if (location.hostname.includes('namu.wiki')) {
-        // 1. [데이터 도청] JSON 파싱 단계에서 광고 데이터 삭제
-        const originalParse = JSON.parse;
-        JSON.parse = function() {
-            let data = originalParse.apply(this, arguments);
-            if (data && data.ads) { data.ads = []; } // 광고 리스트 강제 비우기
-            return data;
-        };
+        // 1. [강력 CSS] 보내주신 소스의 #fffff6 색상을 정조준
+        const style = document.createElement('style');
+        style.textContent = `
+            div[style*="#fffff6"], 
+            div[style*="rgb(255, 255, 246)"],
+            div[class*="veta-ad"],
+            iframe[src*="doubleclick.net"],
+            iframe[id*="google_ads"] { display: none !important; height: 0px !important; visibility: hidden !important; }
+        `;
+        (document.head || document.documentElement).appendChild(style);
 
-        // 2. [네트워크 봉쇄] XHR/Fetch 차단
-        const killAdRequest = (url) => (url.includes('adcr.naver.com') || url.includes('veta.naver.com'));
+        // 2. [네트워크 봉쇄] 구글 gpt.js 및 네이버 veta 원천 차단 (XHR 포함)
+        const adKeywords = ['gpt.js', 'securepubads', 'adcr.naver.com', 'veta.naver.com'];
+
         const originalFetch = window.fetch;
         window.fetch = async (...args) => {
-            if (args[0] && killAdRequest(typeof args[0] === 'string' ? args[0] : args[0].url)) {
+            const url = typeof args[0] === 'string' ? args[0] : args[0]?.url;
+            if (url && adKeywords.some(k => url.includes(k))) {
                 return new Response(JSON.stringify({ads:[]}), {status: 200});
             }
             return originalFetch.apply(window, args);
         };
 
-        // 3. [시각적 사살] 가장 강력한 CSS 주입 (파워링크 특유 색상 타격)
-        const style = document.createElement('style');
-        style.textContent = `
-            div[style*="background-color: rgb(253, 255, 245)"], 
-            div:has(a[href*="adcr.naver.com"]),
-            .veta_ad_wrapper { display: none !important; height: 0px !important; }
-        `;
-        (document.head || document.documentElement).appendChild(style);
+        const originalXHR = window.XMLHttpRequest.prototype.open;
+        window.XMLHttpRequest.prototype.open = function(m, url) {
+            if (typeof url === 'string' && adKeywords.some(k => url.includes(k))) return;
+            return originalOpen.apply(this, arguments);
+        };
 
+        // 3. [시각적 사살] "파워링크" 텍스트 기반 즉각 삭제
         const namuCleaner = () => {
             document.querySelectorAll('div').forEach(el => {
-                // "파워링크"라는 글자가 포함된 컨테이너를 찾아서 부모 레이아웃까지 삭제
-                if (el.innerText === "파워링크" || el.querySelector('a[href*="adcr.naver.com"]')) {
-                    const target = el.closest('div[style*="background-color"]') || el;
+                if (el.innerText === "파워링크" || el.innerText?.includes("광고등록") || el.querySelector('a[href*="adcr.naver.com"]')) {
+                    const target = el.closest('div[style*="#fffff6"]') || el.closest('div[style*="rgb(255, 255, 246)"]') || el;
                     collapseNode(target);
+                    target.remove();
                 }
             });
         };
 
         const namuObserver = new MutationObserver(namuCleaner);
         namuObserver.observe(document.documentElement, { childList: true, subtree: true });
-        setInterval(namuCleaner, 800); // 사파리의 지연 렌더링에 대응
+        setInterval(namuCleaner, 500);
     }
 })();
