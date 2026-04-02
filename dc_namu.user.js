@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         DC & Namu Combined Stealth
-// @version      3.3
-// @description  디시(v2.4 고정) + 나무위키(본문 증발 방지 및 외과수술식 차단)
+// @version      3.4
+// @description  디시(v2.4 고정) + 나무위키(내부 검색 이동 대응 및 하단 로딩 정상화)
 // @match        *://*.dcinside.com/*
 // @match        *://*.namu.wiki/*
 // @updateURL    https://raw.githubusercontent.com/OK-KR2/filter-backup/main/dc_namu.user.js
@@ -15,7 +15,7 @@
 
     const blocked = new WeakSet();
     const collapseNode = (node) => {
-        if (!node || blocked.has(node) || node.id === 'app') return; // 메인 앱 컨테이너 보호
+        if (!node || blocked.has(node) || node.id === 'app') return;
         blocked.add(node);
         node.style.setProperty('display', 'none', 'important');
         node.style.setProperty('height', '0', 'important');
@@ -45,21 +45,19 @@
     }
 
     /* --------------------------------------------------
-       PART 2: 나무위키 (v3.3 화이트스크린 방지 강화)
+       PART 2: 나무위키 (v3.4 내부 이동 대응 및 로딩 정상화)
     -------------------------------------------------- */
     if (location.hostname.includes('namu.wiki')) {
-        // 1. [선제 방어] 메인 구조를 건드리지 않는 정밀 CSS
+        // 1. [선제적 CSS] 하단 영역(#app 이후)은 건드리지 않고 본문 내 광고만 타격
         const style = document.createElement('style');
         style.textContent = `
-            /* 광고 상자 특유의 클래스와 색상만 조준 (메인 #app 제외) */
             div[style*="#fffff6"], div[style*="rgb(255, 255, 246)"],
-            .gn4Z21wj, .VBwhMBUe, .veta_ad_wrapper,
-            iframe[src*="doubleclick.net"] { display: none !important; height: 0px !important; visibility: hidden !important; }
+            .gn4Z21wj, .VBwhMBUe, .veta_ad_wrapper { display: none !important; }
         `;
         (document.head || document.documentElement).appendChild(style);
 
-        // 2. [네트워크 가로채기] 사이트 중단 없는 안전한 데이터 필터링
-        const adKeywords = ['adcr.naver.com', 'veta.naver.com', 'securepubads', 'gpt.js'];
+        // 2. [네트워크 가로채기] 광고 데이터만 선별적으로 차단 (사이트 기능 보호)
+        const adKeywords = ['adcr.naver.com', 'veta.naver.com', 'securepubads'];
         const originalFetch = window.fetch;
         window.fetch = async (...args) => {
             const url = typeof args[0] === 'string' ? args[0] : args[0]?.url;
@@ -69,12 +67,13 @@
             return originalFetch.apply(window, args);
         };
 
-        // 3. [시각적 사살] 본문을 보호하며 광고 텍스트만 솎아내기
+        // 3. [정밀 청소기] 내부 검색/이동 시에도 작동하도록 실시간 감시 강화
         const namuCleaner = () => {
+            // 본문 내 광고 텍스트 및 레이아웃 박멸
             document.querySelectorAll('div, section').forEach(el => {
-                // 본문 전체(#app)를 포함하지 않는 작은 단위의 광고 노드만 타격
                 if (el.innerText === "파워링크" || el.innerText === "광고등록") {
                     const target = el.closest('div[style*="#fffff6"]') || el.closest('div[style*="rgb(255, 255, 246)"]') || el;
+                    // 메인 레이아웃 파괴 방지 및 본문 내 요소만 타격
                     if (target && target.id !== 'app' && target.tagName !== 'BODY') {
                         collapseNode(target);
                     }
@@ -82,8 +81,20 @@
             });
         };
 
+        // 내부 이동(검색 등) 감지를 위한 URL 변화 모니터링
+        let lastUrl = location.href;
+        const urlObserver = new MutationObserver(() => {
+            if (location.href !== lastUrl) {
+                lastUrl = location.href;
+                console.log("나무위키: 내부 이동 감지 - 방어선 재설정 🎯");
+                setTimeout(namuCleaner, 200); // 이동 후 렌더링 타이밍 대기
+            }
+        });
+        urlObserver.observe(document, { subtree: true, childList: true });
+
+        // 실시간 DOM 변화 감시 및 주기적 청소
         const namuObserver = new MutationObserver(namuCleaner);
         namuObserver.observe(document.documentElement, { childList: true, subtree: true });
-        setInterval(namuCleaner, 600);
+        setInterval(namuCleaner, 700);
     }
 })();
