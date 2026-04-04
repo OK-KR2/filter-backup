@@ -5,55 +5,43 @@
 // ==/UserScript==
 
 (function () {
-    // 1. 기존 Eruda 로드 (이게 맨 아래 투명 버튼으로 나옵니다)
     var script = document.createElement('script');
     script.src = "//cdn.jsdelivr.net/npm/eruda"; 
     document.body.appendChild(script);
     script.onload = function () {
+        // 1. 오리지널 Eruda 실행
         eruda.init();
-    };
 
-    // 2. 복사 전용 톱니바퀴 버튼 (딱 1개만 추가)
-    var copyBtn = document.createElement('button');
-    copyBtn.innerText = '⚙️'; 
-    
-    // Eruda 기본 버튼과 똑같은 반투명 스타일 적용 (기존 버튼 위쪽에 배치)
-    copyBtn.style.cssText = 'position:fixed; bottom:70px; right:20px; z-index:999999; width:40px; height:40px; background:rgba(0, 0, 0, 0.2); color:#fff; border:none; border-radius:50%; font-size:24px; line-height:40px; text-align:center; cursor:pointer; padding:0; margin:0; backdrop-filter:blur(2px);';
-    
-    // 3. 버튼 클릭 시 소스 복사 기능 실행
-    copyBtn.onclick = function() {
-        var htmlContent = document.documentElement.outerHTML;
+        // 2. Eruda 안에 'Copy' 탭 새로 만들기
+        var CopyTool = eruda.Tool.extend({
+            name: 'copy', // 탭 이름
+            init: function ($el) {
+                this.callSuper(eruda.Tool, 'init', arguments);
+                
+                // 탭 안에 들어갈 큰 버튼 디자인
+                $el.html('<div style="padding: 20px; display: flex; height: 100%; align-items: center; justify-content: center; background: #f4f4f4;"><button id="eruda-copy-btn" style="width: 100%; max-width: 300px; padding: 20px; background: #007AFF; color: #fff; border: none; border-radius: 12px; font-size: 18px; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">📄 전체 소스 복사하기</button></div>');
+                
+                // 버튼 눌렀을 때 복사 작동
+                $el.find('#eruda-copy-btn').on('click', function() {
+                    var htmlContent = document.documentElement.outerHTML;
+                    var ta = document.createElement("textarea");
+                    ta.value = htmlContent;
+                    ta.style.cssText = "position:absolute; top:-9999px;";
+                    document.body.appendChild(ta);
+                    ta.focus();
+                    ta.select();
+                    try {
+                        document.execCommand('copy');
+                        alert('전체 소스가 깔끔하게 복사되었습니다!');
+                    } catch (err) {
+                        alert('복사 실패;; 콘솔을 확인해주세요.');
+                    }
+                    document.body.removeChild(ta);
+                });
+            }
+        });
         
-        if (navigator.clipboard && window.isSecureContext) {
-            navigator.clipboard.writeText(htmlContent).then(function() {
-                alert('전체 HTML 소스가 복사되었습니다!');
-            }).catch(function(err) {
-                fallbackCopyTextToClipboard(htmlContent);
-            });
-        } else {
-            fallbackCopyTextToClipboard(htmlContent);
-        }
+        // 만든 탭을 Eruda에 꽂아넣기
+        eruda.add(new CopyTool());
     };
-
-    // 구형 브라우저/사파리 호환성을 위한 복사 보조 함수
-    function fallbackCopyTextToClipboard(text) {
-        var textArea = document.createElement("textarea");
-        textArea.value = text;
-        textArea.style.cssText = "top:0; left:0; position:fixed; width:1px; height:1px; opacity:0;";
-        document.body.appendChild(textArea);
-        textArea.focus();
-        textArea.select();
-
-        try {
-            var successful = document.execCommand('copy');
-            if(successful) alert('전체 HTML 소스가 복사되었습니다!');
-            else alert('복사 실패.');
-        } catch (err) {
-            alert('복사 권한이 없습니다.');
-        }
-        document.body.removeChild(textArea);
-    }
-
-    // 버튼을 화면에 추가
-    document.body.appendChild(copyBtn);
 })();
