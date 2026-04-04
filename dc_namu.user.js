@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         DC & Namu Combined Stealth
-// @version      4.8
-// @description  나무위키(깜빡임 100% 원천 봉쇄) + 디시(안정화된 유배 모드)
+// @version      4.9
+// @description  디시(4.7.1 안정성 + 흰여백 안전 압착) + 나무위키(동기식 처리로 깜빡임 완벽 제거)
 // @match        *://*.dcinside.com/*
 // @match        *://*.namu.wiki/*
 // @run-at       document-start
@@ -25,13 +25,13 @@
     };
 
     /* --------------------------------------------------
-       PART 1: 디시인사이드 (v4.7.2 최적화 안정형 유지)
+       PART 1: 디시인사이드 (v4.7.1 베이스 + 빈 여백 안전 압착)
     -------------------------------------------------- */
     if (location.hostname.includes('dcinside.com')) {
         const laundryDC = () => {
             localStorage.removeItem('adblock_detected');
             localStorage.removeItem('find_ab');
-            localStorage.removeItem('find_ab_check'); 
+            localStorage.removeItem('find_ab_check');
             if (document.cookie.includes('find_ab=ok')) {
                 document.cookie = "find_ab=no; expires=Thu, 01 Jan 2030 00:00:00 UTC; path=/; domain=.dcinside.com";
             }
@@ -39,12 +39,13 @@
         laundryDC();
         lock('is_adblock', false); lock('adblock_chk', false); lock('canRunAds', true); lock('is_ad_block', 'N');
 
+        // [안전 압착] 위치를 옮기거나 삭제하지 않고, 크기만 0으로 구겨버림 (서버 감시 통과)
         const style = document.createElement('style');
         style.textContent = `
-            #moveOverlay, #moveimg, .adv-group, .adv-groupin, .adv-grouptop, .pwlink, 
+            #moveOverlay, #moveimg, .adv-group, .adv-groupin, .adv-grouptop, .pwlink,
             .pp-box:has(.penalty-box), div[id*="ad_middle"], iframe[src*="netinsight"] {
-                display: block !important; position: fixed !important;
-                left: -9999px !important; opacity: 0 !important; pointer-events: none !important;
+                height: 0px !important; min-height: 0px !important; margin: 0px !important; padding: 0px !important;
+                border: 0px !important; overflow: hidden !important; visibility: hidden !important; opacity: 0 !important;
             }
         `;
         (document.head || document.documentElement).appendChild(style);
@@ -57,57 +58,47 @@
             }
             return originalFetch.apply(window, args);
         };
-        setInterval(() => requestAnimationFrame(laundryDC), 1000);
+
+        setInterval(laundryDC, 800);
     }
 
     /* --------------------------------------------------
-       PART 2: 나무위키 (v4.8 깜빡임 원천 봉쇄)
+       PART 2: 나무위키 (v4.7.1 로직 복구로 깜빡임 원천 차단)
     -------------------------------------------------- */
     if (location.hostname.includes('namu.wiki')) {
-        // [핵심 1] 소스 분석 기반: 모든 파워링크 최상위 컨테이너 패턴 선제적 차단
         const style = document.createElement('style');
         style.textContent = `
-            /* veta 광고 및 알려진 모든 변종 껍데기 사전 차단 */
             [data-v-aed07d7a], .veta_ad_wrapper, .gn4Z21wj, .VBwhMBUe, ._3Dy97h7l,
-            div[class*="vKJY7-f5"], div[class*="HJeR5GcT"], /* 이번에 새로 발견된 변종들 */
+            div[class*="vKJY7-f5"], div[class*="HJeR5GcT"], 
             div:has(> a[href*="adcr.naver.com"]), div[style*="#fffff6"],
-            iframe[src*="doubleclick.net"] { 
-                display: none !important; height: 0px !important; margin: 0px !important; padding: 0px !important; opacity: 0 !important; pointer-events: none !important;
+            iframe[src*="doubleclick.net"] {
+                display: none !important; height: 0px !important; margin: 0px !important; padding: 0px !important; opacity: 0 !important;
             }
         `;
         (document.head || document.documentElement).appendChild(style);
 
-        // [핵심 2] 엔진 자체를 더 철저하게 바보로 만들기
         const mockAd = { loadAd: () => {}, init: () => {}, getAds: () => [], setTargeting: () => {}, display: () => {}, enableServices: () => {}, pubads: () => mockAd, addService: () => mockAd };
         window.veta = window.veta || mockAd;
         window.googletag = window.googletag || mockAd;
         window.ad_block_detected = false;
         window.canRunAds = true;
 
-        // [핵심 3] 재생성 시도 자체를 박살내는 무자비 청소기
-        let cleanupTimeout;
         const namuCleaner = () => {
             document.querySelectorAll('div, section').forEach(el => {
-                // 광고 텍스트나 네이버 링크가 포함된 경우
                 if (el.hasAttribute('data-v-aed07d7a') || el.innerText === "파워링크" || el.querySelector('a[href*="adcr.naver.com"]')) {
-                    // 가장 바깥쪽의 불규칙한 클래스 컨테이너까지 싹 다 추적해서 날림
                     const target = el.closest('div[class*="vKJY7-f5"]') || el.closest('div[class*="_"]') || el;
                     if (target && target.id !== 'app' && target.id !== 'eruda') {
                         collapseNode(target);
-                        if (target.parentNode) target.remove(); 
+                        if (target.parentNode) target.remove();
                     }
                 }
             });
         };
+
+        // 딜레이(setTimeout) 제거 -> 즉시 썰어버려서 브라우저가 그릴 시간 자체를 안 줌
+        new MutationObserver(namuCleaner).observe(document.documentElement, { childList: true, subtree: true });
         
-        // DOM 변화가 있을 때만 지능적으로 실행 (배터리 최적화 + 밀당 방지)
-        new MutationObserver(() => {
-            clearTimeout(cleanupTimeout);
-            cleanupTimeout = setTimeout(namuCleaner, 20); // 찰나의 순간에 썰어버림
-        }).observe(document.documentElement, { childList: true, subtree: true });
-        
-        // 페이지 로드 직후 혹시 모를 좀비 대비
-        let fastClean = setInterval(namuCleaner, 100);
-        setTimeout(() => clearInterval(fastClean), 3000);
+        let fastClean = setInterval(namuCleaner, 50);
+        setTimeout(() => { clearInterval(fastClean); setInterval(namuCleaner, 600); }, 3000);
     }
 })();
