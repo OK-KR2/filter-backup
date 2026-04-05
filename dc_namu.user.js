@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         DC & Namu Combined Stealth
-// @version      4.9
-// @description  디시(4.7.1 안정성 + 흰여백 안전 압착) + 나무위키(동기식 처리로 깜빡임 완벽 제거)
+// @version      4.9.5
+// @description  디시(4.9의 CSS 기만술 + 함수 가로채기 2중 방어) + 나무위키(v4.3 성공 로직)
 // @match        *://*.dcinside.com/*
 // @match        *://*.namu.wiki/*
 // @run-at       document-start
@@ -21,14 +21,27 @@
         node.style.setProperty('height', '0', 'important');
         node.style.setProperty('margin', '0', 'important');
         node.style.setProperty('padding', '0', 'important');
-        node.setAttribute('data-blocked-by-stealth', 'true');
     };
 
     /* --------------------------------------------------
-       PART 1: 디시인사이드 (v4.7.1 베이스 + 빈 여백 안전 압착)
+       PART 1: 디시인사이드 (소스 검증 기반 완벽 기만술)
     -------------------------------------------------- */
     if (location.hostname.includes('dcinside.com')) {
+        
+        // [2중 방어막] 차단 쿠키(find_ab=ok) 생성 함수 가로채기
+        const hijackCookieFunction = () => {
+            if (window.setCookie_hk_hour && !window.setCookie_hk_hour.hijacked) {
+                const originalSetCookie = window.setCookie_hk_hour;
+                window.setCookie_hk_hour = function(name, value, expiredays) {
+                    if (name === 'find_ab' && value === 'ok') return; // 페널티 컷
+                    return originalSetCookie(name, value, expiredays);
+                };
+                window.setCookie_hk_hour.hijacked = true;
+            }
+        };
+
         const laundryDC = () => {
+            hijackCookieFunction();
             localStorage.removeItem('adblock_detected');
             localStorage.removeItem('find_ab');
             localStorage.removeItem('find_ab_check');
@@ -36,14 +49,16 @@
                 document.cookie = "find_ab=no; expires=Thu, 01 Jan 2030 00:00:00 UTC; path=/; domain=.dcinside.com";
             }
         };
+
         laundryDC();
         lock('is_adblock', false); lock('adblock_chk', false); lock('canRunAds', true); lock('is_ad_block', 'N');
 
-        // [안전 압착] 위치를 옮기거나 삭제하지 않고, 크기만 0으로 구겨버림 (서버 감시 통과)
+        // [1차 절대 방어막 - 4.9 로직] display: none을 쓰지 않고 안전 압착!
+        // 사용자 취향 반영: .penalty-box 숨겨서 차단 시 빨간 경고 대신 하얀 화면 띄움
         const style = document.createElement('style');
         style.textContent = `
             #moveOverlay, #moveimg, .adv-group, .adv-groupin, .adv-grouptop, .pwlink,
-            .pp-box:has(.penalty-box), div[id*="ad_middle"], iframe[src*="netinsight"] {
+            .penalty-box, .pp-box:has(.penalty-box), div[id*="ad_middle"], iframe[src*="netinsight"] {
                 height: 0px !important; min-height: 0px !important; margin: 0px !important; padding: 0px !important;
                 border: 0px !important; overflow: hidden !important; visibility: hidden !important; opacity: 0 !important;
             }
@@ -63,7 +78,7 @@
     }
 
     /* --------------------------------------------------
-       PART 2: 나무위키 (v4.7.1 로직 복구로 깜빡임 원천 차단)
+       PART 2: 나무위키 (사용자님 경고 반영: 4.9의 v4.3 로직 절대 유지)
     -------------------------------------------------- */
     if (location.hostname.includes('namu.wiki')) {
         const style = document.createElement('style');
@@ -95,9 +110,7 @@
             });
         };
 
-        // 딜레이(setTimeout) 제거 -> 즉시 썰어버려서 브라우저가 그릴 시간 자체를 안 줌
         new MutationObserver(namuCleaner).observe(document.documentElement, { childList: true, subtree: true });
-        
         let fastClean = setInterval(namuCleaner, 50);
         setTimeout(() => { clearInterval(fastClean); setInterval(namuCleaner, 600); }, 3000);
     }
