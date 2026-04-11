@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name         DC & Namu Combined Stealth
-// @version      4.9.8
-// @description  디시/나무위키(4.9.6 절대 고정) + 클라우드플레어 무한루프 방어막 추가
+// @version      4.9.9
+// @description  디시/나무위키(4.9.6 절대 고정) + 글로벌 클플 무한루프 완화 모듈
 // @match        *://*.dcinside.com/*
 // @match        *://*.namu.wiki/*
-// @run-at       document-start
+// @match        *://*/* // @run-at       document-start
 // @grant        none
 // ==/UserScript==
 
@@ -12,10 +12,9 @@
     'use strict';
 
     /* --------------------------------------------------
-       PART 1: 디시인사이드 (v4.9.6 원본 그대로! 1바이트도 안 건드림)
+       PART 1: 디시인사이드 (v4.9.6 원본 절대 고정)
     -------------------------------------------------- */
     if (location.hostname.includes('dcinside.com')) {
-
         try {
             const cookieDesc = Object.getOwnPropertyDescriptor(Document.prototype, 'cookie') || Object.getOwnPropertyDescriptor(HTMLDocument.prototype, 'cookie');
             if (cookieDesc && cookieDesc.configurable) {
@@ -74,10 +73,9 @@
     }
 
     /* --------------------------------------------------
-       PART 2: 나무위키 (v4.9.6 원본 그대로! 1바이트도 안 건드림)
+       PART 2: 나무위키 (v4.9.6 원본 절대 고정)
     -------------------------------------------------- */
     if (location.hostname.includes('namu.wiki')) {
-        
         const collapseNode = (node) => {
             if (!node || node.id === 'app' || node.id === 'eruda' || node.tagName === 'BODY') return;
             node.style.setProperty('display', 'none', 'important');
@@ -117,33 +115,28 @@
         };
 
         new MutationObserver(namuCleaner).observe(document.documentElement, { childList: true, subtree: true });
-        
         let fastClean = setInterval(namuCleaner, 50);
         setTimeout(() => { clearInterval(fastClean); setInterval(namuCleaner, 600); }, 3000);
     }
 
     /* --------------------------------------------------
-       PART 3: 클라우드플레어 무한루프 방지 모듈 (최하단 추가)
+       PART 3: 클라우드플레어 무한루프 방어막 (모든 사이트 적용)
     -------------------------------------------------- */
     (function preventCloudflareLoop() {
-        const checkAndRestore = () => {
-            // 화면이 클라우드플레어 인증창(Just a moment...)인지 확인
-            if (document.title.includes('Just a moment') || document.querySelector('#challenge-running') || document.getElementById('cf-wrapper')) {
-                try {
-                    // 클플 통과를 위해 브라우저 순정 쿠키 시스템을 원상 복구 (무한루프 탈출)
-                    const originalDesc = Object.getOwnPropertyDescriptor(Document.prototype, 'cookie') || 
-                                         Object.getOwnPropertyDescriptor(HTMLDocument.prototype, 'cookie');
-                    if (originalDesc) {
-                        Object.defineProperty(document, 'cookie', originalDesc);
-                    }
-                } catch (e) {}
-            }
-        };
+        // 화면이 클라우드플레어 인증창(잠시만 기다리십시오)인지 식별
+        const isCloudflare = document.title.includes('Just a moment') || 
+                             document.title.includes('잠시만 기다리십시오') || 
+                             document.querySelector('script[src*="/cdn-cgi/challenge-platform"]');
         
-        // 찰나의 순간에 클플이 뜰 것을 대비해 3번 확인
-        checkAndRestore();
-        setTimeout(checkAndRestore, 500);
-        setTimeout(checkAndRestore, 1500);
+        if (isCloudflare) {
+            try {
+                // 1. 애드가드를 봇으로 오해하게 만드는 브라우저 속성 숨기기
+                Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
+                
+                // 2. 꼬여버린 세션 데이터(루프 원인) 강제 초기화
+                sessionStorage.clear();
+            } catch (e) {}
+        }
     })();
 
 })();
