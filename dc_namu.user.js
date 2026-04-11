@@ -1,10 +1,9 @@
 // ==UserScript==
 // @name         DC & Namu Combined Stealth
-// @version      4.9.9
-// @description  디시/나무위키(4.9.6 절대 고정) + 글로벌 클플 무한루프 완화 모듈 활성화
+// @version      4.9.6
+// @description  디시(네이티브 쿠키/스토리지 원천 차단) + 나무위키(v4.9 절대 고정)
 // @match        *://*.dcinside.com/*
 // @match        *://*.namu.wiki/*
-// @match        *://*/*
 // @run-at       document-start
 // @grant        none
 // ==/UserScript==
@@ -13,9 +12,12 @@
     'use strict';
 
     /* --------------------------------------------------
-       PART 1: 디시인사이드 (v4.9.6 원본 절대 고정)
+       PART 1: 디시인사이드 (API 원천 가로채기 절대 방어)
     -------------------------------------------------- */
     if (location.hostname.includes('dcinside.com')) {
+
+        // 1. [절대 방어] 브라우저 네이티브 쿠키/스토리지 API 가로채기
+        // 디시 스크립트가 언제 로드되든 상관없이 '차단 낙인' 자체를 브라우저에 못 쓰게 막습니다.
         try {
             const cookieDesc = Object.getOwnPropertyDescriptor(Document.prototype, 'cookie') || Object.getOwnPropertyDescriptor(HTMLDocument.prototype, 'cookie');
             if (cookieDesc && cookieDesc.configurable) {
@@ -23,7 +25,7 @@
                     get: function() { return cookieDesc.get.call(document); },
                     set: function(val) {
                         if (val && (val.includes('find_ab=ok') || val.includes('adblock_detected'))) {
-                            return; 
+                            return; // 429 페널티 쿠키 저장 완전 거부
                         }
                         cookieDesc.set.call(document, val);
                     }
@@ -33,12 +35,13 @@
             const originalSetItem = Storage.prototype.setItem;
             Storage.prototype.setItem = function(key, value) {
                 if (key === 'adblock_detected' || key === 'find_ab' || key === 'find_ab_check') {
-                    return; 
+                    return; // 로컬스토리지 차단 낙인 거부
                 }
                 originalSetItem.apply(this, arguments);
             };
         } catch (e) {}
 
+        // 2. 혹시 이미 묻어있는 기존 낙인 세척
         localStorage.removeItem('adblock_detected');
         localStorage.removeItem('find_ab');
         localStorage.removeItem('find_ab_check');
@@ -46,6 +49,7 @@
             document.cookie = "find_ab=no; expires=Thu, 01 Jan 2030 00:00:00 UTC; path=/; domain=.dcinside.com";
         }
 
+        // 3. 서버 안심용 가짜 변수
         try {
             Object.defineProperty(window, 'is_adblock', { value: false, writable: false, configurable: false });
             Object.defineProperty(window, 'adblock_chk', { value: false, writable: false, configurable: false });
@@ -53,6 +57,7 @@
             Object.defineProperty(window, 'is_ad_block', { value: 'N', writable: false, configurable: false });
         } catch (e) {}
 
+        // 4. 안전 압착 CSS (차단 시 깔끔한 하얀 화면 유지)
         const style = document.createElement('style');
         style.textContent = `
             #moveOverlay, #moveimg, .adv-group, .adv-groupin, .adv-grouptop, .pwlink,
@@ -74,9 +79,10 @@
     }
 
     /* --------------------------------------------------
-       PART 2: 나무위키 (v4.9.6 원본 절대 고정)
+       PART 2: 나무위키 (v4.9 로직 - 1바이트도 수정 안 함)
     -------------------------------------------------- */
     if (location.hostname.includes('namu.wiki')) {
+        
         const collapseNode = (node) => {
             if (!node || node.id === 'app' || node.id === 'eruda' || node.tagName === 'BODY') return;
             node.style.setProperty('display', 'none', 'important');
@@ -116,25 +122,8 @@
         };
 
         new MutationObserver(namuCleaner).observe(document.documentElement, { childList: true, subtree: true });
+        
         let fastClean = setInterval(namuCleaner, 50);
         setTimeout(() => { clearInterval(fastClean); setInterval(namuCleaner, 600); }, 3000);
     }
-
-    /* --------------------------------------------------
-       PART 3: 클라우드플레어 무한루프 방어막 (모든 사이트 적용)
-    -------------------------------------------------- */
-    (function preventCloudflareLoop() {
-        // 화면이 클라우드플레어 인증창인지 식별
-        const isCloudflare = document.title.includes('Just a moment') || 
-                             document.title.includes('잠시만 기다리십시오') || 
-                             document.querySelector('script[src*="/cdn-cgi/challenge-platform"]');
-        
-        if (isCloudflare) {
-            try {
-                Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
-                sessionStorage.clear();
-            } catch (e) {}
-        }
-    })();
-
 })();
