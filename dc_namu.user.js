@@ -124,7 +124,7 @@
     -------------------------------------------------- */
     (function preventCloudflareLoop() {
         // 화면이 클라우드플레어 인증창(잠시만 기다리십시오)인지 식별
-        const isCloudflare = document.title.includes('보안 확인 수행 중') || 
+        const isCloudflare = document.title.includes('사람인지 확인하십시오') || 
                              document.title.includes('잠시만 기다리십시오') || 
                              document.querySelector('script[src*="/cdn-cgi/challenge-platform"]');
         
