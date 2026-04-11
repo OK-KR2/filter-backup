@@ -1,10 +1,11 @@
 // ==UserScript==
 // @name         DC & Namu Combined Stealth
 // @version      4.9.9
-// @description  디시/나무위키(4.9.6 절대 고정) + 글로벌 클플 무한루프 완화 모듈
+// @description  디시/나무위키(4.9.6 절대 고정) + 글로벌 클플 무한루프 완화 모듈 활성화
 // @match        *://*.dcinside.com/*
 // @match        *://*.namu.wiki/*
-// @match        *://*/* // @run-at       document-start
+// @match        *://*/*
+// @run-at       document-start
 // @grant        none
 // ==/UserScript==
 
@@ -123,17 +124,14 @@
        PART 3: 클라우드플레어 무한루프 방어막 (모든 사이트 적용)
     -------------------------------------------------- */
     (function preventCloudflareLoop() {
-        // 화면이 클라우드플레어 인증창(잠시만 기다리십시오)인지 식별
-        const isCloudflare = document.title.includes('사람인지 확인하십시오') || 
+        // 화면이 클라우드플레어 인증창인지 식별
+        const isCloudflare = document.title.includes('Just a moment') || 
                              document.title.includes('잠시만 기다리십시오') || 
                              document.querySelector('script[src*="/cdn-cgi/challenge-platform"]');
         
         if (isCloudflare) {
             try {
-                // 1. 애드가드를 봇으로 오해하게 만드는 브라우저 속성 숨기기
                 Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
-                
-                // 2. 꼬여버린 세션 데이터(루프 원인) 강제 초기화
                 sessionStorage.clear();
             } catch (e) {}
         }
