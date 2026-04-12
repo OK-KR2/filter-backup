@@ -1,11 +1,13 @@
 // ==UserScript==
 // @name         DC Integrated Ultimate Stealth
-// @version      8.0
-// @description  DC Stealth(v5.1) + Cache System(v7.6.1) + Ultimate Bypass(v1.0.0) 무수정 통합본
+// @version      8.1
+// @description  DC Stealth v5.1 + Cache System v7.6.1 + Ultimate Bypass v1.0.0 (100% 무수정 병합)
 // @match        *://*.dcinside.com/*
 // @run-at       document-start
 // @grant        GM_xmlhttpRequest
 // @grant        GM.xmlHttpRequest
+// @grant        GM_setValue
+// @grant        GM_getValue
 // ==/UserScript==
 
 (function () {
@@ -13,12 +15,12 @@
 
     /* ==================================================
        [PART 1] DC Stealth v5.1 (즉시 실행 모듈)
+       - 광고 차단 감지 우회 및 콘솔 에러 방지
        ================================================== */
     const lock = (p, v) => {
         try { Object.defineProperty(window, p, { value: v, writable: false, configurable: false }); } catch (e) {}
     };
 
-    // 콘솔 에러 방어용 함수 선언
     if (typeof window.getCookie === 'undefined') { window.getCookie = function() { return ''; }; }
     if (typeof window.setCookie_hk_hour === 'undefined') { window.setCookie_hk_hour = function() {}; }
     
@@ -59,14 +61,15 @@
 
 
     /* ==================================================
-       [타이밍 브릿지] 아래 모듈들은 DOM 로드 후 실행
+       [실행 브릿지] 아래 모듈들은 페이지 로드 완료 후 실행됩니다.
        ================================================== */
     window.addEventListener('DOMContentLoaded', () => {
 
         /* ==============================================
-           [PART 2] Cache System + Rate Limit (v7.6.1)
+           [PART 2] 1번 스크립트 전문 (Cache System v7.6.1)
            ============================================== */
         (function() {
+            'use strict';
             let rateLimitUI = null;
             const updateRateLimitUI = (limit, remaining) => {
                 if (!rateLimitUI) {
@@ -97,10 +100,22 @@
                 };
                 request.onsuccess = (t) => {
                     dbInstance = t.target.result;
+                    if (Math.random() < 0.05) cleanOldCache(dbInstance);
                     resolve(dbInstance);
                 };
                 request.onerror = (e) => reject(e);
             });
+            const cleanOldCache = (db) => {
+                const transaction = db.transaction([STORE_NAME], "readwrite");
+                const store = transaction.objectStore(STORE_NAME);
+                const index = store.index("time");
+                const twentyFourHoursAgo = Date.now() - 86400000;
+                const range = IDBKeyRange.upperBound(twentyFourHoursAgo);
+                index.openCursor(range).onsuccess = (e) => {
+                    const cursor = e.target.result;
+                    if (cursor) { store.delete(cursor.primaryKey); cursor.continue(); }
+                };
+            };
             checkRateLimit();
             window.dcCache = { 
                 getCache: async (url) => {
@@ -122,9 +137,10 @@
         })();
 
         /* ==============================================
-           [PART 3] Ultimate Bypass (v1.0.0)
+           [PART 3] 2번 스크립트 전문 (Ultimate Bypass v1.0.0)
            ============================================== */
         (function() {
+            'use strict';
             const isBlocked = document.body.innerText.includes("너무 많은 요청으로") || document.querySelector('.penalty-box-inner');
             if (!isBlocked) return;
             const urlMatch = window.location.pathname.match(/\/(board|mini)\/([^\/?]+)\/([0-9]+)/);
@@ -132,41 +148,79 @@
             const isMini = urlMatch[1] === 'mini';
             const gallId = urlMatch[2];
             const postNo = urlMatch[3];
-            document.body.innerHTML = `<div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; background:#f4f4f4;"><div style="padding: 20px; background: #fff; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align:center;"><h3 style="color:#d9534f; margin-bottom: 10px;">🚨 차단 감지됨</h3><p style="color:#555; font-size:14px; margin:0;">PC 위장 모드로 복구 중...</p></div></div>`;
+            document.body.innerHTML = `
+                <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; background:#f4f4f4;">
+                    <div style="padding: 20px; background: #fff; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align:center;">
+                        <h3 style="color:#d9534f; margin-bottom: 10px;">🚨 차단 감지됨</h3>
+                        <p style="color:#555; font-size:14px; margin:0;">PC 위장 모드로 게시글과 이미지를 복구 중입니다...</p>
+                        <div style="margin-top: 15px; font-size:24px;">🔄</div>
+                    </div>
+                </div>
+            `;
             const fetchPCData = (url) => {
                 return new Promise((resolve, reject) => {
-                    const reqFunc = typeof GM_xmlhttpRequest !== 'undefined' ? GM_xmlhttpRequest : GM.xmlHttpRequest;
-                    reqFunc({
+                    GM_xmlhttpRequest({
                         method: "GET", url: url,
-                        headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36", "Referer": "https://gall.dcinside.com/" },
+                        headers: {
+                            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                            "Referer": "https://gall.dcinside.com/",
+                            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"
+                        },
                         onload: (res) => resolve(res.responseText),
                         onerror: (err) => reject(err)
                     });
                 });
             };
             const runBypass = async () => {
+                let htmlStr = ""; let pcUrl = "";
                 try {
-                    let pcUrl = isMini ? `https://gall.dcinside.com/mini/board/view/?id=${gallId}&no=${postNo}` : `https://gall.dcinside.com/mgallery/board/view/?id=${gallId}&no=${postNo}`;
-                    let htmlStr = await fetchPCData(pcUrl);
-                    if (!htmlStr.includes("title_subject") && !isMini) {
-                        pcUrl = `https://gall.dcinside.com/board/view/?id=${gallId}&no=${postNo}`;
+                    if (isMini) {
+                        pcUrl = `https://gall.dcinside.com/mini/board/view/?id=${gallId}&no=${postNo}`;
                         htmlStr = await fetchPCData(pcUrl);
+                    } else {
+                        pcUrl = `https://gall.dcinside.com/mgallery/board/view/?id=${gallId}&no=${postNo}`;
+                        htmlStr = await fetchPCData(pcUrl);
+                        if (!htmlStr.includes("title_subject")) {
+                            pcUrl = `https://gall.dcinside.com/board/view/?id=${gallId}&no=${postNo}`;
+                            htmlStr = await fetchPCData(pcUrl);
+                        }
                     }
                     const parser = new DOMParser();
                     const doc = parser.parseFromString(htmlStr, "text/html");
-                    const title = doc.querySelector('.title_subject')?.innerText.trim() || "제목 없음";
+                    const titleEl = doc.querySelector('.title_subject');
+                    if (!titleEl) throw new Error("게시글이 삭제되었거나 잘못된 접근입니다.");
+                    const title = titleEl.innerText.trim();
                     const contentEl = doc.querySelector('.write_div');
+                    let contentHtml = "<p>본문 내용이 없습니다.</p>";
                     if (contentEl) {
+                        contentEl.querySelectorAll('script, style, iframe, .adv-groupno').forEach(el => el.remove());
                         contentEl.querySelectorAll('img').forEach(img => {
                             const realSrc = img.getAttribute('data-original') || img.getAttribute('src');
                             if (realSrc && !realSrc.includes('dcinside_icon')) {
                                 img.setAttribute('src', realSrc);
-                                img.style.cssText = "max-width: 100%; height: auto; display: block; margin: 15px auto;";
+                                img.style.cssText = "max-width: 100%; height: auto; display: block; margin: 15px auto; border-radius: 4px;";
+                                img.removeAttribute('onclick'); img.removeAttribute('onload'); img.removeAttribute('class');
                             } else { img.remove(); }
                         });
+                        contentEl.querySelectorAll('a').forEach(a => { if (a.href.includes('javascript:')) a.removeAttribute('href'); });
+                        contentHtml = contentEl.innerHTML;
                     }
-                    document.body.innerHTML = `<div style="padding: 15px; background: #fff;"><h2 style="font-size: 18px; border-bottom: 1px solid #eee;">${title}</h2><div>${contentEl?.innerHTML || ""}</div><button onclick="window.history.back()">뒤로가기</button></div>`;
-                } catch (err) { console.error("Bypass Error", err); }
+                    const restoredUI = `
+                        <div style="max-width: 800px; margin: 0 auto; padding: 0; background: #fff; min-height: 100vh;">
+                            <div style="padding: 15px; border-bottom: 1px solid #eee; background: #f8f9fa;">
+                                <span style="display:inline-block; padding:3px 8px; background:#d9534f; color:#fff; font-size:12px; border-radius:3px; font-weight:bold; margin-bottom:8px;">PC 우회 복구됨</span>
+                                <h2 style="margin: 0; font-size: 18px; line-height: 1.4; color: #333; word-break: break-all;">${title}</h2>
+                            </div>
+                            <div style="padding: 20px 15px; font-size: 15px; line-height: 1.6; color: #222; word-break: break-all;">${contentHtml}</div>
+                            <div style="padding: 20px; text-align: center; border-top: 1px solid #eee;">
+                                <button onclick="window.history.back()" style="padding: 10px 20px; background: #3b5998; color: #fff; border: none; border-radius: 5px; font-size: 14px; font-weight: bold; cursor: pointer;">← 뒤로 가기</button>
+                            </div>
+                        </div>
+                    `;
+                    document.body.innerHTML = restoredUI;
+                } catch (err) {
+                    document.body.innerHTML = `<div style="padding: 30px; text-align: center; color: #d9534f; margin-top: 50px;"><h3>❌ 복구 실패</h3><p style="color:#555; font-size:14px;">${err.message}</p><button onclick="window.location.reload()" style="margin-top:20px; padding: 8px 16px; border:1px solid #ccc; background:#fff; border-radius:4px;">다시 시도</button></div>`;
+                }
             };
             runBypass();
         })();
