@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         DC & Namu Combined Stealth
-// @version      5.0
-// @description  디시(초정밀 스텔스 오프스크린 기만술) + 나무위키(v4.9.6 엔진 완전 고정)
+// @version      5.1
+// @description  디시(콘솔 에러 해결 + 오프스크린 스텔스) + 나무위키(고정)
 // @match        *://*.dcinside.com/*
 // @match        *://*.namu.wiki/*
 // @run-at       document-start
@@ -28,9 +28,17 @@
     };
 
     /* --------------------------------------------------
-       PART 1: 디시인사이드 (v5.0 오프스크린 스텔스)
+       PART 1: 디시인사이드 (ReferenceError 해결 및 스텔스)
     -------------------------------------------------- */
     if (location.hostname.includes('dcinside.com')) {
+
+        // [에러 방어] 콘솔 창을 터뜨리는 가짜 변수들을 미리 주입하여 충돌을 막습니다.
+        if (typeof window.getCookie === 'undefined') {
+            window.getCookie = function() { return ''; };
+        }
+        if (typeof window.setCookie_hk_hour === 'undefined') {
+            window.setCookie_hk_hour = function() {};
+        }
         
         const laundryDC = () => {
             localStorage.removeItem('adblock_detected');
@@ -50,8 +58,7 @@
             lock('is_ad_block', 'N');
         } catch (e) {}
 
-        // [핵심 업그레이드] 요소를 압착하는 대신, 화면 밖(-9999px)으로 던져버립니다.
-        // 디시 스크립트는 요소가 존재한다고 인식하지만, 사용자 눈에는 보이지 않습니다.
+        // 요소를 투명하게 만들어 화면 밖으로 던져버리는 오프스크린 기법 유지
         const style = document.createElement('style');
         style.textContent = `
             #moveOverlay, #moveimg, .adv-group, .adv-groupin, .adv-grouptop, .pwlink,
@@ -81,7 +88,7 @@
     }
 
     /* --------------------------------------------------
-       PART 2: 나무위키 (사용자 제공 v4.9.6 엔진 완전 고정)
+       PART 2: 나무위키 (사용자 제공 엔진 절대 고정)
     -------------------------------------------------- */
     if (location.hostname.includes('namu.wiki')) {
         
