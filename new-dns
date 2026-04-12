@@ -40,7 +40,7 @@
 ||nv.veta.naver.com^
 ||ad-m.daum.net^
 ||display.ad.daum.net^
-||amapi.pstatic.net^
+! ||amapi.pstatic.net^
 
 ! ## [02] 추적
 ! 소셜 미디어 추적 위젯 차단 (제미니)
@@ -121,7 +121,7 @@ etoland.co.kr#%#//scriptlet('trusted-click-element', '[data-cookie-key]', '', '3
 ||dctrend.ai^
 ||onelink.me^
 ||shortformstats.kakao.com^
-||pstatic.net.topo.gscdn.net^
+! ||pstatic.net.topo.gscdn.net^
 ||nrc.naver.com^
 ! 광고 서버 사전 연결 시도 차단 (제미니)
 #%#//scriptlet('abort-current-inline-script', 'dns-prefetch')
@@ -403,12 +403,11 @@ $ping,important
 @@||ad.search.naver.com^$important
 ! 네이버 앱 카페 접속 등 로그인 인식 못하는 현상 허용 (제미니)
 ! ||adcr.naver.com^
-! 네이버 카페/메일 로그인 세션 유지 및 기능 복구 (제미니)
-@@||cc.naver.com^$domain=naver.com,important
+! 네이버 카페/메일 로그인 세션 유지 및 기능 복구 (앱/웹 호환)
+@@||cc.naver.com^$important
+@@||cr.naver.com^$important
+@@||adcr.naver.com^$important
 @@||log.naver.com^$domain=naver.com,important
-@@||veta.naver.com^$domain=naver.com,important
-@@||cr.naver.com^$domain=naver.com,important
-@@||adcr.naver.com^$domain=naver.com,important
 ! 로보락/샤오미 로봇청소기 작동만 허용 (제미니)
 ||api.io.mi.com^
 ||cn^
@@ -448,7 +447,6 @@ $ping,important
 naver.com##.veta_ad
 naver.com##.veta_ad_wrapper
 naver.com##div[id*="veta"]
-namu.wiki##div.veta-ad-container:empty
 #%#//scriptlet('set-constant', 'yt.config_.GOOGLE_ANALYTICS_ID', '')
 #%#//scriptlet('prevent-fetch', 'google-analytics.com')
 ||connect.facebook.net^
