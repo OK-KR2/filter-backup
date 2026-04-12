@@ -1,149 +1,85 @@
 // ==UserScript==
 // @name         DC & Namu Combined Stealth
-// @version      4.9.9 (Bypass Edition)
-// @description  디시(4.9.6 절대 방어 + PC 우회 복원) + 나무위키(v4.9 고정)
+// @version      4.9.7
+// @description  디시(와이파이 안정화 + 하얀화면 유지) + 나무위키(v4.9.6 완전 고정)
 // @match        *://*.dcinside.com/*
 // @match        *://*.namu.wiki/*
 // @run-at       document-start
-// @grant        GM_xmlhttpRequest
-// @grant        GM.xmlHttpRequest
+// @grant        none
 // ==/UserScript==
 
 (function () {
     'use strict';
 
+    /* --------------------------------------------------
+       [공통 유틸리티]
+    -------------------------------------------------- */
     const lock = (p, v) => {
         try { Object.defineProperty(window, p, { value: v, writable: false, configurable: false }); } catch (e) {}
     };
 
+    const collapseNode = (node) => {
+        if (!node || node.id === 'app' || node.id === 'eruda' || node.tagName === 'BODY') return;
+        node.style.setProperty('display', 'none', 'important');
+        node.style.setProperty('height', '0', 'important');
+        node.style.setProperty('margin', '0', 'important');
+        node.style.setProperty('padding', '0', 'important');
+        node.setAttribute('data-blocked-by-stealth', 'true');
+    };
+
     /* --------------------------------------------------
-       PART 1: 디시인사이드 (네이티브 차단 방어 + PC 우회 복원)
+       PART 1: 디시인사이드 (와이파이 안정화 및 스텔스)
     -------------------------------------------------- */
     if (location.hostname.includes('dcinside.com')) {
-
-        // 1. [4.9.6] 네이티브 쿠키/스토리지 가로채기
-        try {
-            const cookieDesc = Object.getOwnPropertyDescriptor(Document.prototype, 'cookie') || Object.getOwnPropertyDescriptor(HTMLDocument.prototype, 'cookie');
-            if (cookieDesc && cookieDesc.configurable) {
-                Object.defineProperty(document, 'cookie', {
-                    get: function() { return cookieDesc.get.call(document); },
-                    set: function(val) {
-                        if (val && (val.includes('find_ab=ok') || val.includes('adblock_detected'))) {
-                            return; 
-                        }
-                        cookieDesc.set.call(document, val);
-                    }
-                });
+        
+        // 1. 브라우저 시스템 변조 없이 조용히 기존 낙인만 세척합니다.
+        const laundryDC = () => {
+            localStorage.removeItem('adblock_detected');
+            localStorage.removeItem('find_ab');
+            localStorage.removeItem('find_ab_check');
+            if (document.cookie.includes('find_ab=ok')) {
+                document.cookie = "find_ab=no; expires=Thu, 01 Jan 2030 00:00:00 UTC; path=/; domain=.dcinside.com";
             }
+        };
 
-            const originalSetItem = Storage.prototype.setItem;
-            Storage.prototype.setItem = function(key, value) {
-                if (key === 'adblock_detected' || key === 'find_ab' || key === 'find_ab_check') {
-                    return; 
-                }
-                originalSetItem.apply(this, arguments);
-            };
-        } catch (e) {}
-
-        localStorage.removeItem('adblock_detected');
-        localStorage.removeItem('find_ab');
-        localStorage.removeItem('find_ab_check');
-        if (document.cookie.includes('find_ab=ok')) {
-            document.cookie = "find_ab=no; expires=Thu, 01 Jan 2030 00:00:00 UTC; path=/; domain=.dcinside.com";
-        }
-
+        laundryDC();
+        
         try {
-            lock('is_adblock', false); lock('adblock_chk', false); lock('canRunAds', true); lock('is_ad_block', 'N');
+            lock('is_adblock', false); 
+            lock('adblock_chk', false); 
+            lock('canRunAds', true); 
+            lock('is_ad_block', 'N');
         } catch (e) {}
 
+        // 2. [안전 압착] display: none 체크를 회피하기 위해 크기만 0으로 줄입니다.
+        // 차단 시에도 깔끔하게 하얀 화면이 유지되도록 패널티 박스까지 포함했습니다.
         const style = document.createElement('style');
         style.textContent = `
             #moveOverlay, #moveimg, .adv-group, .adv-groupin, .adv-grouptop, .pwlink,
-            div[id*="ad_middle"], iframe[src*="netinsight"] {
+            .penalty-box, .pp-box:has(.penalty-box), div[id*="ad_middle"], iframe[src*="netinsight"] {
                 height: 0px !important; min-height: 0px !important; margin: 0px !important; padding: 0px !important;
                 border: 0px !important; overflow: hidden !important; visibility: hidden !important; opacity: 0 !important;
             }
         `;
         (document.head || document.documentElement).appendChild(style);
 
-        // 2. [추출 기능] 너무 많은 요청(429) 시 PC 버전 우회 복원
-        document.addEventListener('DOMContentLoaded', async () => {
-            const match = window.location.pathname.match(/\/(board|mini)\/([^\/?]+)\/([0-9]+)/);
-            if (match && document.body.innerText.includes("너무 많은 요청으로")) {
-                const isMini = match[1] === "mini";
-                const gallId = match[2];
-                const articleNo = match[3];
-
-                document.body.innerHTML = '<div style="text-align:center; padding: 50px; font-size: 15px; color: #666; font-weight: bold;">PC 버전으로 우회 복구 중입니다... 잠시만 기다려주세요.</div>';
-
-                try {
-                    const fetchPC = (url) => new Promise((resolve, reject) => {
-                        const requestMethod = typeof GM !== "undefined" && GM.xmlHttpRequest ? GM.xmlHttpRequest : GM_xmlhttpRequest;
-                        requestMethod({
-                            method: "GET",
-                            url: url,
-                            headers: {
-                                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-                                "Referer": "https://gall.dcinside.com/"
-                            },
-                            onload: (res) => resolve(res.responseText),
-                            onerror: (err) => reject(err)
-                        });
-                    });
-
-                    let pcUrl = `https://gall.dcinside.com/${isMini ? "mini/" : ""}board/view/?id=${gallId}&no=${articleNo}`;
-                    let htmlData = await fetchPC(pcUrl);
-                    let parser = new DOMParser();
-                    let doc = parser.parseFromString(htmlData, "text/html");
-
-                    if (!doc.querySelector(".title_subject") && !isMini) {
-                        pcUrl = `https://gall.dcinside.com/mgallery/board/view/?id=${gallId}&no=${articleNo}`;
-                        htmlData = await fetchPC(pcUrl);
-                        doc = parser.parseFromString(htmlData, "text/html");
-                    }
-
-                    const title = doc.querySelector(".title_subject") ? doc.querySelector(".title_subject").innerText : "제목 없음";
-                    const writerNode = doc.querySelector(".gall_writer");
-                    const writer = writerNode ? writerNode.getAttribute("data-nick") : "ㅇㅇ";
-                    const contentNode = doc.querySelector(".write_div");
-                    const content = contentNode ? contentNode.innerHTML : "<p>본문을 파싱하지 못했습니다.</p>";
-
-                    document.body.innerHTML = `
-                        <div style="padding: 15px; background: #fff; min-height: 100vh;">
-                            <button onclick="history.back()" style="padding: 8px 15px; margin-bottom: 15px; border: 1px solid #ccc; background: #f9f9f9; border-radius: 5px;">&larr; 뒤로 가기</button>
-                            <h2 style="font-size: 18px; margin-bottom: 10px; border-bottom: 2px solid #ddd; padding-bottom: 10px;"><span style="color:#d9534f;">[우회 복원됨]</span> ${title}</h2>
-                            <div style="font-size: 13px; color: #555; margin-bottom: 20px;">작성자: <b>${writer}</b></div>
-                            <div style="font-size: 15px; line-height: 1.6; word-break: break-all;">
-                                ${content}
-                            </div>
-                        </div>
-                    `;
-
-                    document.querySelectorAll("img").forEach(img => {
-                        img.style.maxWidth = "100%";
-                        img.style.height = "auto";
-                    });
-
-                } catch (e) {
-                    document.body.innerHTML = `<div style="text-align:center; padding: 50px; color:#d9534f;"><strong>우회 로드에 실패했습니다.</strong><br><small>${e.message}</small></div>`;
-                }
+        const originalFetch = window.fetch;
+        window.fetch = async (...args) => {
+            const url = typeof args[0] === 'string' ? args[0] : args[0]?.url;
+            if (url && (url.includes('ajax/naverad') || url.includes('naverad'))) {
+                return new Response(JSON.stringify({ ads: [] }), { status: 200 });
             }
-        });
+            return originalFetch.apply(window, args);
+        };
+
+        setInterval(laundryDC, 800);
     }
 
     /* --------------------------------------------------
-       PART 2: 나무위키 (v4.9 완전 고정)
+       PART 2: 나무위키 (사용자 제공 v4.9.6 엔진 완전 고정)
     -------------------------------------------------- */
     if (location.hostname.includes('namu.wiki')) {
-        const collapseNode = (node) => {
-            if (!node || node.id === 'app' || node.id === 'eruda' || node.tagName === 'BODY') return;
-            node.style.setProperty('display', 'none', 'important');
-            node.style.setProperty('height', '0', 'important');
-            node.style.setProperty('margin', '0', 'important');
-            node.style.setProperty('padding', '0', 'important');
-            node.setAttribute('data-blocked-by-stealth', 'true');
-        };
-
+        
         const style = document.createElement('style');
         style.textContent = `
             [data-v-aed07d7a], .veta_ad_wrapper, .gn4Z21wj, .VBwhMBUe, ._3Dy97h7l,
