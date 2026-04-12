@@ -1,9 +1,8 @@
 // ==UserScript==
 // @name         DC & Namu Combined Stealth
-// @version      5.1
-// @description  디시(콘솔 에러 해결 + 오프스크린 스텔스) + 나무위키(고정)
+// @version      5.2
+// @description  디시(콘솔 에러 해결 + 오프스크린 스텔스)
 // @match        *://*.dcinside.com/*
-// @match        *://*.namu.wiki/*
 // @run-at       document-start
 // @grant        none
 // ==/UserScript==
@@ -16,15 +15,6 @@
     -------------------------------------------------- */
     const lock = (p, v) => {
         try { Object.defineProperty(window, p, { value: v, writable: false, configurable: false }); } catch (e) {}
-    };
-
-    const collapseNode = (node) => {
-        if (!node || node.id === 'app' || node.id === 'eruda' || node.tagName === 'BODY') return;
-        node.style.setProperty('display', 'none', 'important');
-        node.style.setProperty('height', '0', 'important');
-        node.style.setProperty('margin', '0', 'important');
-        node.style.setProperty('padding', '0', 'important');
-        node.setAttribute('data-blocked-by-stealth', 'true');
     };
 
     /* --------------------------------------------------
@@ -85,44 +75,5 @@
         };
 
         setInterval(laundryDC, 800);
-    }
-
-    /* --------------------------------------------------
-       PART 2: 나무위키 (사용자 제공 엔진 절대 고정)
-    -------------------------------------------------- */
-    if (location.hostname.includes('namu.wiki')) {
-        
-        const style = document.createElement('style');
-        style.textContent = `
-            [data-v-aed07d7a], .veta_ad_wrapper, .gn4Z21wj, .VBwhMBUe, ._3Dy97h7l,
-            div[class*="vKJY7-f5"], div[class*="HJeR5GcT"], 
-            div:has(> a[href*="adcr.naver.com"]), div[style*="#fffff6"],
-            iframe[src*="doubleclick.net"] {
-                display: none !important; height: 0px !important; margin: 0px !important; padding: 0px !important; opacity: 0 !important;
-            }
-        `;
-        (document.head || document.documentElement).appendChild(style);
-
-        const mockAd = { loadAd: () => {}, init: () => {}, getAds: () => [], setTargeting: () => {}, display: () => {}, enableServices: () => {}, pubads: () => mockAd, addService: () => mockAd };
-        window.veta = window.veta || mockAd;
-        window.googletag = window.googletag || mockAd;
-        window.ad_block_detected = false;
-        window.canRunAds = true;
-
-        const namuCleaner = () => {
-            document.querySelectorAll('div, section').forEach(el => {
-                if (el.hasAttribute('data-v-aed07d7a') || el.innerText === "파워링크" || el.querySelector('a[href*="adcr.naver.com"]')) {
-                    const target = el.closest('div[class*="vKJY7-f5"]') || el.closest('div[class*="_"]') || el;
-                    if (target && target.id !== 'app' && target.id !== 'eruda') {
-                        collapseNode(target);
-                        if (target.parentNode) target.remove();
-                    }
-                }
-            });
-        };
-
-        new MutationObserver(namuCleaner).observe(document.documentElement, { childList: true, subtree: true });
-        let fastClean = setInterval(namuCleaner, 50);
-        setTimeout(() => { clearInterval(fastClean); setInterval(namuCleaner, 600); }, 3000);
     }
 })();
