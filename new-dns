@@ -185,10 +185,7 @@ daum.net##div[id^="ad_"]
 ! 카카오톡 PC 하단 빈 광고 영역 숨기기 (선택 사항) (제미니)
 #kakao.com##.ad_area
 
-! ## [07] 나무위키 (보강) - 스크립트 대체 
-namu.wiki##div:matches-css(background-color: /rgb\(253, 255, 245\)/):xpath(parent::div/parent::div/parent::div/parent::div)
-
-! ## [08] 유튜브
+! ## [07] 유튜브
 ! 유튜브 영상 종료 후 카드 숨기기 (제미니)
 youtube.com##.ytp-ce-element
 youtube.com##.ytp-ce-video
@@ -198,11 +195,7 @@ youtube.com##ytd-ad-slot-renderer
 youtube.com##ytd-rich-item-renderer:has(> ytd-ad-slot-renderer)
 youtube.com##ytd-banner-promo-renderer
 
-! ## [09] 디시인사이드 (보강) - 스크립트 대체
-m.dcinside.com##.ad_box, .ad_area
-@@||dcinside.com^$jsinject,important
-
-! ## [10] 숨기기
+! ## [08] 숨기기
 ! 쿠키/개인정보 동의 배너 숨기기 (제미니)
 ##.cookie-banner
 ##.cookie-consent
@@ -248,7 +241,7 @@ m.cafe.naver.com##.banner_ad
 m.cafe.naver.com###articleFeedList > .ad_item
 m.cafe.naver.com##.popular_ad_area
 
-! ## [11] 지능형 추적 및 핑거프린팅 방어 (제미니)
+! ## [09] 지능형 추적 및 핑거프린팅 방어 (제미니)
 ! 기기 고유 정보를 조합해 신분을 특정하는 핑거프린팅 방지 (제미니)
 ##+js(fp-protection)
 ##+js(nowebrtc)
@@ -260,7 +253,7 @@ m.cafe.naver.com##.popular_ad_area
 ||google.com/ads/ga-audiences^
 ||facebook.com/tr/
 
-! ## [12] 악성 레이어 및 투명 팝업 원천 차단
+! ## [10] 악성 레이어 및 투명 팝업 원천 차단
 ! 악성 도메인 변종 및 서브도메인 광역 차단 (제미니)
 ||acceptancedishearten.com^$important
 ||*.acceptancedishearten.com^$important
@@ -280,7 +273,7 @@ m.cafe.naver.com##.popular_ad_area
 #%#//scriptlet('prevent-window-open', 'itunes.apple.com')
 #%#//scriptlet('prevent-window-open', 'apps.apple.com')
 
-! ## [13] 하드웨어 센서 및 AI 스크래핑 방어
+! ## [11] 하드웨어 센서 및 AI 스크래핑 방어
 ! 배터리 상태/네트워크 정보로 기기를 식별하는 '사이드 채널' 차단 (제미니)
 #%#//scriptlet('set-constant', 'navigator.getBattery', 'undefined')
 #%#//scriptlet('set-constant', 'navigator.connection', 'undefined')
@@ -291,14 +284,14 @@ m.cafe.naver.com##.popular_ad_area
 ||anthropic.com/robots.txt^$important
 ||claudebot.com^$important
 
-! ## [14] 브라우저 기능 제약 및 강제 해제
+! ## [12] 브라우저 기능 제약 및 강제 해제
 ! 우클릭 차단, 드래그 방지, 복사 방지 스크립트 강제 무력화 (제미니)
 ##+js(阻止右键)
 ##+js(allow-contextmenu)
 ! 복사할 때 몰래 '출처: OOO' 문구를 클립보드에 끼워 넣는 행위 차단 (제미니)
 ##+js(prevent-clipboard-write)
 
-! ## [15] 검색 엔진 프라이버시 및 누수 방지
+! ## [13] 검색 엔진 프라이버시 및 누수 방지
 ! 검색어 자동 완성 및 검색 결과 미리 불러오기(Leak) 차단 (제미니)
 ||google.com/complete/search?*
 ||naver.com/ac?*
@@ -310,14 +303,14 @@ m.cafe.naver.com##.popular_ad_area
 #%#//scriptlet('abort-current-inline-script', 'dns-prefetch')
 #%#//scriptlet('abort-current-inline-script', 'prerender')
 
-! ## [16] 시스템 텔레메트리
+! ## [14] 시스템 텔레메트리
 ! 애플/구글 시스템 레벨의 최소한의 텔레메트리 차단 보강 (제미니)
 ||is.apple.com^
 ||api.smoot.apple.com^
 ||telemetry.google.com^
 ||location.google.com^
 
-! ## [17] 리퍼러 및 정보 누수 차단
+! ## [15] 리퍼러 및 정보 누수 차단
 ! 다른 사이트로 넘어갈 때 '내가 어디서 왔는지' 숨기기 (Referer 정책 강화) (제미니)
 #%#//scriptlet('set-constant', 'document.referrer', '')
 ! 브라우저 창의 이름(window.name)을 이용한 사이트 간 추적 방지 (제미니)
@@ -326,7 +319,7 @@ m.cafe.naver.com##.popular_ad_area
 ||history.google.com^
 ||myactivity.google.com^
 
-! ## [18] 소셜 로그인 및 공유 버튼 청소
+! ## [16] 소셜 로그인 및 공유 버튼 청소
 ! 웹사이트 곳곳에 박힌 '소셜 로그인' 위젯 및 통신 차단 (제미니)
 ||facebook.net/en_US/sdk.js^
 ||connect.facebook.net^
@@ -338,7 +331,7 @@ m.cafe.naver.com##.popular_ad_area
 ##div[class*="share-layer"]
 ##[id*="login-with-"]
 
-! ## [19] 글로벌 개인정보 제어 및 오류 로깅 차단
+! ## [17] 글로벌 개인정보 제어 및 오류 로깅 차단
 ! 모든 웹사이트에 "개인정보 수집 거부(GPC)" 신호 강제 전송 (제미니)
 ##+js(set-constant, navigator.globalPrivacyControl, true)
 ! 오류 보고를 가장한 세션 및 기기 정보 수집 차단 (Sentry, Bugsnag 등) (제미니)
@@ -348,7 +341,7 @@ m.cafe.naver.com##.popular_ad_area
 ||rollbar.com^$important
 ||logrocket.com^$important (사용자 화면 녹화 및 세션 리플레이 방지)
 
-! ## [20] 하이퍼링크 오디팅 및 미디어 분석 차단
+! ## [18] 하이퍼링크 오디팅 및 미디어 분석 차단
 ! 링크 클릭 시 백그라운드에서 몰래 전송되는 클릭 신호(Ping) 차단 (제미니)
 $ping,important
 ! HTML5 비디오 플레이어의 시청 습관 분석 및 통계 전송 차단 (제미니)
@@ -357,27 +350,27 @@ $ping,important
 ||p-events-delivery.vimeo.com^
 ||v.shopify.com/storefront/internal/video_stats^
 
-! ## [21] 로컬 스토리지 및 캐시 기반 추적 방어
+! ## [19] 로컬 스토리지 및 캐시 기반 추적 방어
 ! 브라우저 로컬 스토리지를 이용한 광고 식별자(ID) 저장 차단 (제미니)
 ##+js(set-constant, localStorage.ad_tracking_id, undefined)
 ##+js(set-constant, localStorage.f_cap, undefined)
 ! 캐시(ETag)를 이용한 사용자 식별용 '슈퍼 쿠키' 생성 방지 (제미니)
 ##+js(set-constant, navigator.serviceWorker, undefined)
 
-! ## [22] 오디오 및 폰트 핑거프린팅 세밀 방어
+! ## [20] 오디오 및 폰트 핑거프린팅 세밀 방어
 ! 기기 고유의 오디오 재생 특성으로 신분을 식별하는 행위 차단 (제미니)
 ! 웹재생 허용 주석처리: ##+js(set-constant, AudioContext, undefined)
 ##+js(set-constant, webkitAudioContext, undefined)
 ! 폰트 리스트 수집을 통한 기기 식별 방지 보강 (제미니)
 ##+js(set-constant, document.fonts, undefined)
 
-! ## [23] 구글 Privacy Sandbox 및 Topics API 저격
+! ## [21] 구글 Privacy Sandbox 및 Topics API 저격
 ! 구글의 새로운 추적 기술인 Topics API 및 FLoC 비활성화 (제미니)
 ##+js(set-constant, document.browsingTopics, undefined)
 ##+js(set-constant, navigator.scheduling, undefined)
 ##+js(set-constant, navigator.userActivation, undefined)
 
-! ## [24] 하드웨어 자원 및 센서 무단 점유 방어
+! ## [22] 하드웨어 자원 및 센서 무단 점유 방어
 ! 웹 채굴(Cryptojacking) 스크립트 및 높은 CPU 점유 차단 (제미니)
 ||coin-hive.com^$important
 ||coinhive.com^$important
@@ -387,7 +380,7 @@ $ping,important
 ! 블루투스/NFC 연결불 허용 주석처리: ##+js(set-constant, navigator.nfc, undefined)
 ! 블루투스/NFC 연결불 허용 주석처리: ##+js(set-constant, navigator.usb, undefined)
 
-! ## [25] 글로벌 미디어 자동 재생 및 트래픽 낭비 차단 (제미니)
+! ## [23] 글로벌 미디어 자동 재생 및 트래픽 낭비 차단 (제미니)
 ! 웹사이트 진입 시 비디오/오디오 자동 재생 강제 중지
 #%#//scriptlet('prevent-autoplay')
 ! 보이지 않는 곳에서 데이터를 갉아먹는 비디오 로딩 방지
@@ -396,7 +389,7 @@ $ping,important
 ! 유튜브/포털의 넥스트 비디오 미리 로드(Preload) 차단
 #%#//scriptlet('abort-current-inline-script', 'next-video-preload')
 
-! ## [26] 허용
+! ## [24] 허용
 ! 슬랙 완전 허용 (제미니)
 @@||slack.com^$important
 @@||slack-edge.com^$important
@@ -448,7 +441,7 @@ $ping,important
 @@||google.com/recaptcha/*$important,script,subdocument
 @@||recaptcha.net^$important,script,subdocument
 
-! ## [27] 방어선
+! ## [25] 방어선
 ! 이중잠금 (제미니)
 naver.com##.veta_ad
 naver.com##.veta_ad_wrapper
