@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         DC & Namu Combined Stealth
-// @version      4.9.7
-// @description  디시(와이파이 안정화 + 하얀화면 유지) + 나무위키(v4.9.6 완전 고정)
+// @version      5.0
+// @description  디시(초정밀 스텔스 오프스크린 기만술) + 나무위키(v4.9.6 엔진 완전 고정)
 // @match        *://*.dcinside.com/*
 // @match        *://*.namu.wiki/*
 // @run-at       document-start
@@ -28,11 +28,10 @@
     };
 
     /* --------------------------------------------------
-       PART 1: 디시인사이드 (와이파이 안정화 및 스텔스)
+       PART 1: 디시인사이드 (v5.0 오프스크린 스텔스)
     -------------------------------------------------- */
     if (location.hostname.includes('dcinside.com')) {
         
-        // 1. 브라우저 시스템 변조 없이 조용히 기존 낙인만 세척합니다.
         const laundryDC = () => {
             localStorage.removeItem('adblock_detected');
             localStorage.removeItem('find_ab');
@@ -51,14 +50,20 @@
             lock('is_ad_block', 'N');
         } catch (e) {}
 
-        // 2. [안전 압착] display: none 체크를 회피하기 위해 크기만 0으로 줄입니다.
-        // 차단 시에도 깔끔하게 하얀 화면이 유지되도록 패널티 박스까지 포함했습니다.
+        // [핵심 업그레이드] 요소를 압착하는 대신, 화면 밖(-9999px)으로 던져버립니다.
+        // 디시 스크립트는 요소가 존재한다고 인식하지만, 사용자 눈에는 보이지 않습니다.
         const style = document.createElement('style');
         style.textContent = `
             #moveOverlay, #moveimg, .adv-group, .adv-groupin, .adv-grouptop, .pwlink,
             .penalty-box, .pp-box:has(.penalty-box), div[id*="ad_middle"], iframe[src*="netinsight"] {
-                height: 0px !important; min-height: 0px !important; margin: 0px !important; padding: 0px !important;
-                border: 0px !important; overflow: hidden !important; visibility: hidden !important; opacity: 0 !important;
+                position: absolute !important; 
+                left: -9999px !important; 
+                top: -9999px !important;
+                width: 1px !important; 
+                height: 1px !important; 
+                overflow: hidden !important; 
+                opacity: 0 !important; 
+                pointer-events: none !important;
             }
         `;
         (document.head || document.documentElement).appendChild(style);
