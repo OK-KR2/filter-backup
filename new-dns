@@ -435,11 +435,13 @@ $ping,important
 @@*/cdn-cgi/challenge-platform/*$jsinject,important
 @@||cloudflareinsights.com^$important
 @@||turnstile.cloudflare.com^$important
-! hCaptcha 및 reCAPTCHA(구글 봇 확인) 정상 작동 보장 및 스크립트 변조 예외 (제미니)
-@@||hcaptcha.com^$important,script,subdocument
+! hCaptcha 및 reCAPTCHA(구글 봇 확인) 정상 작동 보장 및 스크립트 변조 예외 처리 (제미니)
+@@||hcaptcha.com^$important
 @@||hcaptcha.com^$jsinject,important
-@@||google.com/recaptcha/*$important,script,subdocument
-@@||recaptcha.net^$important,script,subdocument
+@@||google.com/recaptcha/*$important
+@@||google.com/recaptcha/*$jsinject,important
+@@||recaptcha.net^$important
+@@||gstatic.com/recaptcha/*$important
 
 ! ## [25] 방어선
 ! 이중잠금 (제미니)
