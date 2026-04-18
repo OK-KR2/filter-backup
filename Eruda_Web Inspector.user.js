@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name        Mobile DevTools (Eruda)
-// @version     1.2
+// @version     1.1
 // @description 모바일 사파리 Eruda 실행 및 전체 소스 복사 기능 추가
 // @match       *://*/*
 // @grant       none
