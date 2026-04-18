@@ -1,7 +1,6 @@
 // ==UserScript==
 // @name         Dcinside Expert Cache System + Rate Limit
-// @namespace    https://github.com/hooray804/adguard-gallery-filter
-// @version      7.6.1
+// @version      7.6.2
 // @description  캐시 시스템에 실시간 Rate Limit(요청 제한) 모니터링 기능을 추가합니다.
 // @match        *://*.dcinside.com/*
 // @run-at       document-end
