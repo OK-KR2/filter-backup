@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         나무위키 파워링크 완벽 방어 (가짜 목차 추적형)
+// @name         NamuWiki Powerlink Kill (Fake TOC)
 // @namespace    http://tampermonkey.net/
 // @version      6.0
 // @description  본문 증발 오류 수정 및 가짜 앵커 링크 기반 타격
