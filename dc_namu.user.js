@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         DC & Namu Combined Stealth
-// @version      5.3
+// @version      6.0
 // @description  디시(콘솔 에러 해결 + 오프스크린 스텔스)
 // @match        *://*.dcinside.com/*
 // @run-at       document-start
