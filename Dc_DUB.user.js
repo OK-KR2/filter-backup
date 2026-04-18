@@ -1,7 +1,6 @@
 // ==UserScript==
 // @name         Dcinside Ultimate Bypass (이미지 복구 특화)
-// @namespace    https://gemini.assistant/
-// @version      1.0.0
+// @version      1.1
 // @description  모바일 Rate Limit 차단 시, 완벽한 PC 헤더 위장과 정밀 파싱을 통해 게시글과 이미지를 90% 이상 확률로 복구합니다.
 // @match        *://*.dcinside.com/*
 // @grant        GM_xmlhttpRequest
