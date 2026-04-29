@@ -1,16 +1,15 @@
 // ==UserScript==
-// @name         Mobile DevTools (Eruda & Copy) - CSP Bypass
-// @version      2.0
+// @name         Mobile DevTools (Only Copy Button)
+// @version      3.0
 // @match        *://*/*
-// @require      https://cdn.jsdelivr.net/npm/eruda
-// @run-at       document-end
+// @run-at       document-start
 // @grant        none
 // ==/UserScript==
 
 (function() {
     'use strict';
 
-    // 1. 전체 소스 복사 기능 (공통)
+    // 소스 복사 핵심 기능
     function copySource() {
         const htmlContent = document.documentElement.outerHTML;
         if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -37,67 +36,52 @@
         document.body.removeChild(ta);
     }
 
-    // 2. Eruda 실행 (보안이 약한 일반 사이트 / 블로그 목록용)
-    function initEruda() {
-        try {
-            if (!document.getElementById('eruda')) {
-                eruda.init();
-            }
-            if (!eruda.get('copy')) {
-                eruda.add(new (eruda.Tool.extend({
-                    name: 'copy',
-                    init: function($el) {
-                        this.callSuper(eruda.Tool, 'init', arguments);
-                        $el.html('<div style="padding:20px;text-align:center;height:100%;background:#f4f4f4;"><button id="btn-copy" style="width:100%;max-width:300px;padding:15px;background:#007AFF;color:#fff;border:none;border-radius:12px;font-weight:bold;font-size:16px;cursor:pointer;">📄 전체 소스 복사하기</button></div>');
-                        $el.find('#btn-copy').on('click', copySource);
-                    }
-                })));
-            }
-        } catch(e) {}
-    }
-
-    // 3. 네이티브 플로팅 버튼 (보안이 빡센 블로그 내부 글 우회용)
-    function initNativeButton() {
-        if (document.getElementById('csp-bypass-btn')) return;
+    // 파란색 플로팅 버튼 생성
+    function createZombieButton() {
+        // 이미 버튼이 있으면 패스 (중복 생성 방지)
+        if (document.getElementById('zombie-copy-btn')) return;
+        
+        // body가 아직 로딩 안 됐으면 대기
+        if (!document.body && !document.documentElement) return;
 
         const btn = document.createElement('button');
-        btn.id = 'csp-bypass-btn';
+        btn.id = 'zombie-copy-btn';
         btn.innerHTML = '📄<br>소스<br>복사';
         btn.style.cssText = `
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            width: 60px;
-            height: 60px;
-            background-color: #007AFF;
-            color: white;
-            border: none;
-            border-radius: 30px;
-            font-size: 13px;
-            font-weight: bold;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            z-index: 2147483647;
-            cursor: pointer;
-            line-height: 1.2;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
+            position: fixed !important;
+            bottom: 30px !important;
+            right: 20px !important;
+            width: 65px !important;
+            height: 65px !important;
+            background-color: #007AFF !important;
+            color: white !important;
+            border: none !important;
+            border-radius: 50% !important;
+            font-size: 14px !important;
+            font-weight: bold !important;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.4) !important;
+            z-index: 2147483647 !important; /* 무조건 최상위 */
+            cursor: pointer !important;
+            line-height: 1.3 !important;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: center !important;
+            align-items: center !important;
         `;
-        btn.onclick = copySource;
-        // 네이버가 body를 날려버려도 살아남도록 최상단 요소에 부착
-        (document.documentElement || document.body).appendChild(btn);
+        
+        // 터치 및 클릭 이벤트 모두 대응 (아이폰 씹힘 방지)
+        btn.addEventListener('click', copySource);
+        btn.addEventListener('touchend', (e) => {
+            e.preventDefault(); // 기본 터치 동작 막고
+            copySource();       // 바로 복사 실행
+        });
+
+        // 네이버가 화면을 갈아치워도 살아남게 최상위 노드에 붙임
+        const targetElement = document.body || document.documentElement;
+        targetElement.appendChild(btn);
     }
 
-    // 4. 무한 감시자 (1초마다 체크하여 방어)
-    setInterval(() => {
-        // Eruda가 정상적으로 로드되었다면 Eruda를 띄움
-        if (typeof eruda !== 'undefined') {
-            initEruda();
-        } else {
-            // 네이버 보안에 막혀 Eruda가 죽었다면 자체 버튼을 띄움
-            initNativeButton();
-        }
-    }, 1000);
+    // 0.5초마다 네이버가 버튼을 지웠는지 감시하고, 지웠으면 즉시 부활시킴
+    setInterval(createZombieButton, 500);
 
 })();
