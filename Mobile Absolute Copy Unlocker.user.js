@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Mobile Absolute Copy Unlocker 🔓
-// @version      9.2
+// @version      9.3
 // @match        *://*/*
 // @run-at       document-start
 // @grant        none
@@ -90,3 +90,4 @@
             setTimeout(() => toast.remove(), 2800);
         }, 800);
     });
+})();
