@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Mobile Absolute Copy Unlocker 🔓
-// @version      9.6
+// @version      9.8
 // @match        *://*/*
 // @run-at       document-start
 // @grant        none
@@ -51,34 +51,36 @@
             position: fixed; 
             top: 25px; 
             left: 50%; 
-            transform: translateX(-50%) scale(0.5); 
+            transform: translateX(-50%) scale(0.6); 
             opacity: 0;
             
-            /* 가독성 핵심: 배경이 밝을수록 더 진해지는 적응형 글래스 */
-            background: rgba(255, 255, 255, 0.05); 
-            backdrop-filter: blur(25px) saturate(210%) brightness(0.8) contrast(1.2);
-            -webkit-backdrop-filter: blur(25px) saturate(210%) brightness(0.8) contrast(1.2);
+            /* 1. 투명도: 다시 확 낮춰서 맑게 (0.1 수준) */
+            background: rgba(255, 255, 255, 0.1); 
             
-            /* 이중 테두리: 흰 배경에서 형태가 안 무너지게 잡아줌 */
-            border: 0.5px solid rgba(0, 0, 0, 0.15);
-            outline: 0.5px solid rgba(255, 255, 255, 0.2);
+            /* 2. 가독성 핵심: 배경을 어둡게 하는 대신 '대비'와 '블러'로 승부 */
+            backdrop-filter: blur(15px) saturate(180%) brightness(0.92);
+            -webkit-backdrop-filter: blur(15px) saturate(180%) brightness(0.92);
+            
+            /* 3. 흰 배경용 치트키: 아주 연한 검정색 테두리 (이게 형태를 잡아줌) */
+            border: 0.5px solid rgba(0, 0, 0, 0.08); 
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.15),      /* 깊이감 주는 그림자 */
+                inset 0 0 0 0.5px rgba(255, 255, 255, 0.2); /* 안쪽 광택선 */
             
             color: #ffffff; 
-            /* 글자 가독성용 딥 섀도우 */
-            text-shadow: 0 1px 6px rgba(0,0,0,0.5);
+            /* 글자 그림자는 필수: 이게 있어야 흰 배경에서 글자가 읽힘 */
+            text-shadow: 0 1px 4px rgba(0,0,0,0.3);
             
             padding: 10px 24px; 
             border-radius: 60px; 
-            font-size: 14px; 
+            font-size: 13px; 
             font-weight: 600;
             display: flex;
             align-items: center;
             z-index: 2147483647; 
             pointer-events: none; 
-            box-shadow: 0 15px 45px rgba(0,0,0,0.3), inset 0 0 10px rgba(255,255,255,0.05);
             
-            /* 26.4 특유의 쫀득한 텐션 애니메이션 */
-            transition: all 0.8s cubic-bezier(0.15, 1.3, 0.3, 1);
+            transition: all 0.75s cubic-bezier(0.2, 1.4, 0.3, 1);
         `;
         
         document.body.appendChild(toast);
