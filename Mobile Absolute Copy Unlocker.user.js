@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Mobile Absolute Copy Unlocker 🔓
-// @version      9.1
+// @version      9.2
 // @match        *://*/*
 // @run-at       document-start
 // @grant        none
@@ -39,32 +39,54 @@
     // 3. 네이버 블로그의 끈질긴 화면 전환 방어 (1초마다 방어막 재생성)
     setInterval(injectCSS, 1000);
 
-    // 4. 작동 확인용 토스트 알림 (거추장스러운 버튼 없이 깔끔하게 떴다 사라짐)
+    // 4. 작동 확인용 토스트 알림 (아이폰 리퀴드 & 다이내믹 아일랜드 스타일)
     window.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => {
             const toast = document.createElement('div');
-            toast.innerHTML = '🔓 복사 방지 해제!';
+            toast.innerHTML = '<span style="margin-right:6px;">🔓</span>복사 방지 해제';
+            
+            // 초기 스타일 (살짝 작고 위로 붙어있는 상태)
             toast.style.cssText = `
                 position: fixed; 
-                top: 20px; 
+                top: 15px; 
                 left: 50%; 
-                transform: translateX(-50%); 
-                background: rgba(40, 200, 80, 0.9); 
-                color: white; 
-                padding: 10px 20px; 
-                border-radius: 20px; 
-                font-weight: bold; 
-                font-size: 14px; 
+                transform: translateX(-50%) scale(0.8); 
+                opacity: 0;
+                
+                /* 다크 글라스 리퀴드 디자인 */
+                background: rgba(10, 10, 10, 0.75); 
+                backdrop-filter: blur(15px);
+                -webkit-backdrop-filter: blur(15px);
+                color: #fff; 
+                padding: 8px 18px; 
+                border-radius: 50px; /* 완전한 알약 모양 */
+                font-size: 13px; 
+                font-weight: 500;
+                letter-spacing: -0.5px;
+                display: flex;
+                align-items: center;
                 z-index: 2147483647; 
                 pointer-events: none; 
-                box-shadow: 0 4px 10px rgba(0,0,0,0.2); 
-                transition: opacity 0.5s;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+                
+                /* 쫀득한 애니메이션을 위한 커스텀 베지어 값 */
+                transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
             `;
+            
             document.body.appendChild(toast);
             
-            // 2초 뒤에 스르륵 사라짐
-            setTimeout(() => toast.style.opacity = '0', 2000);
-            setTimeout(() => toast.remove(), 2500);
-        }, 1000); // 페이지 로딩되고 1초 뒤에 알림 띄움
+            // 0.1초 뒤 실제 등장 (쫀득하게 커지며 내려옴)
+            setTimeout(() => {
+                toast.style.opacity = '1';
+                toast.style.transform = 'translateX(-50%) scale(1) translateY(10px)';
+            }, 100);
+            
+            // 2초 뒤 퇴장 (다시 위로 쇽 사라짐)
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(-50%) scale(0.7) translateY(-5px)';
+            }, 2100);
+
+            setTimeout(() => toast.remove(), 2800);
+        }, 800);
     });
-})();
