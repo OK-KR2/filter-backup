@@ -1,30 +1,42 @@
 // ==UserScript==
-// @name         YouTube Home to Trending Fixer (SPA 대응)
-// @namespace    http://tampermonkey.net/
-// @version      2.0
-// @description  유튜브 홈 화면 접속 시 인기 급상승으로 즉시 납치
-// @author       Gemini
+// @name         YouTube Home Fixer (개빡센 버전)
+// @version      3.0
 // @match        *://*.youtube.com/*
-// @grant        none
 // @run-at       document-start
 // ==/UserScript==
 
 (function() {
     'use strict';
 
-    // 목적지 설정 (인기 급상승 탭)
-    const targetUrl = '/feed/trending';
+    const target = '/feed/trending';
 
-    // 홈 화면인지 확인하고 쏴버리는 함수
-    const redirectIfHome = () => {
-        if (window.location.pathname === '/' || window.location.pathname === '/index') {
-            window.location.replace(targetUrl);
+    // 1. 처음 접속했을 때 홈이면 묻지도 따지지도 않고 바로 납치
+    if (location.pathname === '/' || location.pathname === '/index') {
+        location.replace(target);
+    }
+
+    // 2. 유튜브가 주소창 몰래 바꾸는 기술(History API) 하이재킹
+    const push = history.pushState;
+    history.pushState = function() {
+        if (arguments[2] === '/' || (typeof arguments[2] === 'string' && arguments[2].startsWith('/?'))) {
+            arguments[2] = target;
         }
+        return push.apply(this, arguments);
     };
 
-    // 1. 처음 페이지가 로드될 때 낚아채기
-    redirectIfHome();
+    const replace = history.replaceState;
+    history.replaceState = function() {
+        if (arguments[2] === '/' || (typeof arguments[2] === 'string' && arguments[2].startsWith('/?'))) {
+            arguments[2] = target;
+        }
+        return replace.apply(this, arguments);
+    };
 
-    // 2. 유튜브 내부에서 클릭으로 홈버튼 눌렀을 때 (SPA 라우팅) 낚아채기
-    window.addEventListener('yt-navigate-finish', redirectIfHome);
+    // 3. 로고 누르거나 뒤로가기 할 때 (finish 말고 start에서 입구컷)
+    window.addEventListener('yt-navigate-start', function(e) {
+        if (e.detail && (e.detail.url === '/' || e.detail.url.startsWith('/?'))) {
+            location.replace(target);
+        }
+    });
 })();
+
