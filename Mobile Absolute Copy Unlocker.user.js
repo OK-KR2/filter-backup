@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Mobile Absolute Copy Unlocker 🔓
-// @version      9.5
+// @version      9.6
 // @match        *://*/*
 // @run-at       document-start
 // @grant        none
@@ -39,62 +39,67 @@
     // 3. 네이버 블로그의 끈질긴 화면 전환 방어 (1초마다 방어막 재생성)
     setInterval(injectCSS, 1000);
 
-    // 4. iOS 26.4 리퀴드 프리즘 (어떤 배경에서도 가독성 쩌는 버전)
+    // 4. iOS 26.4 리퀴드 프리즘 토스트 (가독성 보강 버전)
     function showToast() {
         if (document.getElementById('liquid-toast')) return;
 
         const toast = document.createElement('div');
         toast.id = 'liquid-toast';
-        toast.innerHTML = '<span style="margin-right:8px; filter: drop-shadow(0 0 2px rgba(255,255,255,0.4));">🔓</span>복사 해제';
+        toast.innerHTML = '<span style="margin-right:8px; filter: drop-shadow(0 0 2px rgba(0,0,0,0.3));">🔓</span>복사 해제됨';
         
         toast.style.cssText = `
             position: fixed; 
             top: 25px; 
             left: 50%; 
-            transform: translateX(-50%) scale(0.6); 
+            transform: translateX(-50%) scale(0.5); 
             opacity: 0;
             
-            /* 핵심: 배경이 흰색일 때를 대비해 brightness를 0.8로 낮춤 (유리 뒤가 살짝 어두워짐) */
+            /* 가독성 핵심: 배경이 밝을수록 더 진해지는 적응형 글래스 */
             background: rgba(255, 255, 255, 0.05); 
-            backdrop-filter: blur(25px) saturate(200%) brightness(0.85) contrast(1.1);
-            -webkit-backdrop-filter: blur(25px) saturate(200%) brightness(0.85) contrast(1.1);
+            backdrop-filter: blur(25px) saturate(210%) brightness(0.8) contrast(1.2);
+            -webkit-backdrop-filter: blur(25px) saturate(210%) brightness(0.8) contrast(1.2);
             
-            /* 테두리에 아주 미세한 어두운 선을 섞어서 흰 배경에서 경계선 확보 */
+            /* 이중 테두리: 흰 배경에서 형태가 안 무너지게 잡아줌 */
             border: 0.5px solid rgba(0, 0, 0, 0.15);
-            outline: 0.5px solid rgba(255, 255, 255, 0.2); /* 이중 테두리로 입체감 극대화 */
+            outline: 0.5px solid rgba(255, 255, 255, 0.2);
             
             color: #ffffff; 
-            /* 글자 뒤에 미세한 그림자를 깔아서 흰 배경에서도 글자가 읽히게 함 */
-            text-shadow: 0 1px 4px rgba(0,0,0,0.4);
+            /* 글자 가독성용 딥 섀도우 */
+            text-shadow: 0 1px 6px rgba(0,0,0,0.5);
             
-            padding: 9px 22px; 
+            padding: 10px 24px; 
             border-radius: 60px; 
-            font-size: 13px; 
+            font-size: 14px; 
             font-weight: 600;
             display: flex;
             align-items: center;
             z-index: 2147483647; 
             pointer-events: none; 
+            box-shadow: 0 15px 45px rgba(0,0,0,0.3), inset 0 0 10px rgba(255,255,255,0.05);
             
-            /* 그림자를 더 깊고 부드럽게 깔아서 공중 부양 느낌 강화 */
-            box-shadow: 0 12px 40px rgba(0,0,0,0.25), inset 0 0 15px rgba(255,255,255,0.05);
-            
-            transition: all 0.75s cubic-bezier(0.2, 1.4, 0.3, 1);
+            /* 26.4 특유의 쫀득한 텐션 애니메이션 */
+            transition: all 0.8s cubic-bezier(0.15, 1.3, 0.3, 1);
         `;
         
         document.body.appendChild(toast);
         
         setTimeout(() => {
             toast.style.opacity = '1';
-            toast.style.transform = 'translateX(-50%) scale(1) translateY(12px)';
+            toast.style.transform = 'translateX(-50%) scale(1) translateY(10px)';
         }, 50);
         
         setTimeout(() => {
             toast.style.opacity = '0';
-            toast.style.transform = 'translateX(-50%) scale(0.8) translateY(-5px)';
-        }, 2200);
+            toast.style.transform = 'translateX(-50%) scale(0.9) translateY(-10px)';
+        }, 2000);
 
-        setTimeout(() => toast.remove(), 3000);
+        setTimeout(() => toast.remove(), 2900);
     }
 
-})(); // 마감까지 깔끔하게
+    if (document.readyState === 'loading') {
+        window.addEventListener('DOMContentLoaded', showToast);
+    } else {
+        setTimeout(showToast, 300);
+    }
+
+})(); // 이번엔 진짜 마감까지 확인 완료!
