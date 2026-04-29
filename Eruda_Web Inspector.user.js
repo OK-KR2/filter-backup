@@ -1,41 +1,26 @@
 // ==UserScript==
-// @name         Mobile DevTools (Eruda) - SPA 대응
-// @version      1.5
+// @name         Mobile DevTools (Eruda) - CSP 우회 
+// @version      1.6
 // @match        *://*/*
-// @grant        none
+// @grant        GM_xmlhttpRequest
+// @connect      cdn.jsdelivr.net
 // @run-at       document-idle
 // ==/UserScript==
 
 (function() {
     'use strict';
 
-    function injectEruda() {
-        // 이미 화면에 Eruda 버튼이 존재하면 중복 실행 방지
-        if (document.getElementById('eruda')) return;
-
-        // Eruda 라이브러리가 없다면 새로 다운로드
-        if (typeof eruda === 'undefined') {
-            const script = document.createElement('script');
-            script.src = "https://cdn.jsdelivr.net/npm/eruda";
-            script.onload = () => initEruda();
-            document.head.appendChild(script);
-        } else {
-            // 이미 다운로드 되어있다면 바로 실행
-            initEruda();
-        }
-    }
-
     function initEruda() {
         if (!window.eruda) return;
         
-        // 페이지 이동으로 Eruda 버튼 껍데기만 날아갔을 경우, 내부 설정 초기화
+        // SPA 찌꺼기 초기화
         if (window.eruda._isInit) {
             try { window.eruda.destroy(); } catch(e){}
         }
 
         eruda.init();
         
-        // 플러그인(복사 탭) 중복 생성 방지
+        // 복사 탭 생성
         if (!eruda.get('copy')) {
             eruda.add(new (eruda.Tool.extend({
                 name: 'copy',
@@ -43,7 +28,7 @@
                     this.callSuper(eruda.Tool, 'init', arguments);
                     $el.html(`
                         <div style="padding: 20px; text-align: center; background: #f4f4f4; height: 100%;">
-                            <button id="eruda-copy-btn" style="width: 100%; max-width: 300px; padding: 20px; background: #007AFF; color: #fff; border: none; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer;">
+                            <button id="eruda-copy-btn" style="width: 100%; max-width: 300px; padding: 20px; background: #007AFF; color: #fff; border: none; border-radius: 12px; font-size: 18px; font-weight: bold;">
                                 📄 전체 소스 복사하기
                             </button>
                         </div>
@@ -51,7 +36,6 @@
                     
                     $el.find('#eruda-copy-btn').on('click', function() {
                         const htmlContent = document.documentElement.outerHTML;
-                        
                         if (navigator.clipboard && navigator.clipboard.writeText) {
                             navigator.clipboard.writeText(htmlContent)
                                 .then(() => alert('전체 소스가 복사되었습니다.'))
@@ -68,28 +52,44 @@
     function fallbackCopy(text) {
         const ta = document.createElement("textarea");
         ta.value = text;
-        ta.style.position = "fixed";
-        ta.style.opacity = "0";
+        ta.style.position = "fixed"; ta.style.opacity = "0";
         document.body.appendChild(ta);
-        ta.focus();
-        ta.select();
-        try {
-            document.execCommand('copy');
-            alert('전체 소스가 복사되었습니다. (구형 방식)');
-        } catch (err) {
-            alert('복사 실패: ' + err);
-        }
+        ta.select(); document.execCommand('copy');
         document.body.removeChild(ta);
+        alert('전체 소스가 복사되었습니다. (구형)');
     }
 
-    // 1. 페이지 접속 시 최초 1회 실행
-    injectEruda();
+    // 🔥 핵심: 네이버 보안 정책(CSP) 우회 함수
+    function forceInjectEruda() {
+        if (document.getElementById('eruda')) return; // 이미 있으면 패스
 
-    // 2. SPA 동적 라우팅 방어 (네이버 블로그 등)
-    // 1.5초(1500ms)마다 확인해서 Eruda 버튼이 화면에서 지워졌으면 다시 생성
+        if (window.eruda) {
+            initEruda(); // 스크립트는 있는데 화면에서만 날아갔을 때
+            return;
+        }
+
+        // 확장 프로그램 권한으로 외부 스크립트 텍스트를 몰래 다운로드
+        GM_xmlhttpRequest({
+            method: "GET",
+            url: "https://cdn.jsdelivr.net/npm/eruda",
+            onload: function(response) {
+                // 다운받은 코드를 파일 링크가 아닌 '순수 텍스트'로 변환해서 강제 삽입 (차단 회피)
+                const script = document.createElement('script');
+                script.textContent = response.responseText; 
+                document.documentElement.appendChild(script);
+                
+                setTimeout(initEruda, 100);
+            }
+        });
+    }
+
+    // 1. 페이지 접속 시 강제 주입 실행
+    forceInjectEruda();
+
+    // 2. 글을 이리저리 이동해서 튕겨나가도 1.5초마다 검사해서 다시 주입
     setInterval(() => {
         if (!document.getElementById('eruda')) {
-            injectEruda();
+            forceInjectEruda();
         }
     }, 1500);
 
