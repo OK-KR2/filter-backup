@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Mobile Absolute Copy Unlocker 🔓
-// @version      9.0
+// @version      9.1
 // @match        *://*/*
 // @run-at       document-start
 // @grant        none
@@ -43,7 +43,7 @@
     window.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => {
             const toast = document.createElement('div');
-            toast.innerHTML = '🔓 복사 방지가 해제되었습니다!';
+            toast.innerHTML = '🔓 복사 방지 해제!';
             toast.style.cssText = `
                 position: fixed; 
                 top: 20px; 
