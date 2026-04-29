@@ -1,48 +1,45 @@
 // ==UserScript==
-// @name         YouTube Home Fixer (로고 물리적 개조 버전)
-// @version      7.0
-// @match        *://*.youtube.com/*
+// @name         YouTube Home Fixer (모바일 찐해결 버전)
+// @version      8.0
+// @match        *://m.youtube.com/*
+// @match        *://www.youtube.com/*
 // @run-at       document-start
 // ==/UserScript==
 
 (function() {
     'use strict';
 
-    const target = '/feed/trending';
+    const targetUrl = '/feed/trending';
+    let isRedirecting = false;
 
-    // 1. 처음 주소창에 youtube.com 치고 들어왔을 때 딱 한 번 이동
-    if (location.pathname === '/') {
-        location.replace(target);
-    }
-
-    // 2. 무식하지만 가장 확실한 방법: 로고 도착지 자체를 조작
+    // 1. URL 실시간 감시: 홈('/') 접속 시 묻지도 따지지도 않고 납치
     setInterval(() => {
-        // 화면에 있는 모든 링크(a 태그)를 뒤짐
-        document.querySelectorAll('a').forEach(link => {
-            try {
-                // 링크 목적지가 홈('/')인지 팩트체크 (m.youtube.com 도 잡아냄)
-                const url = new URL(link.href, location.origin);
-                if (url.pathname === '/') {
-                    // 목적지를 인기 급상승으로 강제 변경
-                    link.href = target; 
-                }
-            } catch(e) {}
-        });
-    }, 500);
-
-    // 3. 보험용: 혹시 조작되기 0.5초 틈에 로고를 눌렀을 경우를 대비한 최우선 차단
-    document.addEventListener('click', function(e) {
-        const link = e.target.closest('a');
-        if (link) {
-            try {
-                const url = new URL(link.href, location.origin);
-                if (url.pathname === '/') {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    location.href = target;
-                }
-            } catch(e) {}
+        // 주소창이 '/' 이면서, 현재 납치 중이 아닐 때만 실행 (무한루프 방지)
+        if (!isRedirecting && (location.pathname === '/' || location.pathname === '/index')) {
+            isRedirecting = true;
+            location.replace(targetUrl);
+            
+            // 2초 쿨타임 (유튜브 시스템과 싸움 방지)
+            setTimeout(() => { isRedirecting = false; }, 2000);
         }
-    }, true);
+    }, 100);
+
+    // 2. 모바일 UI 버튼 물리적 낚아채기 (a 태그 버림)
+    document.addEventListener('click', function(e) {
+        // 뽑아주신 소스코드 기반: 상단 로고(ytm-home-logo) & 하단 홈 탭(.pivot-w2w)
+        const homeBtn = e.target.closest('ytm-home-logo, .pivot-w2w');
+        
+        if (homeBtn) {
+            e.preventDefault();      // 유튜브 자체 동작 취소
+            e.stopPropagation();     // 클릭 이벤트 전파 차단
+            
+            // 이미 인기 급상승이 아니면 이동
+            if (location.pathname !== targetUrl) {
+                isRedirecting = true;
+                location.href = targetUrl;
+                setTimeout(() => { isRedirecting = false; }, 2000);
+            }
+        }
+    }, true); // 캡처링으로 유튜브가 클릭 감지하기 전에 제일 먼저 뺏어옴
 })();
 
