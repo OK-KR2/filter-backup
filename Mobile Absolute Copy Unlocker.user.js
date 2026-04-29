@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Mobile Absolute Copy Unlocker 🔓
-// @version      9.3
+// @version      9.4
 // @match        *://*/*
 // @run-at       document-start
 // @grant        none
@@ -39,55 +39,65 @@
     // 3. 네이버 블로그의 끈질긴 화면 전환 방어 (1초마다 방어막 재생성)
     setInterval(injectCSS, 1000);
 
-    // 4. 작동 확인용 토스트 알림 (아이폰 리퀴드 & 다이내믹 아일랜드 스타일)
-    window.addEventListener('DOMContentLoaded', () => {
-        setTimeout(() => {
-            const toast = document.createElement('div');
-            toast.innerHTML = '<span style="margin-right:6px;">🔓</span>복사 방지 해제';
-            
-            // 초기 스타일 (살짝 작고 위로 붙어있는 상태)
-            toast.style.cssText = `
-                position: fixed; 
-                top: 15px; 
-                left: 50%; 
-                transform: translateX(-50%) scale(0.8); 
-                opacity: 0;
-                
-                /* 다크 글라스 리퀴드 디자인 */
-                background: rgba(10, 10, 10, 0.75); 
-                backdrop-filter: blur(15px);
-                -webkit-backdrop-filter: blur(15px);
-                color: #fff; 
-                padding: 8px 18px; 
-                border-radius: 50px; /* 완전한 알약 모양 */
-                font-size: 13px; 
-                font-weight: 500;
-                letter-spacing: -0.5px;
-                display: flex;
-                align-items: center;
-                z-index: 2147483647; 
-                pointer-events: none; 
-                box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-                
-                /* 쫀득한 애니메이션을 위한 커스텀 베지어 값 */
-                transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-            `;
-            
-            document.body.appendChild(toast);
-            
-            // 0.1초 뒤 실제 등장 (쫀득하게 커지며 내려옴)
-            setTimeout(() => {
-                toast.style.opacity = '1';
-                toast.style.transform = 'translateX(-50%) scale(1) translateY(10px)';
-            }, 100);
-            
-            // 2초 뒤 퇴장 (다시 위로 쇽 사라짐)
-            setTimeout(() => {
-                toast.style.opacity = '0';
-                toast.style.transform = 'translateX(-50%) scale(0.7) translateY(-5px)';
-            }, 2100);
+    // 4. iOS 26.4 리퀴드 프리즘 토스트 (Adaptive Glass)
+    function showToast() {
+        if (document.getElementById('liquid-toast')) return;
 
-            setTimeout(() => toast.remove(), 2800);
-        }, 800);
-    });
-})();
+        const toast = document.createElement('div');
+        toast.id = 'liquid-toast';
+        toast.innerHTML = '<span style="margin-right:8px; filter: drop-shadow(0 0 2px rgba(255,255,255,0.5));">🔓</span>복사 해제됨';
+        
+        toast.style.cssText = `
+            position: fixed; 
+            top: 25px; 
+            left: 50%; 
+            transform: translateX(-50%) scale(0.5); 
+            opacity: 0;
+            
+            /* 26.4 핵심: 블랙 제거, 초고투명 리퀴드 글래스 */
+            background: rgba(255, 255, 255, 0.1); 
+            backdrop-filter: blur(25px) saturate(200%) brightness(1.1);
+            -webkit-backdrop-filter: blur(25px) saturate(200%) brightness(1.1);
+            
+            /* 광택감 있는 프리즘 테두리 */
+            border: 0.5px solid rgba(255, 255, 255, 0.4);
+            color: #ffffff; 
+            text-shadow: 0 0 10px rgba(0,0,0,0.2);
+            
+            padding: 10px 24px; 
+            border-radius: 60px; 
+            font-size: 14px; 
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            z-index: 2147483647; 
+            pointer-events: none; 
+            box-shadow: 0 15px 45px rgba(0,0,0,0.15), inset 0 0 10px rgba(255,255,255,0.2);
+            
+            /* 26.4 특유의 쫀득한 텐션 애니메이션 */
+            transition: all 0.8s cubic-bezier(0.15, 1.3, 0.3, 1);
+        `;
+        
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+            toast.style.opacity = '1';
+            toast.style.transform = 'translateX(-50%) scale(1) translateY(10px)';
+        }, 50);
+        
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateX(-50%) scale(0.9) translateY(-10px)';
+        }, 2000);
+
+        setTimeout(() => toast.remove(), 2900);
+    }
+
+    if (document.readyState === 'loading') {
+        window.addEventListener('DOMContentLoaded', showToast);
+    } else {
+        setTimeout(showToast, 300);
+    }
+
+})(); // 마감까지 깔끔하게
+
