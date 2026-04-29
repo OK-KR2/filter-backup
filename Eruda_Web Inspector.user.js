@@ -1,6 +1,6 @@
 // ==UserScript==
-// @name         Mobile Custom Debugger (Source + Errors)
-// @version      8.0
+// @name         Mobile Custom Debugger (Sync Copy)
+// @version      8.1
 // @match        *://*/*
 // @run-at       document-start
 // @grant        none
@@ -9,36 +9,27 @@
 (function() {
     'use strict';
 
-    // 1. 에러 및 로그 수집기 (페이지 켜질 때부터 몰래 기록 시작)
+    // 1. 에러 및 로그 수집기
     const logs = [];
     function addLog(type, args) {
         try {
             const msg = Array.from(args).map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' ');
             logs.push(`[${type}] ${msg}`);
-            // 메모리 폭발 방지: 최근 로그 100개만 유지
             if(logs.length > 100) logs.shift();
         } catch(e) {}
     }
 
-    // 기존 콘솔 기능 가로채기 (네이버에서 몰래 뿜는 에러들을 다 주워담음)
     const oLog = console.log, oWarn = console.warn, oErr = console.error;
     console.log = function() { addLog('LOG', arguments); oLog.apply(console, arguments); };
     console.warn = function() { addLog('WARN', arguments); oWarn.apply(console, arguments); };
     console.error = function() { addLog('ERROR', arguments); oErr.apply(console, arguments); };
 
-    // 시스템 치명적 에러 가로채기
-    window.addEventListener('error', function(e) {
-        logs.push(`[SYS_ERR] ${e.message} at ${e.filename}:${e.lineno}`);
-    });
-    window.addEventListener('unhandledrejection', function(e) {
-        logs.push(`[PROMISE_ERR] ${e.reason}`);
-    });
+    window.addEventListener('error', function(e) { logs.push(`[SYS_ERR] ${e.message} at ${e.filename}:${e.lineno}`); });
+    window.addEventListener('unhandledrejection', function(e) { logs.push(`[PROMISE_ERR] ${e.reason}`); });
 
-    // 2. 리포트 생성 및 복사 기능
+    // 2. 리포트 생성
     function exportDebugData() {
         const html = document.documentElement.outerHTML;
-        
-        // 저(AI)한테 바로 복붙하기 좋게 리포트 형식으로 포장
         const debugReport = `
 === [SITE INFO] ===
 URL: ${location.href}
@@ -50,9 +41,10 @@ ${logs.length > 0 ? logs.join('\n') : '기록된 에러가 없습니다.'}
 === [HTML SOURCE] ===
 ${html}
 `;
+        // 터치 즉시 동기적으로 실행 (아이폰 보안 우회)
         if (navigator.clipboard && navigator.clipboard.writeText) {
             navigator.clipboard.writeText(debugReport)
-                .then(() => alert('✅ 디버그 리포트(소스+에러) 복사 완료!'))
+                .then(() => alert('✅ 리포트가 클립보드에 복사되었습니다!'))
                 .catch(() => fallbackCopy(debugReport));
         } else {
             fallbackCopy(debugReport);
@@ -62,19 +54,48 @@ ${html}
     function fallbackCopy(text) {
         const ta = document.createElement("textarea");
         ta.value = text;
-        ta.style.position = "fixed"; ta.style.opacity = "0";
+        ta.setAttribute('readonly', ''); // 아이폰 키보드 올라오는 것 방지
+        ta.style.position = "absolute";
+        ta.style.left = "-9999px";
         document.body.appendChild(ta);
+        
+        // 아이폰 전용 텍스트 선택 트릭
         ta.select();
+        ta.setSelectionRange(0, 999999);
+        
         try {
-            document.execCommand('copy');
-            alert('✅ 디버그 리포트(소스+에러) 복사 완료! (구형)');
+            const successful = document.execCommand('copy');
+            if (successful) {
+                alert('✅ 디버그 리포트 복사 완료! (구형)');
+            } else {
+                throw new Error('Copy command failed');
+            }
         } catch (err) {
-            alert('❌ 복사 실패');
+            // 사파리가 끝까지 막을 경우: 궁극의 수동 복사창 띄우기
+            showManualCopyModal(text);
         }
         document.body.removeChild(ta);
     }
 
-    // 3. 추출 버튼 생성 (디버그 느낌 나게 검정/빨강 테마 + 벌레 아이콘)
+    // [최후의 수단] 화면에 강제로 텍스트창을 띄워버림
+    function showManualCopyModal(text) {
+        if (document.getElementById('manual-copy-modal')) return;
+        const modal = document.createElement('div');
+        modal.id = 'manual-copy-modal';
+        modal.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:2147483647; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px; box-sizing:border-box;';
+        
+        modal.innerHTML = `
+            <p style="color:white; font-size:16px; margin-bottom:10px; font-weight:bold;">자동 복사 차단됨. 아래 텍스트를 직접 전체 복사하세요.</p>
+            <textarea style="width:100%; height:70%; border-radius:10px; padding:10px; font-size:12px;"></textarea>
+            <button style="margin-top:15px; padding:10px 20px; background:#e06c75; color:white; border:none; border-radius:8px; font-size:16px; font-weight:bold; cursor:pointer;">닫기</button>
+        `;
+        
+        modal.querySelector('textarea').value = text;
+        modal.querySelector('button').onclick = () => document.body.removeChild(modal);
+        document.body.appendChild(modal);
+    }
+
+    // 3. 버튼 생성
     function createButton() {
         if (document.getElementById('custom-debug-btn')) return;
         if (!document.body) return;
@@ -100,32 +121,24 @@ ${html}
                 align-items: center;
                 z-index: 2147483647;
                 cursor: pointer;
-                transition: transform 0.1s ease;
                 border: 2px solid #e06c75;
             ">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="8" y="6" width="8" height="14" rx="4"></rect>
-                    <path d="M12 2v4"></path>
-                    <path d="M6 10h2"></path>
-                    <path d="M16 10h2"></path>
-                    <path d="M6 14h2"></path>
-                    <path d="M16 14h2"></path>
-                    <path d="M6 18h2"></path>
-                    <path d="M16 18h2"></path>
+                <svg width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\">
+                    <rect x=\"8\" y=\"6\" width=\"8\" height=\"14\" rx=\"4\"></rect>
+                    <path d=\"M12 2v4\"></path><path d=\"M6 10h2\"></path><path d=\"M16 10h2\"></path>
+                    <path d=\"M6 14h2\"></path><path d=\"M16 14h2\"></path>
+                    <path d=\"M6 18h2\"></path><path d=\"M16 18h2\"></path>
                 </svg>
             </div>
         `;
         
         const actualBtn = btnContainer.firstElementChild;
         
-        actualBtn.addEventListener('touchstart', (e) => {
+        // 지연(애니메이션) 없이 즉시 실행
+        actualBtn.addEventListener('touchend', (e) => {
             e.preventDefault();
-            actualBtn.style.transform = 'scale(0.85)';
-            setTimeout(() => {
-                actualBtn.style.transform = 'scale(1)';
-                exportDebugData();
-            }, 150);
-        }, { passive: false });
+            exportDebugData();
+        });
 
         actualBtn.addEventListener('click', (e) => {
             e.preventDefault();
@@ -135,6 +148,6 @@ ${html}
         document.body.appendChild(btnContainer);
     }
 
-    // 4. 네이버 블로그 방어막 뚫기 (1초마다 버튼 유지)
+    // 4. 네이버 블로그 무한 부활 방어
     setInterval(createButton, 1000);
 })();
