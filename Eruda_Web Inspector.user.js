@@ -1,80 +1,54 @@
 // ==UserScript==
-// @name         Mobile DevTools (Eruda) - Stable Version
-// @version      1.2
-// @description  네이버 블로그 등 보안 사이트에서도 작동하도록 개선된 Eruda
+// @name         Mobile DevTools (Eruda)
+// @version      1.3
 // @match        *://*/*
-// @require      https://cdn.jsdelivr.net/npm/eruda
-// @run-at       document-end
 // @grant        none
 // ==/UserScript==
 
-(function () {
+(function() {
     'use strict';
 
-    // 1. Eruda 초기화 (이미 @require로 불러왔으므로 바로 실행 가능)
-    if (typeof eruda !== 'undefined') {
-        initEruda();
-    } else {
-        // 만약 require가 실패했을 경우를 대비한 대체 로드 방식
-        var script = document.createElement('script');
-        script.src = "https://cdn.jsdelivr.net/npm/eruda";
-        document.body.appendChild(script);
-        script.onload = function () {
-            initEruda();
-        };
-    }
+    // 중복 실행 방지
+    if (window.eruda) return;
 
-    function initEruda() {
+    // Eruda 스크립트 강제 주입 (가장 확실한 로드 방식)
+    const script = document.createElement('script');
+    script.src = "https://cdn.jsdelivr.net/npm/eruda";
+    script.onload = function() {
+        // 라이브러리 로드가 완료된 후 초기화
         eruda.init();
-
-        // 2. Eruda 안에 'Copy' 탭 새로 만들기
-        var CopyTool = eruda.Tool.extend({
-            name: 'copy', // 탭 이름
-            init: function ($el) {
+        
+        // 복사 도구 추가
+        eruda.add(new (eruda.Tool.extend({
+            name: 'copy',
+            init: function($el) {
                 this.callSuper(eruda.Tool, 'init', arguments);
-                
                 $el.html(`
-                    <div style="padding: 20px; display: flex; height: 100%; align-items: center; justify-content: center; background: #f4f4f4;">
-                        <button id="eruda-copy-btn" style="width: 100%; max-width: 300px; padding: 20px; background: #007AFF; color: #fff; border: none; border-radius: 12px; font-size: 18px; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                    <div style="padding: 20px; display: flex; justify-content: center;">
+                        <button id="eruda-copy-btn" style="width: 100%; padding: 15px; background: #007AFF; color: #fff; border: none; border-radius: 10px; font-size: 16px; font-weight: bold;">
                             📄 전체 소스 복사하기
                         </button>
                     </div>
                 `);
                 
                 $el.find('#eruda-copy-btn').on('click', function() {
-                    var htmlContent = document.documentElement.outerHTML;
-                    
-                    // 최신 방식의 복사 API 사용 시도
+                    const htmlContent = document.documentElement.outerHTML;
                     if (navigator.clipboard && navigator.clipboard.writeText) {
-                        navigator.clipboard.writeText(htmlContent).then(function() {
-                            alert('전체 소스가 복사되었습니다!');
-                        }).catch(function(err) {
-                            fallbackCopy(htmlContent);
-                        });
+                        navigator.clipboard.writeText(htmlContent).then(() => alert('복사되었습니다.'));
                     } else {
-                        fallbackCopy(htmlContent);
+                        const ta = document.createElement("textarea");
+                        ta.value = htmlContent;
+                        document.body.appendChild(ta);
+                        ta.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(ta);
+                        alert('복사되었습니다. (구형 방식)');
                     }
                 });
             }
-        });
-
-        function fallbackCopy(text) {
-            var ta = document.createElement("textarea");
-            ta.value = text;
-            ta.style.position = "fixed";
-            ta.style.opacity = "0";
-            document.body.appendChild(ta);
-            ta.focus();
-            ta.select();
-            try {
-                document.execCommand('copy');
-                alert('전체 소스가 복사되었습니다! (Fallback)');
-            } catch (err) {
-                alert('복사 실패: ' + err);
-            }
-            document.body.removeChild(ta);
-        }
-        
-        eruda.add(new CopyTool());
-    }
+        })));
+    };
+    
+    // head가 없으면 documentElement에 추가
+    (document.head || document.documentElement).appendChild(script);
 })();
