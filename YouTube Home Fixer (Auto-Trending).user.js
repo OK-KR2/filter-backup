@@ -1,6 +1,8 @@
 // ==UserScript==
-// @name         YouTube Home Fixer (Auto-Trending)
-// @version      1.0
+// @name         YouTube Home Fixer Mobile
+// @version      1.2
+// @description  Force redirect empty home to trending on mobile
+// @author       Gemini
 // @match        *://m.youtube.com/*
 // @match        *://www.youtube.com/*
 // @run-at       document-start
@@ -10,25 +12,27 @@
 (function() {
     'use strict';
 
-    // 메인 피드인지 확인하는 함수
-    function checkAndRedirect() {
+    function bulldozerRedirect() {
+        const url = window.location.href;
         const path = window.location.pathname;
-        
-        // 경로가 딱 '/' 이거나 '/index.html'인 경우 (즉, 메인 페이지)
-        if (path === '/' || path === '/index.html') {
-            console.log('빈 메인 대신 인기 급상승으로 이동함!');
+
+        // 1. 경로가 '/' 이거나 메인 관련 주소일 때
+        if (path === '/' || path === '/index.html' || path.startsWith('/?')) {
             
-            // 뒤로가기 꼬이지 않게 replace로 이동
-            // '/feed/trending'이 가장 볼거리가 많음
-            window.location.replace('/feed/trending');
+            // 2. 무한 루프 방지 (이미 이동했으면 중단)
+            if (url.includes('redirected=true')) return;
+
+            // 3. 특히 '검색하여 시작하기' 화면이 뜨는 메인인지 확인
+            // 모바일 유튜브는 주소 뒤에 파라미터가 지저분하게 붙는 경우가 많아서 처리
+            console.log('🚀 [Fixer] 빈 메인 감지! 인기 탭으로 강제 이동');
+            window.location.replace('/feed/trending?redirected=true');
         }
     }
 
-    // 1. 처음 진입할 때 체크
-    checkAndRedirect();
+    // ★ 핵심: 모바일은 이벤트가 잘 안 먹히니 0.5초마다 주소창을 감시함 (불도저)
+    setInterval(bulldozerRedirect, 500);
 
-    // 2. 유튜브는 SPA(앱처럼 작동)라서 페이지 이동을 감시해야 함
-    window.addEventListener('yt-navigate-start', checkAndRedirect);
-    window.addEventListener('popstate', checkAndRedirect);
+    // 초기 실행
+    bulldozerRedirect();
 
 })();
