@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Safari Universal Video Optimizer (Final Lock)
-// @version      3.2
-// @description  모든 영상 내장 플레이어 적용 및 속성 잠금(Lock), 늦은 개입 취소, YouTube PiP 완벽 지원
+// @version      3.3
+// @description  모든 영상 내장 플레이어 적용 및 속성 잠금(Lock), 늦은 개입 취소, YouTube PiP 완벽 지원, 10초 건너뛰기 추가
 // @author       You
 // @match        *://*/*
 // @run-at       document-start
@@ -144,5 +144,32 @@
     window.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('video').forEach(processVideo);
     });
+
+    // ==========================================
+    // 5. 키보드 방향키 10초 이동 강제 설정 (추가 코드)
+    // ==========================================
+    window.addEventListener('keydown', (e) => {
+        // [수정 포인트] 검색창, 댓글창 등 텍스트 입력 중일 때는 방향키가 정상 작동하도록 예외 처리
+        const activeEl = document.activeElement;
+        if (activeEl && (['INPUT', 'TEXTAREA', 'SELECT'].includes(activeEl.tagName) || activeEl.isContentEditable)) {
+            return;
+        }
+
+        const activeVideo = document.querySelector('video');
+        if (!activeVideo) return;
+
+        // 화살표 오른쪽 키
+        if (e.key === 'ArrowRight') {
+            e.preventDefault(); // 브라우저 기본 동작 중지
+            e.stopImmediatePropagation(); // 사이트 자체 스크립트 간섭 중지
+            activeVideo.currentTime += 10;
+        }
+        // 화살표 왼쪽 키
+        else if (e.key === 'ArrowLeft') {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            activeVideo.currentTime -= 10;
+        }
+    }, true); // 'true'를 사용해 이벤트 캡처링 단계에서 먼저 가로챔
 
 })();
