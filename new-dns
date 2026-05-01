@@ -444,6 +444,8 @@ $ping,important
 @@||google.com/recaptcha/*$jsinject,important
 @@||recaptcha.net^$important
 @@||gstatic.com/recaptcha/*$important
+! 영상 재생 허용 (제미니)
+@@||bunny-frame.online^$media,domain=tvwiki*.net
 
 ! ## [25] 방어선
 ! 이중잠금 (제미니)
