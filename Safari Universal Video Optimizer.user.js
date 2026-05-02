@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Safari Universal Video Optimizer (Final Lock)
-// @version      3.3
+// @version      4.0
 // @description  모든 영상 내장 플레이어 적용 및 속성 잠금(Lock), 늦은 개입 취소, YouTube PiP 완벽 지원, 10초 건너뛰기 추가
 // @author       You
 // @match        *://*/*
@@ -146,10 +146,10 @@
     });
 
     // ==========================================
-    // 5. 키보드 방향키 10초 이동 강제 설정 (추가 코드)
+    // 5. 키보드 방향키 10초 이동 & 스페이스바 제어 강제 설정
     // ==========================================
     window.addEventListener('keydown', (e) => {
-        // [수정 포인트] 검색창, 댓글창 등 텍스트 입력 중일 때는 방향키가 정상 작동하도록 예외 처리
+        // 검색창, 댓글창 등 텍스트 입력 중일 때는 키보드 단축키 무시
         const activeEl = document.activeElement;
         if (activeEl && (['INPUT', 'TEXTAREA', 'SELECT'].includes(activeEl.tagName) || activeEl.isContentEditable)) {
             return;
@@ -158,18 +158,26 @@
         const activeVideo = document.querySelector('video');
         if (!activeVideo) return;
 
-        // 화살표 오른쪽 키
+        // 화살표 오른쪽 키 (10초 앞으로)
         if (e.key === 'ArrowRight') {
-            e.preventDefault(); // 브라우저 기본 동작 중지
-            e.stopImmediatePropagation(); // 사이트 자체 스크립트 간섭 중지
+            e.preventDefault(); 
+            e.stopImmediatePropagation(); 
             activeVideo.currentTime += 10;
         }
-        // 화살표 왼쪽 키
+        // 화살표 왼쪽 키 (10초 뒤로)
         else if (e.key === 'ArrowLeft') {
             e.preventDefault();
             e.stopImmediatePropagation();
             activeVideo.currentTime -= 10;
         }
+        // 스페이스바 (재생/일시정지 더블 클릭 현상 방지)
+        else if (e.key === ' ' || e.code === 'Space') {
+            e.preventDefault(); // 브라우저 기본 스크롤 다운 방지
+            e.stopImmediatePropagation(); // 사이트 자체 스크립트 중복 실행 방지
+            if (activeVideo.paused) {
+                activeVideo.play();
+            } else {
+                activeVideo.pause();
+            }
+        }
     }, true); // 'true'를 사용해 이벤트 캡처링 단계에서 먼저 가로챔
-
-})();
