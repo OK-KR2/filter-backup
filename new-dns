@@ -446,6 +446,10 @@ $ping,important
 @@||gstatic.com/recaptcha/*$important
 ! 영상 재생 허용 (제미니)
 @@||bunny-frame.online^$media,domain=tvwiki*.net
+! 닌텐도 스토어 로그인/장바구니 필수 스크립트 오진 예외 (완전 허용 아님)
+@@||store.nintendo.co.kr/*/Magento_Banner/js/model/banner.min.js$script
+@@||store.nintendo.co.kr/*/js-storage/storage-wrapper.min.js$script
+@@||store.nintendo.co.kr/*/js-storage/js.storage.min.js$script
 
 ! ## [25] 방어선
 ! 이중잠금 (제미니)
