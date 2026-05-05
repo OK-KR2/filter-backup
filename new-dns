@@ -1,6 +1,6 @@
 ! Title: 커스텀 필터
 ! Description: 종합 차단
-! Version: 20260505.1
+! Version: 20260505.2
 
 ! ## [01] 통합 추적 방지 리스트
 ! 국내 기업 전용 - 네이버, 카카오, 쿠팡 등 (제미니)
@@ -450,17 +450,8 @@ $ping,important
 @@||gstatic.com/recaptcha/*$important
 ! 영상 재생 허용 (제미니)
 @@||bunny-frame.online^$media,domain=tvwiki*.net
-! 닌텐도 스토어 필수 스크립트 및 UI 복구 (우선순위 최상위) (제미니)
-@@||store.nintendo.co.kr/*/js.storage.min.js$script,important
-@@||store.nintendo.co.kr/*/storage-wrapper.min.js$script,important
-@@||store.nintendo.co.kr/*/banner.min.js$script,important
-! 닌텐도 장바구니, 로그인 등 UI 요소 강제 표시 (코스메틱 차단 방지) (제미니)
-store.nintendo.co.kr#@#.minicart-wrapper
-store.nintendo.co.kr#@##authenticationPopup
-! 닌텐도 스토어 기능 정상화 (로컬 스토리지 차단 및 스크립트 예외)
-@@||store.nintendo.co.kr^$important
-store.nintendo.co.kr#@#+js(set-constant, localStorage.ad_tracking_id, undefined)
-store.nintendo.co.kr#@#+js(set-constant, localStorage.f_cap, undefined)
+! 닌텐도 스토어 로그인/장바구니 (제미니)
+@@||store.nintendo.co.kr^$document
 
 ! ## [25] 방어선
 ! 이중잠금 (제미니)
