@@ -446,14 +446,13 @@ $ping,important
 @@||gstatic.com/recaptcha/*$important
 ! 영상 재생 허용 (제미니)
 @@||bunny-frame.online^$media,domain=tvwiki*.net
-! 닌텐도 필수 스크립트 오진 해제 (우선순위 최상위 강제) (제미니)
-@@||store.nintendo.co.kr/*Magento_Banner*$script,important
-@@||store.nintendo.co.kr/*js-storage*$script,important
-@@||store.nintendo.co.kr/*js.storage*$script,important
-! 닌텐도 장바구니 및 로그인 UI 숨김 강제 해제 (코스메틱 필터 예외) (제미니)
+! 닌텐도 스토어 필수 스크립트 및 UI 복구 (우선순위 최상위) (제미니)
+@@||store.nintendo.co.kr/*/js.storage.min.js$script,important
+@@||store.nintendo.co.kr/*/storage-wrapper.min.js$script,important
+@@||store.nintendo.co.kr/*/banner.min.js$script,important
+! 닌텐도 장바구니, 로그인 등 UI 요소 강제 표시 (코스메틱 차단 방지) (제미니)
 store.nintendo.co.kr#@#.minicart-wrapper
 store.nintendo.co.kr#@##authenticationPopup
-store.nintendo.co.kr#@#.header-customer-menu
 
 ! ## [25] 방어선
 ! 이중잠금 (제미니)
