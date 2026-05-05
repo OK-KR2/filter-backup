@@ -1,9 +1,8 @@
 // ==UserScript==
 // @name         디시인사이드 IP 식별기 (통피/VPN/비공개릴레이 총망라)
-// @version      3.0
+// @version      4.0
 // @description  통피, 애플 비공개릴레이, 유명 VPN 및 데이터센터 IP 대역을 식별합니다.
-// @match        *://gall.dcinside.com/*
-// @match        *://m.dcinside.com/*
+// @match        *://*.dcinside.com/*
 // @grant        none
 // ==/UserScript==
 
