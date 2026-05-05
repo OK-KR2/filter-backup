@@ -453,6 +453,10 @@ $ping,important
 ! 닌텐도 장바구니, 로그인 등 UI 요소 강제 표시 (코스메틱 차단 방지) (제미니)
 store.nintendo.co.kr#@#.minicart-wrapper
 store.nintendo.co.kr#@##authenticationPopup
+! 닌텐도 스토어 기능 정상화 (로컬 스토리지 차단 및 스크립트 예외)
+@@||store.nintendo.co.kr^$important
+store.nintendo.co.kr#@#+js(set-constant, localStorage.ad_tracking_id, undefined)
+store.nintendo.co.kr#@#+js(set-constant, localStorage.f_cap, undefined)
 
 ! ## [25] 방어선
 ! 이중잠금 (제미니)
