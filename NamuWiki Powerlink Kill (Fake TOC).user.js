@@ -1,7 +1,7 @@
 // ==UserScript==
-// @name         나무위키 파워링크 최종 처형 (실존 목차 도용 방어)
-// @version      7.0
-// @description  실제 존재하는 목차 ID를 훔쳐쓰는 최신 위장 기법 완벽 타격
+// @name         나무위키 파워링크 최종 처형 (목차 보호 완벽 적용)
+// @version      7.1
+// @description  실제 목차 번호(1, 2.1 등) 완벽 보호 및 위장 앵커 타격
 // @match        *://namu.wiki/*
 // @run-at       document-start
 // @grant        none
@@ -21,19 +21,21 @@
     `;
     if (document.documentElement) document.documentElement.appendChild(style);
 
-    // 2. 광고 폭파 함수 (본문 절대 보호 3중 레이어)
+    // 2. 광고 폭파 함수 (안전망 강화)
     const nuke = (el) => {
         let parent = el;
         let adBox = null;
         let depth = 0;
         
-        while (parent && depth < 8) {
+        while (parent && depth < 7) {
             const tag = parent.tagName ? parent.tagName.toUpperCase() : '';
             // 최상위 레이어 도달 시 중단
             if (tag === 'ARTICLE' || tag === 'MAIN' || tag === 'BODY' || parent.id === 'app') break;
             if (parent.className && typeof parent.className === 'string' && parent.className.includes('wiki-inner-content')) break;
-            // 방어막: 글자 수가 너무 많으면 본문으로 간주하고 폭파 중단
-            if (parent.textContent && parent.textContent.length > 1500) break;
+            
+            // [방어막] 글자 수가 500자가 넘어가면 정상적인 본문 문단으로 간주하고 폭파 중단
+            let textLen = parent.textContent ? parent.textContent.replace(/\s+/g, '').length : 0;
+            if (textLen > 500) break; 
             
             adBox = parent;
             parent = parent.parentElement;
@@ -51,52 +53,31 @@
     };
 
     const scan = () => {
-        // [패턴 1] 실존하는 문서 목차(ID)를 도용한 가짜 앵커 추적
-        // 실제 있는 목차(#s-7 등)를 훔쳐서 위장한 광고 타격
+        // [패턴 1] 가짜 앵커 추적 (목차 완벽 보호 적용)
         document.querySelectorAll('a[href^="#s-"]').forEach(a => {
             const text = a.textContent.trim();
-            if (!text) return; // 텍스트 없는 플로팅 버튼 제외
-            if (/^\[\d+\]$/.test(text)) return; // [1], [2] 같은 정상 각주 제외
-            if (a.closest('#toc') || a.closest('.toc')) return; // 실제 상단 목차 박스 제외
-            if (a.parentElement && /^H[1-6]$/.test(a.parentElement.tagName)) return; // 본문 제목 태그 제외
-            if (a.classList.contains('wiki-link-internal')) return; // 유저가 직접 작성한 정상 내부 링크 제외
+            if (!text) return; // 텍스트가 없는 투명 버튼 패스
             
-            // 위 정상적인 케이스를 모두 뚫고 남은 텍스트 길이가 2 이상인 링크? 100% 목차를 도용한 광고입니다.
-            if (text.length > 2) {
-                nuke(a);
-            }
+            // ★ 핵심: 텍스트가 오직 숫자와 마침표로만 이루어져 있다면 진짜 목차(예: 1, 2.1, 10.2.3)이므로 보호!
+            if (/^[\d.]+$/.test(text)) return; 
+            
+            if (/^\[\d+\]$/.test(text)) return; // [1], [2] 같은 주석 패스
+            if (a.classList.contains('wiki-link-internal')) return; // 위키 유저가 작성한 내부 링크 패스
+            
+            // 숫자/주석/내부링크가 아닌데 #s- 로 간다? 100% 훔친 목차 아이디를 쓴 광고입니다.
+            nuke(a);
         });
 
         // [패턴 2] 허니팟(워터마크) 텍스트 추적
-        // 나무위키가 스크립트 감시용으로 몰래 숨겨두는 식별 코드(클래스명 = 텍스트)를 역추적
+        // 나무위키가 스크립트 감시용으로 몰래 숨겨두는 8자리 랜덤 식별 코드(클래스명 = 텍스트)를 역추적
         document.querySelectorAll('div, span').forEach(el => {
             if (el.childNodes.length === 1 && el.firstChild.nodeType === Node.TEXT_NODE) {
                 const text = el.textContent.trim();
+                // 보통 8글자(예: _3Ckm61w8)의 쓰레기 텍스트가 클래스명과 동일하게 박혀있음
                 if (text.length >= 6 && text.length <= 15) {
                     if (el.classList.contains(text)) {
                         nuke(el);
                     }
-                }
-            }
-        });
-
-        // [패턴 3] 쇼핑몰 도메인 텍스트 타격
-        // 화면에 m.coupang.com 같은 도메인이 텍스트로 적혀있는 경우 타격
-        const domainRegex = /([a-zA-Z0-9-]+\.(com|co\.kr|net|kr|biz|info))/i;
-        document.querySelectorAll('div, span, a').forEach(el => {
-            if (el.childNodes.length === 1 && el.firstChild.nodeType === Node.TEXT_NODE) {
-                const text = el.textContent.trim();
-                // URL이 적혀있는데, 실제 <a> 태그의 외부 링크(http~)로 정상 연결된 게 아니라 꼼수로 넣은 텍스트라면 광고로 간주
-                if (domainRegex.test(text)) {
-                    let isSafe = false;
-                    let p = el.parentElement;
-                    while(p && p.tagName !== 'BODY') {
-                        if (p.tagName === 'A' && p.getAttribute('href') && !p.getAttribute('href').startsWith('#')) {
-                            isSafe = true; break;
-                        }
-                        p = p.parentElement;
-                    }
-                    if (!isSafe) nuke(el);
                 }
             }
         });
