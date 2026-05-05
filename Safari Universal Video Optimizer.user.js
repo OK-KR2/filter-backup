@@ -1,9 +1,11 @@
 // ==UserScript==
 // @name         Safari Universal Video Optimizer (Final Lock)
-// @version      4.0
+// @version      4.2
 // @description  모든 영상 내장 플레이어 적용 및 속성 잠금(Lock), 늦은 개입 취소, YouTube PiP 완벽 지원, 10초 건너뛰기 추가
 // @author       You
 // @match        *://*/*
+// @exclude      *://store.nintendo.co.kr/*
+// @exclude      *://192.168.0.1/*
 // @run-at       document-start
 // @grant        none
 // ==/UserScript==
