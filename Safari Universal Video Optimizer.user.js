@@ -1,9 +1,10 @@
 // ==UserScript==
-// @name         Safari Universal Video Optimizer (Final Lock)
-// @version      4.7
-// @description  모든 영상 내장 플레이어 적용, YouTube PiP & 10초 건너뛰기 완벽 지원 (SPA 대응)
+// @name         Safari Universal Video Optimizer (Targeted PiP Button)
+// @version      5.1
+// @description  모든 영상 내장 플레이어 적용 및 단축키 지원, YouTube & TVWIKI 전용 PiP 버튼 (SPA/iframe 대응)
 // @author       You
 // @match        *://*/*
+// @all_frames   true
 // @run-at       document-start
 // @grant        none
 // ==/UserScript==
@@ -12,7 +13,11 @@
     'use strict';
 
     const host = window.location.hostname;
+    
+    // 타겟 사이트 확인 (유튜브 및 티비위키 계열)
     const isYoutube = host.includes('youtube.com');
+    // 숫자 변동에 대응하기 위해 'tvwiki'만 포함되어 있는지 확인 + 실제 영상이 로드되는 iframe 도메인 포함
+    const isTvWiki = host.includes('tvwiki') || host.includes('bunny-frame'); 
 
     // ==========================================
     // 1. DRM 사이트 예외 처리
@@ -26,7 +31,6 @@
     const togglePiP = (v) => {
         if (!v) return;
         if (v.webkitSetPresentationMode) {
-            // iOS Safari 전용
             v.webkitSetPresentationMode(v.webkitPresentationMode === 'picture-in-picture' ? 'inline' : 'picture-in-picture');
         } else if (document.pictureInPictureElement) {
             document.exitPictureInPicture();
@@ -36,21 +40,25 @@
     };
 
     // ==========================================
-    // 3. YouTube 전용: PiP 버튼 추가 (SPA 완벽 대응)
+    // 3. PiP 버튼 강제 생성 (유튜브 & 티비위키에서만 감시 실행)
     // ==========================================
-    if (isYoutube) {
+    if (isYoutube || isTvWiki) {
         const managePipButton = () => {
-            const isWatching = window.location.pathname === '/watch'; // 현재 영상 재생 페이지인지 확인
-            let btn = document.getElementById('force-pip-btn');
-
-            // 영상 페이지가 아니면 버튼 숨기기
-            if (!isWatching) {
+            // 유튜브인 경우 SPA(단일 페이지 애플리케이션) 대응: 영상 페이지(/watch)가 아니면 숨김
+            if (isYoutube && window.location.pathname !== '/watch') {
+                let btn = document.getElementById('force-pip-btn');
                 if (btn) btn.style.display = 'none';
                 return;
             }
 
             const video = document.querySelector('video');
-            if (!video) return;
+            let btn = document.getElementById('force-pip-btn');
+
+            // 영상이 없으면 버튼 숨김
+            if (!video) {
+                if (btn) btn.style.display = 'none';
+                return;
+            }
 
             // 버튼이 없으면 생성
             if (!btn) {
@@ -58,27 +66,32 @@
                 btn.id = 'force-pip-btn';
                 btn.innerText = 'PiP 모드';
                 btn.style.cssText = `
-                    position: fixed; bottom: 20px; right: 20px; z-index: 99999; 
-                    padding: 10px 15px; background: rgba(255, 0, 0, 0.8); color: white; 
+                    position: absolute; bottom: 60px; right: 20px; z-index: 2147483647; 
+                    padding: 10px 15px; background: rgba(240, 0, 1, 0.85); color: white; 
                     border: none; border-radius: 8px; cursor: pointer; font-weight: bold; 
                     backdrop-filter: blur(5px); transition: 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.3);
                 `;
+                // 버튼을 body에 추가 (iframe 내부일 경우 영상 바로 위에 뜸)
                 document.body.appendChild(btn);
             }
             
-            // 영상 페이지면 다시 보이기 및 이벤트 갱신
             btn.style.display = 'block';
-            btn.onclick = () => togglePiP(document.querySelector('video'));
+            btn.onclick = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                togglePiP(video);
+            };
         };
+        
+        // 사파리 부하를 줄이기 위해 타겟 사이트에서만 2초마다 감시
         setInterval(managePipButton, 2000);
     }
 
     // ==========================================
-    // 4. 범용 영상 처리 (유튜브 제외 일반 사이트용)
+    // 4. 범용 영상 처리 (모든 사이트 적용 - 부하가 적은 이벤트 감지 방식)
     // ==========================================
     const processVideo = (v) => {
-        if (isYoutube || v.dataset.optmStatus) return; // 유튜브는 자체 플레이어 유지
-        if (v.mediaKeys) return;
+        if (isYoutube || v.dataset.optmStatus || v.mediaKeys) return;
 
         const enforce = () => {
             v.controls = true;
@@ -105,7 +118,7 @@
     observer.observe(document.documentElement, { childList: true, subtree: true });
 
     // ==========================================
-    // 5. 통합 키보드 단축키 (유튜브 포함 모든 사이트)
+    // 5. 통합 키보드 단축키 (모든 사이트 적용)
     // ==========================================
     window.addEventListener('keydown', (e) => {
         const activeEl = document.activeElement;
