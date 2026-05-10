@@ -1,9 +1,10 @@
 // ==UserScript==
-// @name         Safari Universal Video Optimizer (Final Lock)
-// @version      11.1
-// @description  모든 영상 내장 플레이어 적용 및 속성 잠금(Lock), 늦은 개입 취소, YouTube PiP 완벽 지원, 10초 건너뛰기 추가
+// @name         Safari Universal Video Optimizer (Final Lock + TV 연합 참교육)
+// @version      12.0
+// @description  모든 영상 내장 플레이어 적용 및 속성 잠금(Lock), 늦은 개입 취소, YouTube PiP 완벽 지원, 10초 건너뛰기 추가 + 티비위키/티비몬 강제 제압
 // @author       You
 // @match        *://*/*
+// @all_frames   true
 // @run-at       document-start
 // @grant        none
 // ==/UserScript==
@@ -181,3 +182,93 @@
             }
         }
     }, true); // 'true'를 사용해 이벤트 캡처링 단계에서 먼저 가로챔
+
+    // ==========================================
+    // 6. [티비위키/티비몬 연합 전용 참교육] 커스텀 플레이어 파괴 및 제어권 강탈
+    // ==========================================
+    const isTvAlliance = /tvmon|tvwiki|tvroom|hoohootv|bunny-frame|poorcdn|digitalorio/i.test(host) || /tvmon|tvwiki|tvroom/i.test(document.referrer);
+
+    if (isTvAlliance) {
+        console.log("🔥 [Video Optimizer] 불법 스트리밍 연합 감지! 참교육 모드 가동!");
+
+        // 방해되는 투명 껍데기(커스텀 UI) CSS로 숨통 끊기
+        const injectStyles = () => {
+            if (document.getElementById('tv-destroyer-style')) return;
+            const style = document.createElement('style');
+            style.id = 'tv-destroyer-style';
+            style.innerHTML = `
+                .jw-controls, .jw-ui, .vjs-control-bar, .vjs-tech, .plyr__controls, .shaka-controls-container, .fluid_controls_container, [class*="overlay"] {
+                    display: none !important;
+                    pointer-events: none !important;
+                }
+                video {
+                    z-index: 2147483647 !important;
+                    position: relative !important;
+                    pointer-events: auto !important;
+                    display: block !important;
+                    opacity: 1 !important;
+                }
+            `;
+            (document.head || document.documentElement).appendChild(style);
+        };
+        injectStyles();
+
+        // 강제 PiP 버튼 (모바일 화면 우측 하단)
+        const addTvPipButton = () => {
+            if (document.getElementById('tv-force-pip') || !document.querySelector('video')) return;
+
+            const btn = document.createElement('button');
+            btn.id = 'tv-force-pip';
+            btn.innerText = '🔥 강제 PiP';
+            btn.style.cssText = `
+                position: fixed !important; bottom: 80px !important; right: 20px !important; z-index: 2147483647 !important; 
+                padding: 12px 18px !important; background: rgba(0, 150, 255, 0.9) !important; color: white !important; 
+                border: 2px solid white !important; border-radius: 8px !important; cursor: pointer !important; font-weight: bold !important; 
+                backdrop-filter: blur(5px) !important; box-shadow: 0 4px 10px rgba(0,0,0,0.5) !important; display: block !important;
+            `;
+            
+            const handlePip = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const v = document.querySelector('video');
+                if (!v) return;
+                
+                try {
+                    if (typeof v.webkitSetPresentationMode === 'function') {
+                        v.webkitSetPresentationMode(v.webkitPresentationMode === 'picture-in-picture' ? 'inline' : 'picture-in-picture');
+                    } else if (document.pictureInPictureElement) {
+                        document.exitPictureInPicture();
+                    } else {
+                        v.requestPictureInPicture();
+                    }
+                } catch(err) { console.error("PiP Error:", err); }
+            };
+
+            btn.addEventListener('click', handlePip, true);
+            btn.addEventListener('touchstart', handlePip, { passive: false, capture: true });
+            
+            (document.body || document.documentElement).appendChild(btn);
+        };
+
+        setInterval(addTvPipButton, 1500);
+        
+        // 껍데기 무시하고 화면 더블 탭 시 PiP 발동
+        let lastTap = 0;
+        window.addEventListener('touchstart', (e) => {
+            if (e.target.id === 'tv-force-pip' || e.target.id === 'force-pip-btn') return;
+            const currentTime = new Date().getTime();
+            const tapLength = currentTime - lastTap;
+            
+            if (tapLength < 300 && tapLength > 0) {
+                const v = document.querySelector('video');
+                if (v && typeof v.webkitSetPresentationMode === 'function') {
+                    // 더블탭 원래 이벤트를 무시하고 사파리 PiP 즉시 실행
+                    e.preventDefault();
+                    e.stopImmediatePropagation();
+                    v.webkitSetPresentationMode('picture-in-picture');
+                }
+            }
+            lastTap = currentTime;
+        }, { passive: false, capture: true }); // 가장 먼저 가로채기
+    }
+})();
