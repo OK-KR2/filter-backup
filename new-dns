@@ -226,15 +226,10 @@ fmkorea.com#%#//scriptlet('set-constant', 'isAdBlockActive', false)
 quasarzone.com##.best-official-news, .new-official-news, .new-partner-saleinfo-container, .recommend-deal-wrap
 web.joongna.com##.pb-12, div:has([alt='ad']):not(:has(h2))
 ! 최하단 사이트 차단의 그레이 영역 사이트 팝업 및 리다이렉트 방지 (제미니)
-[$domain=/^(booktoki|toki|tkor|hoohootv|tvmon|tvroom|tvwiki|yako|torrentsee|torrentbot)\d*/]#%#//scriptlet('prevent-window-open')
-[$domain=/^(booktoki|toki|tkor|hoohootv|tvmon|tvroom|tvwiki|yako|torrentsee|torrentbot)\d*/]#%#//scriptlet('prevent-popads')
-! 사이트 연합 내부 광고/배너 싹쓸이 (초압축 통합 버전) (제미니)
-[$domain=/^(booktoki|toki|tkor|hoohootv|tvmon|tvroom|tvwiki|yako|torrentsee|torrentbot)\d*/]###novel_content:style(-webkit-touch-callout: default !important; -webkit-user-select: text !important; user-select: text !important;)
-[$domain=/^(booktoki|toki|tkor|hoohootv|tvmon|tvroom|tvwiki|yako|torrentsee|torrentbot)\d*/]##.ad-view, .banner_list, .at-banner, .banner_wrap2, ul[id^="banner-row-"], ul[id^="fixed-banner-container-"], div.mobile-only, a[target="_blank"]:has(img[src*="/data/banner/"]), [src*='/AD/'], [src*='/banner/'], ###bannerList, ###viewCover
-[$domain=/^tvroom\d+/]###mq-notice, ###n_b_2, .banners_area, .iziModal-overlay, .supermarquee-item, [id^='modal-anc-'], div.banner_l, body,html:style(overflow:auto!important)
-[$domain=/^(booktoki|toki|tkor|hoohootv|tvmon|tvroom|tvwiki|yako|torrentsee|torrentbot)\d*/]##.view-padding div:has(> a[target="_blank"])
-[$domain=/^(booktoki|toki|tkor|hoohootv|tvmon|tvroom|tvwiki|yako|torrentsee|torrentbot)\d*/]##.view-padding a
-[$domain=/^(booktoki|toki|tkor|hoohootv|tvmon|tvroom|tvwiki|yako|torrentsee|torrentbot)\d*/]##.view-padding a > img
+#%#//scriptlet('prevent-window-open', 'acceptancedishearten')
+#%#//scriptlet('prevent-popads')
+! 내부 광고/배너 싹쓸이 (안전 무한 추적 버전) (제미니)
+[$domain=/^(booktoki|toki|tkor|hoohootv|tvmon|tvroom|tvwiki|yako|torrentsee|torrentbot)/]##.banner_wrap2, .banner-area, ul[id^="banner-row-"], ul[id^="fixed-banner-container-"], div.mobile-only, a[target="_blank"]:has(img[src*="/data/banner/"]), img[src*="/data/banner/"], .view-padding div:has(> a[target="_blank"])
 ! 네이버 시각적 광고 요소 정밀 타격 (제미니)
 naver.com##.veta_ad
 naver.com##.veta_ad_wrapper
@@ -448,8 +443,8 @@ $ping,important
 @@||google.com/recaptcha/*$jsinject,important
 @@||recaptcha.net^$important
 @@||gstatic.com/recaptcha/*$important
-! 영상 재생 허용 (제미니)
-@@||bunny-frame.online^$media,domain=tvwiki*.net
+! 영상 재생 허용 (플레이어 도용 방지를 위해 스트리밍 연합군 도메인 내에서만 꽉 묶어서 허용) (제미니)
+@@||bunny-frame.online^$media,subdocument,domain=tvwiki*.*|tvmon*.*|tvroom*.*|hoohootv*.*
 ! 닌텐도 스토어 공홈 로그인/장바구니 (제미니)
 @@||store.nintendo.co.kr^$document
 
