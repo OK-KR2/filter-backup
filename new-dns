@@ -225,13 +225,14 @@ fmkorea.com##.relevant_products_from_ad, .bd_mobile:matches-css(margin: /3px 0px
 fmkorea.com#%#//scriptlet('set-constant', 'isAdBlockActive', false)
 quasarzone.com##.best-official-news, .new-official-news, .new-partner-saleinfo-container, .recommend-deal-wrap
 web.joongna.com##.pb-12, div:has([alt='ad']):not(:has(h2))
-! 최하단 사이트 차단의 그레이 영역 사이트 팝업 및 리다이렉트 방지 (제미니)
-/^(booktoki|toki|tkor|hoohootv|tvmon|tvroom|tvwiki|yako|torrentsee|torrentbot).*/#%#//scriptlet('prevent-window-open', 'acceptancedishearten')
-/^(booktoki|toki|tkor|hoohootv|tvmon|tvroom|tvwiki|yako|torrentsee|torrentbot).*/#%#//scriptlet('prevent-popads')
-! 사이트 연합 내부 광고/배너 싹쓸이 (초압축 통합 버전 - 문법 픽스 완료) (제미니)
-/^(booktoki|toki|tkor|hoohootv|tvmon|tvroom|tvwiki|yako|torrentsee|torrentbot).*/###novel_content:style(-webkit-touch-callout: default !important; -webkit-user-select: text !important; user-select: text !important;)
-/^(booktoki|toki|tkor|hoohootv|tvmon|tvroom|tvwiki|yako|torrentsee|torrentbot).*/##.ad-view, .banner_list, .at-banner, .banner_wrap2, .banner-area, ul[id^="banner-row-"], ul[id^="fixed-banner-container-"], div.mobile-only, a[target="_blank"]:has(img[src*="/data/banner/"]), img[src*="/data/banner/"], [src*='/AD/'], [src*='/banner/'], ###bannerList, ###viewCover, .view-padding div:has(> a[target="_blank"]), .view-padding a, .view-padding a > img
-/^tvroom\d+/###mq-notice, ###n_b_2, .banners_area, .iziModal-overlay, .supermarquee-item, [id^='modal-anc-'], div.banner_l, body,html:style(overflow:auto!important)
+! 최하단 사이트 차단의 그레이 영역 사이트 팝업 방지 (제미니)
+booktoki.*,toki.*,tkor.*,hoohootv.*,tvmon.*,tvroom.*,tvwiki.*,yako.*,torrentsee.*,torrentbot.*#%#//scriptlet('prevent-window-open', 'acceptancedishearten')
+booktoki.*,toki.*,tkor.*,hoohootv.*,tvmon.*,tvroom.*,tvwiki.*,yako.*,torrentsee.*,torrentbot.*#%#//scriptlet('prevent-popads')
+! 내부 광고/배너 싹쓸이 (도메인 결속 + PC/모바일 완벽 호환) (제미니)
+booktoki.*,toki.*,tkor.*,hoohootv.*,tvmon.*,tvroom.*,tvwiki.*,yako.*,torrentsee.*,torrentbot.*##.banner_wrap2, .banner-area, [id^="banner-row-"], [id^="fixed-banner-container-"], .mobile-only
+! 특정 사이트 전용 UI 강제 수정 (제미니)
+booktoki.*,toki.*,tkor.*###novel_content:style(-webkit-touch-callout: default !important; -webkit-user-select: text !important; user-select: text !important;)
+tvmon.*,tvroom.*,tvwiki.*###mq-notice, ###n_b_2, .banners_area, .iziModal-overlay, .supermarquee-item, [id^='modal-anc-'], div.banner_l
 ! 네이버 시각적 광고 요소 정밀 타격 (제미니)
 naver.com##.veta_ad
 naver.com##.veta_ad_wrapper
