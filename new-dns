@@ -1,6 +1,6 @@
 ! Title: 커스텀 필터
 ! Description: 종합 차단
-! Version: 20260505.2
+! Version: 20260510.1
 
 ! ## [01] 통합 추적 방지 리스트
 ! 국내 기업 전용 - 네이버, 카카오, 쿠팡 등 (제미니)
@@ -450,8 +450,13 @@ $ping,important
 @@||gstatic.com/recaptcha/*$important
 ! 영상 재생 허용 (제미니)
 @@||bunny-frame.online^$media,domain=tvwiki*.net
-! 닌텐도 스토어 로그인/장바구니 (제미니)
+! 닌텐도 스토어 공홈 로그인/장바구니 (제미니)
 @@||store.nintendo.co.kr^$document
+! ECH (Encrypted Client Hello) 및 SVCB/HTTPS 레코드 통과 허용 (제미니)
+! 브라우저가 ECH 지원 여부를 묻는 특수 DNS 쿼리(SVCB/HTTPS type 64, 65)가 필터에 막히지 않도록 강제 예외 처리
+@@||*^$dnsrewrite=NO
+@@||*^$dnstype=HTTPS,important
+@@||*^$dnstype=SVCB,important
 
 ! ## [25] 방어선
 ! 이중잠금 (제미니)
