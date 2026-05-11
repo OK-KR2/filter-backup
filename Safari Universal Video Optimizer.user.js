@@ -1,10 +1,9 @@
 // ==UserScript==
-// @name         Safari Universal Video Optimizer (Absolute Hijacker)
-// @version      15.0
-// @description  11.0 뼈대 유지 + 속성 가로채기(Monkey Patch)로 순정 플레이어 강제 고정 + 하단 PiP 버튼
+// @name         Safari Universal Video Optimizer (Final Lock)
+// @version      16.0
+// @description  모든 영상 내장 플레이어 적용 및 속성 잠금(Lock), 늦은 개입 취소, YouTube PiP 완벽 지원, 10초 건너뛰기 추가
 // @author       You
 // @match        *://*/*
-// @all_frames   true
 // @run-at       document-start
 // @grant        none
 // ==/UserScript==
@@ -22,12 +21,16 @@
         'disneyplus.com', 'coupangplay.com', 'primevideo.com'
     ];
     
-    if (drmDomains.some(domain => host.includes(domain))) return;
+    if (drmDomains.some(domain => host.includes(domain))) {
+        console.log("🔒 [Video Optimizer] DRM 사이트입니다. 순정 상태를 유지합니다.");
+        return;
+    }
 
     // ==========================================
-    // 2. YouTube 전용: PiP 강제 활성화 (11.0 원본)
+    // 2. YouTube 전용: PiP(화면 안의 화면) 강제 활성화
     // ==========================================
     if (host.includes('youtube.com')) {
+        // 단축키 (Ctrl + P)
         window.addEventListener('keydown', (e) => {
             if (e.ctrlKey && e.key.toLowerCase() === 'p') {
                 const video = document.querySelector('video');
@@ -38,6 +41,7 @@
             }
         });
 
+        // 우측 하단 고정 버튼
         const addPipButton = () => {
             if (document.getElementById('force-pip-btn') || !document.querySelector('video')) return;
 
@@ -48,8 +52,11 @@
                 position: fixed; bottom: 20px; right: 20px; z-index: 99999; 
                 padding: 10px 15px; background: rgba(255, 0, 0, 0.8); color: white; 
                 border: none; border-radius: 8px; cursor: pointer; font-weight: bold; 
-                backdrop-filter: blur(5px); box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+                backdrop-filter: blur(5px); transition: 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.3);
             `;
+            
+            btn.onmouseover = () => btn.style.transform = 'scale(1.05)';
+            btn.onmouseout = () => btn.style.transform = 'scale(1)';
             btn.onclick = () => {
                 const v = document.querySelector('video');
                 if (document.pictureInPictureElement) document.exitPictureInPicture();
@@ -59,20 +66,29 @@
         };
 
         setInterval(addPipButton, 2000);
-        return;
+        return; // 유튜브는 여기서 스크립트 완전 종료
     }
 
     // ==========================================
-    // 3. 범용 영상 처리 (11.0 원본)
+    // 3. 범용 영상 처리 및 속성 방어 로직
     // ==========================================
     const processVideo = (v) => {
-        if (v.dataset.optmStatus || v.mediaKeys) return;
+        if (v.dataset.optmStatus) return; // 이미 처리/취소된 영상 패스
 
+        // [방어 1] EME(DRM 암호화) 영상 보호
+        if (v.mediaKeys) {
+            v.dataset.optmStatus = "drm_skipped";
+            return;
+        }
+
+        // [방어 2] 지각 개입 취소 (영상이 이미 2초 이상 재생된 경우)
         if (v.currentTime > 2 && !v.controls) {
+            console.log("⚠️ [Video Optimizer] 영상이 이미 진행 중입니다. 충돌 방지를 위해 개입을 취소합니다.");
             v.dataset.optmStatus = "too_late";
             return;
         }
 
+        // Safari 내장 컨트롤러 강제 활성화 및 최상단 배치
         const enforceControls = () => {
             if (!v.controls) {
                 v.controls = true;
@@ -84,144 +100,84 @@
 
         enforceControls();
 
+        // [핵심] 사이트 자체 스크립트가 controls를 끄려고 할 때 막아내는 방어막(Lock)
         const attributeLock = new MutationObserver((mutations) => {
             mutations.forEach((mutation) => {
                 if (mutation.attributeName === 'controls' && !v.controls) {
+                    console.log("🛡️ [Video Optimizer] 사이트가 내장 컨트롤러를 끄려는 것을 방어했습니다.");
                     v.controls = true;
                     v.setAttribute('controls', 'controls');
                 }
             });
         });
         
+        // controls 속성의 변화만 타겟으로 감시
         attributeLock.observe(v, { attributes: true, attributeFilter: ['controls'] });
+
+        // 우클릭 차단 뚫기 (캡처 및 사파리 기본 메뉴용)
         v.addEventListener('contextmenu', e => e.stopPropagation(), true);
+
         v.dataset.optmStatus = "success_locked";
+        console.log("✅ [Video Optimizer] Safari 내장 플레이어 전환 및 잠금 완료.");
     };
 
+    // ==========================================
+    // 4. 초고속 DOM 감지 (페이지 렌더링 극초기)
+    // ==========================================
     const observer = new MutationObserver((mutations) => {
         for (let mutation of mutations) {
             for (let node of mutation.addedNodes) {
-                if (node.tagName === 'VIDEO') processVideo(node);
-                else if (node.querySelectorAll) node.querySelectorAll('video').forEach(processVideo);
+                if (node.tagName === 'VIDEO') {
+                    processVideo(node);
+                } else if (node.querySelectorAll) {
+                    // 추가된 요소 내부에 비디오가 숨어있는지 확인
+                    const videos = node.querySelectorAll('video');
+                    videos.forEach(processVideo);
+                }
             }
         }
     });
 
     observer.observe(document.documentElement, { childList: true, subtree: true });
 
+    // 혹시라도 놓친 영상이 있다면 DOMContentLoaded 시점에 한 번 더 스캔
+    window.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('video').forEach(processVideo);
+    });
+
     // ==========================================
-    // 4. 키보드 방향키 10초 이동 (11.0 원본)
+    // 5. 키보드 방향키 10초 이동 & 스페이스바 제어 강제 설정
     // ==========================================
     window.addEventListener('keydown', (e) => {
+        // 검색창, 댓글창 등 텍스트 입력 중일 때는 키보드 단축키 무시
         const activeEl = document.activeElement;
-        if (activeEl && (['INPUT', 'TEXTAREA', 'SELECT'].includes(activeEl.tagName) || activeEl.isContentEditable)) return;
+        if (activeEl && (['INPUT', 'TEXTAREA', 'SELECT'].includes(activeEl.tagName) || activeEl.isContentEditable)) {
+            return;
+        }
 
         const activeVideo = document.querySelector('video');
         if (!activeVideo) return;
 
+        // 화살표 오른쪽 키 (10초 앞으로)
         if (e.key === 'ArrowRight') {
-            e.preventDefault(); e.stopImmediatePropagation(); activeVideo.currentTime += 10;
-        } else if (e.key === 'ArrowLeft') {
-            e.preventDefault(); e.stopImmediatePropagation(); activeVideo.currentTime -= 10;
-        } else if (e.key === ' ' || e.code === 'Space') {
-            e.preventDefault(); e.stopImmediatePropagation();
-            if (activeVideo.paused) activeVideo.play(); else activeVideo.pause();
+            e.preventDefault(); 
+            e.stopImmediatePropagation(); 
+            activeVideo.currentTime += 10;
         }
-    }, true);
-
-    // ==========================================
-    // 5. 🔥 [끝판왕] 외부 플레이어 순정 강제 고정 및 PiP 버튼
-    // ==========================================
-    // 티비위키, 티비몬 등 영상 껍데기 프레임 도메인 감지
-    if (/bunny-frame|poorcdn|digitalorio|tvmon|tvwiki/i.test(host)) {
-        
-        const absoluteHijack = () => {
-            const v = document.querySelector('video');
-            if (!v || v.dataset.hijacked) return;
-
-            // [방패 부수기 1] 놈들이 controls를 끄려고 할 때 브라우저 기능 자체를 가로채서 씹어버림
-            try {
-                Object.defineProperty(v, 'controls', {
-                    get: () => true,
-                    set: (val) => { console.log("놈들이 컨트롤러를 끄려고 시도했지만 차단함"); }
-                });
-
-                const originalRemove = v.removeAttribute;
-                v.removeAttribute = function(attr) {
-                    if (attr.toLowerCase() === 'controls') return; // 삭제 시도 무시
-                    return originalRemove.apply(this, arguments);
-                };
-            } catch(e) {}
-
-            v.setAttribute('controls', 'controls');
-            v.setAttribute('playsinline', 'playsinline');
-            
-            // 영상 자체를 모든 가짜 UI 위로 강제 노출
-            v.style.setProperty('z-index', '2147483647', 'important');
-            v.style.setProperty('position', 'relative', 'important');
-            v.style.setProperty('pointer-events', 'auto', 'important');
-
-            v.dataset.hijacked = "true";
-        };
-
-        // PiP 버튼 하단 생성 (순정 컨트롤바에 안 겹치게 bottom: 60px 위치)
-        const injectPipButton = () => {
-            if (document.getElementById('ultimate-pip-btn') || !document.querySelector('video')) return;
-
-            const btn = document.createElement('button');
-            btn.id = 'ultimate-pip-btn';
-            btn.innerHTML = '🔥 PiP';
-            btn.style.cssText = `
-                position: fixed !important; 
-                bottom: 60px !important; 
-                left: 15px !important; 
-                z-index: 2147483647 !important; 
-                padding: 10px 14px !important; 
-                background: rgba(0, 100, 255, 0.85) !important; 
-                color: white !important; 
-                border: 2px solid rgba(255,255,255,0.5) !important; 
-                border-radius: 8px !important; 
-                cursor: pointer !important; 
-                font-size: 13px !important;
-                font-weight: bold !important; 
-                backdrop-filter: blur(4px) !important; 
-                box-shadow: 0 4px 10px rgba(0,0,0,0.5) !important; 
-                pointer-events: auto !important;
-            `;
-            
-            const handlePip = (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                const v = document.querySelector('video');
-                if (!v) return;
-                
-                if (v.paused) {
-                    alert("⚠️ 영상을 '재생(▶)' 한 뒤에 눌러주세요!");
-                    v.play().catch(err => console.log(err));
-                    return;
-                }
-
-                try {
-                    if (typeof v.webkitSetPresentationMode === 'function') {
-                        v.webkitSetPresentationMode(v.webkitPresentationMode === 'picture-in-picture' ? 'inline' : 'picture-in-picture');
-                    } else if (document.pictureInPictureElement) {
-                        document.exitPictureInPicture();
-                    } else {
-                        v.requestPictureInPicture();
-                    }
-                } catch(err) { alert("PiP Error: " + err.message); }
-            };
-
-            btn.addEventListener('click', handlePip, true);
-            btn.addEventListener('touchstart', handlePip, { passive: false, capture: true });
-            
-            (document.body || document.documentElement).appendChild(btn);
-        };
-
-        // 0.5초마다 놈들의 방어막을 뚫고 계속 주입
-        setInterval(() => {
-            absoluteHijack();
-            injectPipButton();
-        }, 500);
-    }
-})();
+        // 화살표 왼쪽 키 (10초 뒤로)
+        else if (e.key === 'ArrowLeft') {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            activeVideo.currentTime -= 10;
+        }
+        // 스페이스바 (재생/일시정지 더블 클릭 현상 방지)
+        else if (e.key === ' ' || e.code === 'Space') {
+            e.preventDefault(); // 브라우저 기본 스크롤 다운 방지
+            e.stopImmediatePropagation(); // 사이트 자체 스크립트 중복 실행 방지
+            if (activeVideo.paused) {
+                activeVideo.play();
+            } else {
+                activeVideo.pause();
+            }
+        }
+    }, true); // 'true'를 사용해 이벤트 캡처링 단계에서 먼저 가로챔
