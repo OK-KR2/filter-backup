@@ -450,6 +450,12 @@ $ping,important
 @@||bunny-frame.online^$media,subdocument,domain=tvwiki*.*|tvmon*.*|tvroom*.*|hoohootv*.*
 ! 닌텐도 스토어 공홈 로그인/장바구니 (제미니)
 @@||store.nintendo.co.kr^$document
+! SVCB/HTTP sni 허용 테스트 (제미니)
+@@||cloudflare.com^$dnstype=HTTPS
+@@||cloudflare-dns.com^$dnstype=HTTPS
+@@||google.com^$dnstype=HTTPS
+@@||googlevideo.com^$dnstype=HTTPS
+@@||*^$dnstype=SVCB
 
 ! ## [25] 방어선
 ! 이중잠금 (제미니)
