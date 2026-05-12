@@ -291,7 +291,6 @@ m.cafe.naver.com##.popular_ad_area
 
 ! ## [12] 브라우저 기능 제약 및 강제 해제
 ! 우클릭 차단, 드래그 방지, 복사 방지 스크립트 강제 무력화 (제미니)
-##+js(阻止右键)
 ##+js(allow-contextmenu)
 ! 복사할 때 몰래 '출처: OOO' 문구를 클립보드에 끼워 넣는 행위 차단 (제미니)
 ##+js(prevent-clipboard-write)
