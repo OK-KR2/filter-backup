@@ -81,6 +81,9 @@ $removeparam=ttclid
 $removeparam=twclid
 $removeparam=wbraid
 $removeparam=gbraid
+! 인스타그램 및 유튜브 최신 URL 공유 추적 파라미터 제거 (2026 추가) (제미니)
+$removeparam=igsh
+$removeparam=si
 
 ! ## [03] 안티
 ! 주요 분석 및 통계 (광고 차단 감지용으로 자주 쓰임)(제미니)
@@ -301,9 +304,11 @@ booktoki.*,toki.*,tkor.*,hoohootv.*,tvmon.*,tvroom.*,tvwiki.*,yako.*,torrentsee.
 ||anthropic.com/robots.txt^$important
 ||claudebot.com^$important
 ! 무단 AI 크롤러 최신 봇 방어 보강 (제미니)
-||bytespider^$important
-||oabot^$important
-||amazonbot^$important
+||bytespider.com^$important
+||oabot.com^$important
+||amazonbot.com^$important
+||perplexity.ai/robots.txt^$important
+||cohere.com/robots.txt^$important
 
 ! ## [12] 브라우저 기능 제약 및 강제 해제
 ! 우클릭 차단, 드래그 방지, 복사 방지 스크립트 강제 무력화 (제미니)
@@ -374,8 +379,9 @@ $ping,important
 ! 브라우저 로컬 스토리지를 이용한 광고 식별자(ID) 저장 차단 (제미니)
 ##+js(set-constant, localStorage.ad_tracking_id, undefined)
 ##+js(set-constant, localStorage.f_cap, undefined)
-! 캐시(ETag)를 이용한 사용자 식별용 '슈퍼 쿠키' 생성 방지 (제미니)
-##+js(set-constant, navigator.serviceWorker, undefined)
+! 캐시(ETag)를 이용한 사용자 식별용 '슈퍼 쿠키' 생성 방지 + 슬랙허용 (제미니)
+! ##+js(set-constant, navigator.serviceWorker, undefined)
+~slack.com##+js(set-constant, navigator.serviceWorker, undefined)
 
 ! ## [20] 오디오 및 폰트 핑거프린팅 세밀 방어
 ! 기기 고유의 오디오 재생 특성으로 신분을 식별하는 행위 차단 (제미니)
@@ -404,10 +410,12 @@ $ping,important
 ! 웹사이트 진입 시 비디오/오디오 자동 재생 강제 중지
 #%#//scriptlet('prevent-autoplay')
 ! 보이지 않는 곳에서 데이터를 갉아먹는 비디오 로딩 방지
-##video[autoplay]
-##video[muted][autoplay]
+! ##video[autoplay]
+! ##video[muted][autoplay]
 ! 유튜브/포털의 넥스트 비디오 미리 로드(Preload) 차단
 #%#//scriptlet('abort-current-inline-script', 'next-video-preload')
+! 보이지 않는 곳에서 데이터를 갉아먹는 비디오 로딩 방지 최신화
+#%#//scriptlet('set-constant', 'HTMLMediaElement.prototype.preload', 'none')
 
 ! ## [24] 허용
 ! 슬랙 완전 허용 (제미니)
