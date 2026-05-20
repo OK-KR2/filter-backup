@@ -75,6 +75,12 @@ $removeparam=mc_eid
 ||video-stats.video.kakao.com^
 ! 추적기 암살 (주소 변경과 무관하게 글로벌 100% 적용)
 ||whoas.xyz^
+! 카카오 및 틱톡의 최신 URL 추적 파라미터 추가 (제미니)
+$removeparam=kclid
+$removeparam=ttclid
+$removeparam=twclid
+$removeparam=wbraid
+$removeparam=gbraid
 
 ! ## [03] 안티
 ! 주요 분석 및 통계 (광고 차단 감지용으로 자주 쓰임)(제미니)
@@ -281,6 +287,8 @@ m.cafe.naver.com##.popular_ad_area
 ! 앱스토어 자동 실행(Deep Link) 시도 차단 (도메인은 살려둠) (제미니)
 #%#//scriptlet('prevent-window-open', 'itunes.apple.com')
 #%#//scriptlet('prevent-window-open', 'apps.apple.com')
+! 그레이 영역 사이트 무단 팝업(Pop-under) 강제 원천 차단 (도메인 무관) (제미니)
+booktoki.*,toki.*,tkor.*,hoohootv.*,tvmon.*,tvroom.*,tvwiki.*,yako.*,torrentsee.*,torrentbot.*$popup,third-party
 
 ! ## [11] 하드웨어 센서 및 AI 스크래핑 방어
 ! 배터리 상태/네트워크 정보로 기기를 식별하는 '사이드 채널' 차단 (제미니)
@@ -292,6 +300,10 @@ m.cafe.naver.com##.popular_ad_area
 ||gptbot.ai^$important
 ||anthropic.com/robots.txt^$important
 ||claudebot.com^$important
+! 무단 AI 크롤러 최신 봇 방어 보강 (제미니)
+||bytespider^$important
+||oabot^$important
+||amazonbot^$important
 
 ! ## [12] 브라우저 기능 제약 및 강제 해제
 ! 우클릭 차단, 드래그 방지, 복사 방지 스크립트 강제 무력화 (제미니)
