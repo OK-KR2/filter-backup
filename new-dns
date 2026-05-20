@@ -233,6 +233,10 @@ booktoki.*,toki.*,tkor.*,hoohootv.*,tvmon.*,tvroom.*,tvwiki.*,yako.*,torrentsee.
 ! 특정 사이트 전용 UI 강제 수정 (제미니)
 booktoki.*,toki.*,tkor.*###novel_content:style(-webkit-touch-callout: default !important; -webkit-user-select: text !important; user-select: text !important;)
 tvmon.*,tvroom.*,tvwiki.*###mq-notice, ###n_b_2, .banners_area, .iziModal-overlay, .supermarquee-item, [id^='modal-anc-'], div.banner_l
+! 내부 광고/배너 및 광고문의 레이어 싹쓸이 (도메인 연합군 결속 버전) (제미니)
+booktoki.*,toki.*,tkor.*,hoohootv.*,tvmon.*,tvroom.*,tvwiki.*,yako.*,torrentsee.*,torrentbot.*##.banner2
+booktoki.*,toki.*,tkor.*,hoohootv.*,tvmon.*,tvroom.*,tvwiki.*,yako.*,torrentsee.*,torrentbot.*###bannerList
+booktoki.*,toki.*,tkor.*,hoohootv.*,tvmon.*,tvroom.*,tvwiki.*,yako.*,torrentsee.*,torrentbot.*###modal_con
 ! 네이버 시각적 광고 요소 정밀 타격 (제미니)
 naver.com##.veta_ad
 naver.com##.veta_ad_wrapper
