@@ -235,17 +235,20 @@ fmkorea.com#%#//scriptlet('set-constant', 'isAdBlockActive', false)
 quasarzone.com##.best-official-news, .new-official-news, .new-partner-saleinfo-container, .recommend-deal-wrap
 web.joongna.com##.pb-12, div:has([alt='ad']):not(:has(h2))
 ! 최하단 사이트 차단의 그레이 영역 사이트 팝업 방지 (제미니)
-booktoki.*,toki.*,tkor.*,hoohootv.*,tvmon.*,tvroom.*,tvwiki.*,yako.*,torrentsee.*,torrentbot.*#%#//scriptlet('prevent-window-open', 'acceptancedishearten')
-booktoki.*,toki.*,tkor.*,hoohootv.*,tvmon.*,tvroom.*,tvwiki.*,yako.*,torrentsee.*,torrentbot.*#%#//scriptlet('prevent-popads')
+booktoki*.*,toki*.*,tkor*.*,hoohootv*.*,tvmon*.*,tvroom*.*,tvwiki*.*,yako*.*,torrentsee*.*,torrentbot*.*#%#//scriptlet('prevent-window-open', 'acceptancedishearten')
+booktoki*.*,toki*.*,tkor*.*,hoohootv*.*,tvmon*.*,tvroom*.*,tvwiki*.*,yako*.*,torrentsee*.*,torrentbot*.*#%#//scriptlet('prevent-popads')
 ! 내부 광고/배너 싹쓸이 (도메인 결속 + PC/모바일 완벽 호환) (제미니)
-booktoki.*,toki.*,tkor.*,hoohootv.*,tvmon.*,tvroom.*,tvwiki.*,yako.*,torrentsee.*,torrentbot.*##.banner_wrap2, .banner-area, [id^="banner-row-"], [id^="fixed-banner-container-"], .mobile-only
+booktoki*.*,toki*.*,tkor*.*,hoohootv*.*,tvmon*.*,tvroom*.*,tvwiki*.*,yako*.*,torrentsee*.*,torrentbot*.*##.banner_wrap2, .banner-area, [id^="banner-row-"], [id^="fixed-banner-container-"], .mobile-only
 ! 특정 사이트 전용 UI 강제 수정 (제미니)
-booktoki.*,toki.*,tkor.*###novel_content:style(-webkit-touch-callout: default !important; -webkit-user-select: text !important; user-select: text !important;)
-tvmon.*,tvroom.*,tvwiki.*###mq-notice, ###n_b_2, .banners_area, .iziModal-overlay, .supermarquee-item, [id^='modal-anc-'], div.banner_l
+booktoki*.*,toki*.*,tkor*.*###novel_content:style(-webkit-touch-callout: default !important; -webkit-user-select: text !important; user-select: text !important;)
+tvmon*.*,tvroom*.*,tvwiki*.*###mq-notice, ###n_b_2, .banners_area, .iziModal-overlay, .supermarquee-item, [id^='modal-anc-'], div.banner_l
 ! 내부 광고/배너 및 광고문의 레이어 싹쓸이 (도메인 연합군 결속 버전) (제미니)
-booktoki.*,toki.*,tkor.*,hoohootv.*,tvmon.*,tvroom.*,tvwiki.*,yako.*,torrentsee.*,torrentbot.*##.banner2
-booktoki.*,toki.*,tkor.*,hoohootv.*,tvmon.*,tvroom.*,tvwiki.*,yako.*,torrentsee.*,torrentbot.*###bannerList
-booktoki.*,toki.*,tkor.*,hoohootv.*,tvmon.*,tvroom.*,tvwiki.*,yako.*,torrentsee.*,torrentbot.*###modal_con
+booktoki*.*,toki*.*,tkor*.*,hoohootv*.*,tvmon*.*,tvroom*.*,tvwiki*.*,yako*.*,torrentsee*.*,torrentbot*.*##.banner2
+booktoki*.*,toki*.*,tkor*.*,hoohootv*.*,tvmon*.*,tvroom*.*,tvwiki*.*,yako*.*,torrentsee*.*,torrentbot*.*###bannerList
+booktoki*.*,toki*.*,tkor*.*,hoohootv*.*,tvmon*.*,tvroom*.*,tvwiki*.*,yako*.*,torrentsee*.*,torrentbot*.*###modal_con
+! 귀찮은 강제 팝업 2종 (DNS 우회 긴급안내, 앱 다운로드 모달) 연합군 전체 폭파 (제미니)
+booktoki*.*,toki*.*,tkor*.*,hoohootv*.*,tvmon*.*,tvroom*.*,tvwiki*.*,yako*.*,torrentsee*.*,torrentbot*.*###dnsguide-modal-overlay
+booktoki*.*,toki*.*,tkor*.*,hoohootv*.*,tvmon*.*,tvroom*.*,tvwiki*.*,yako*.*,torrentsee*.*,torrentbot*.*###appDownloadModal
 ! 네이버 시각적 광고 요소 정밀 타격 (제미니)
 naver.com##.veta_ad
 naver.com##.veta_ad_wrapper
@@ -291,7 +294,8 @@ m.cafe.naver.com##.popular_ad_area
 #%#//scriptlet('prevent-window-open', 'itunes.apple.com')
 #%#//scriptlet('prevent-window-open', 'apps.apple.com')
 ! 그레이 영역 사이트 무단 팝업(Pop-under) 강제 원천 차단 (도메인 무관) (제미니)
-booktoki.*,toki.*,tkor.*,hoohootv.*,tvmon.*,tvroom.*,tvwiki.*,yako.*,torrentsee.*,torrentbot.*$popup,third-party
+! booktoki.*,toki.*,tkor.*,hoohootv.*,tvmon.*,tvroom.*,tvwiki.*,yako.*,torrentsee.*,torrentbot.*$popup,third-party
+booktoki*.*,toki*.*,tkor*.*,hoohootv*.*,tvmon*.*,tvroom*.*,tvwiki*.*,yako*.*,torrentsee*.*,torrentbot*.*$popup,third-party⁠
 
 ! ## [11] 하드웨어 센서 및 AI 스크래핑 방어
 ! 배터리 상태/네트워크 정보로 기기를 식별하는 '사이드 채널' 차단 (제미니)
