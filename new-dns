@@ -278,21 +278,23 @@ m.cafe.naver.com##.popular_ad_area
 ||cdn3k.site/data/banner/^$image,important
 ! 화면 크래시 및 팝업 스크립트 차단 보강
 ||whoas.xyz^$script,important
-! 특정 웹툰 사이트 전용 방어 (sbxh, toki 계열) - AdGuard Safari 최적화
-! 차단기 감지(Anti-Adblock) 스크립트 강제 차단 (네트워크 & 스니펫)
-||sbxh*.com/init/block.js$script,important
-||*toki*.com/init/block.js$script,important
+! 특정 웹툰 사이트 전용 방어 (sbxh, toki 계열) - AdGuard Safari 최적화 (수정본)
+! 차단기 감지(Anti-Adblock) 원천 차단 (Preload 무력화 포함)
+||sbxh*.com/init/block.js$script,xmlhttprequest,important
+||*toki*.com/init/block.js$script,xmlhttprequest,important
+! 사이트 로드 최우선 순위에서 스크립트 변수들을 날려버립니다.
+sbxh*.com,*toki*.com#%#//scriptlet('set-constant', 'adblock', undefined)
+sbxh*.com,*toki*.com#%#//scriptlet('set-constant', 'block', undefined)
 sbxh*.com,*toki*.com#%#//scriptlet('abort-on-property-read', 'adblock')
-sbxh*.com,*toki*.com#%#//scriptlet('abort-on-property-read', 'block')
-! 미끼(Bait) 엘리먼트 강제 노출 (탐지 로직 교란 - !important 범벅)
+! 미끼(Bait) 엘리먼트 강제 노출 (CSS 강제 주입)
 sbxh*.com,*toki*.com##div[data-adblock-root]:style(display: block !important; visibility: visible !important; width: 1px !important; height: 1px !important; opacity: 0.01 !important; pointer-events: none !important; position: fixed !important; top: -9999px !important; left: -9999px !important; z-index: -1 !important;)
 sbxh*.com,*toki*.com##div[data-adblock-bait]:style(display: block !important; visibility: visible !important; width: 1px !important; height: 1px !important; opacity: 0.01 !important; pointer-events: none !important;)
 ! 메인 배너 및 외부 후원사 광고 컨테이너 완벽 제거
 sbxh*.com,*toki*.com##div[data-br="1"]
 sbxh*.com,*toki*.com##button[data-bs="1"]
 sbxh*.com,*toki*.com##button[data-bp="1"]
-! 페이지 진입 시 발생하는 중앙 팝업 및 투명 안티-애드블록 레이어 강제 삭제
-sbxh*.com,*toki*.com##div[data-pm-ov="1"]
+! 난독화된 중앙 팝업 모달 및 안티-애드블록 레이어 강제 삭제
+! 클래스명이 수시로 바뀌므로 role="dialog"와 data-pm-ov 속성 조합으로만 타격합니다.
 sbxh*.com,*toki*.com##div[role="dialog"][data-pm-ov="1"]
 sbxh*.com,*toki*.com##.coming-toast
 
