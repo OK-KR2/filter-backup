@@ -278,25 +278,24 @@ m.cafe.naver.com##.popular_ad_area
 ||cdn3k.site/data/banner/^$image,important
 ! 화면 크래시 및 팝업 스크립트 차단 보강
 ||whoas.xyz^$script,important
-! 특정 웹툰 사이트 전용 방어 (sbxh, toki 계열) - AdGuard Safari 최적화 (수정본)
-! 차단기 감지(Anti-Adblock) 원천 차단 (Preload 무력화 포함)
-||sbxh*.com/init/block.js$script,xmlhttprequest,important
-||*toki*.com/init/block.js$script,xmlhttprequest,important
-! 사이트 로드 최우선 순위에서 스크립트 변수들을 날려버립니다.
-sbxh*.com,*toki*.com#%#//scriptlet('set-constant', 'adblock', undefined)
-sbxh*.com,*toki*.com#%#//scriptlet('set-constant', 'block', undefined)
+! 특정 웹툰 사이트 전용 방어 (sbxh, toki 계열) - 2026-05-21 최종 수정
+! 안티-애드블록 엔진 원천 봉쇄 (스크립트 로드 자체를 거부 및 삭제)
+||sbxh*.com/init/block.js^$script,important
+||*toki*.com/init/block.js^$script,important
+sbxh*.com,*toki*.com#%#//scriptlet('prevent-fetch', 'init/block.js')
 sbxh*.com,*toki*.com#%#//scriptlet('abort-on-property-read', 'adblock')
-! 미끼(Bait) 엘리먼트 강제 노출 (CSS 강제 주입)
-sbxh*.com,*toki*.com##div[data-adblock-root]:style(display: block !important; visibility: visible !important; width: 1px !important; height: 1px !important; opacity: 0.01 !important; pointer-events: none !important; position: fixed !important; top: -9999px !important; left: -9999px !important; z-index: -1 !important;)
-sbxh*.com,*toki*.com##div[data-adblock-bait]:style(display: block !important; visibility: visible !important; width: 1px !important; height: 1px !important; opacity: 0.01 !important; pointer-events: none !important;)
-! 메인 배너 및 외부 후원사 광고 컨테이너 완벽 제거
+! 팝업 및 차단 메시지 레이어 즉시 삭제 (DOM 노드 파괴)
+! 기존의 숨기기(hide)가 아닌 노드 삭제(remove)를 사용하여 팝업 자체를 제거합니다.
+sbxh*.com,*toki*.com##div[data-pm-ov="1"]:remove()
+sbxh*.com,*toki*.com##div[data-adblock-root]:remove()
+sbxh*.com,*toki*.com##.coming-toast:remove()
+sbxh*.com,*toki*.com##div[role="dialog"][aria-modal="true"]:remove()
+! 메인 배너 및 외부 광고 컨테이너 완벽 제거
 sbxh*.com,*toki*.com##div[data-br="1"]
 sbxh*.com,*toki*.com##button[data-bs="1"]
 sbxh*.com,*toki*.com##button[data-bp="1"]
-! 난독화된 중앙 팝업 모달 및 안티-애드블록 레이어 강제 삭제
-! 클래스명이 수시로 바뀌므로 role="dialog"와 data-pm-ov 속성 조합으로만 타격합니다.
-sbxh*.com,*toki*.com##div[role="dialog"][data-pm-ov="1"]
-sbxh*.com,*toki*.com##.coming-toast
+! 강제 스크롤 잠금 해제 (팝업 때문에 스크롤 안 되는 현상 방지)
+sbxh*.com,*toki*.com#%#//scriptlet('set-constant', 'document.body.style.overflow', 'auto')
 
 ! ## [09] 지능형 추적 및 핑거프린팅 방어 (제미니)
 ! 기기 고유 정보를 조합해 신분을 특정하는 핑거프린팅 방지 (제미니)
