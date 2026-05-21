@@ -278,20 +278,23 @@ m.cafe.naver.com##.popular_ad_area
 ||cdn3k.site/data/banner/^$image,important
 ! 화면 크래시 및 팝업 스크립트 차단 보강
 ||whoas.xyz^$script,important
-! 특정 웹툰 사이트 전용 방어 (sbxh, toki 계열) (제미니)
-! 차단기 감지(Anti-Adblock) 스크립트 실행 원천 차단
+! 특정 웹툰 사이트 전용 방어 (sbxh, toki 계열) - AdGuard Safari 최적화
+! 차단기 감지(Anti-Adblock) 스크립트 강제 차단 (네트워크 & 스니펫)
 ||sbxh*.com/init/block.js$script,important
 ||*toki*.com/init/block.js$script,important
-! 미끼(Bait) 엘리먼트 강제 노출 (탐지 로직 교란) (제미니)
-! 다른 광고 차단 필터가 미끼를 숨겨서 탐지되는 것을 막기 위해, 화면 밖에서 강제로 살려둡니다.
-sbxh*.com,*toki*.com##div[data-adblock-root]:style(display: block !important; width: 1px !important; height: 1px !important; opacity: 0.01 !important; pointer-events: none !important;)
-sbxh*.com,*toki*.com##div[data-adblock-bait]:style(display: block !important; width: 1px !important; height: 1px !important; opacity: 0.01 !important; pointer-events: none !important;)
-! 메인 배너 및 외부 후원사 광고 컨테이너 완벽 제거 (제미니)
+sbxh*.com,*toki*.com#%#//scriptlet('abort-on-property-read', 'adblock')
+sbxh*.com,*toki*.com#%#//scriptlet('abort-on-property-read', 'block')
+! 미끼(Bait) 엘리먼트 강제 노출 (탐지 로직 교란 - !important 범벅)
+sbxh*.com,*toki*.com##div[data-adblock-root]:style(display: block !important; visibility: visible !important; width: 1px !important; height: 1px !important; opacity: 0.01 !important; pointer-events: none !important; position: fixed !important; top: -9999px !important; left: -9999px !important; z-index: -1 !important;)
+sbxh*.com,*toki*.com##div[data-adblock-bait]:style(display: block !important; visibility: visible !important; width: 1px !important; height: 1px !important; opacity: 0.01 !important; pointer-events: none !important;)
+! 메인 배너 및 외부 후원사 광고 컨테이너 완벽 제거
 sbxh*.com,*toki*.com##div[data-br="1"]
 sbxh*.com,*toki*.com##button[data-bs="1"]
 sbxh*.com,*toki*.com##button[data-bp="1"]
-! 페이지 진입 시 발생하는 중앙 팝업 모달창 제거 (제미니)
+! 페이지 진입 시 발생하는 중앙 팝업 및 투명 안티-애드블록 레이어 강제 삭제
 sbxh*.com,*toki*.com##div[data-pm-ov="1"]
+sbxh*.com,*toki*.com##div[role="dialog"][data-pm-ov="1"]
+sbxh*.com,*toki*.com##.coming-toast
 
 ! ## [09] 지능형 추적 및 핑거프린팅 방어 (제미니)
 ! 기기 고유 정보를 조합해 신분을 특정하는 핑거프린팅 방지 (제미니)
