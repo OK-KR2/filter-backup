@@ -224,33 +224,6 @@ youtube.com##.mobile-app-banner
 ##div[class*="AdSlot"]
 ##div[id^="ad-wrapper"]
 ##.ad_box:empty, .ad_area:empty
-! 웹사이트 내부 광고 요소 숨기기 (CSS/Element Hiding)
-##.ad-view, .happy-under-player-mobile, .textwidget, [alt$='xn--299aqd'], [class*='basic-banner'][id], [class^='happy-header'], [id*='powerLink'], [id*='powerlink'], [id^='hd_pop'], div.banner_m, div[class^='AD'][style], ins.adsbyaiinad
-naver.com,daum.net,ppomppu.co.kr,ruliweb.com##[id$='_ad']
-m.dcinside.com###notice_list > li:not(:has(.ntc-line-pink))
-m.dcinside.com##.dna-group, .media-group, .layer-bottom-popup, .outside-search-box, .trend.cont
-m.cafe.naver.com###articleFeedList, .bottom.banner_add, .popular_toast_popup, .subscribe_layer_wrap
-fmkorea.com##.relevant_products_from_ad, .bd_mobile:matches-css(margin: /3px 0px/):remove()
-fmkorea.com#%#//scriptlet('set-constant', 'isAdBlockActive', false)
-quasarzone.com##.best-official-news, .new-official-news, .new-partner-saleinfo-container, .recommend-deal-wrap
-web.joongna.com##.pb-12, div:has([alt='ad']):not(:has(h2))
-
-! 최하단 사이트 차단의 그레이 영역 사이트 팝업 방지 (제미니)
-booktoki*.*,toki*.*,tkor*.*,hoohootv*.*,tvmon*.*,tvroom*.*,tvwiki*.*,yako*.*,torrentsee*.*,torrentbot*.*#%#//scriptlet('prevent-window-open', 'acceptancedishearten')
-booktoki*.*,toki*.*,tkor*.*,hoohootv*.*,tvmon*.*,tvroom*.*,tvwiki*.*,yako*.*,torrentsee*.*,torrentbot*.*#%#//scriptlet('prevent-popads')
-! 내부 광고/배너 싹쓸이 (도메인 결속 + PC/모바일 완벽 호환) (제미니)
-booktoki*.*,toki*.*,tkor*.*,hoohootv*.*,tvmon*.*,tvroom*.*,tvwiki*.*,yako*.*,torrentsee*.*,torrentbot*.*##.banner_wrap2, .banner-area, [id^="banner-row-"], [id^="fixed-banner-container-"], .mobile-only
-! 특정 사이트 전용 UI 강제 수정 (제미니)
-booktoki*.*,toki*.*,tkor*.*###novel_content:style(-webkit-touch-callout: default !important; -webkit-user-select: text !important; user-select: text !important;)
-tvmon*.*,tvroom*.*,tvwiki*.*###mq-notice, ###n_b_2, .banners_area, .iziModal-overlay, .supermarquee-item, [id^='modal-anc-'], div.banner_l
-! 내부 광고/배너 및 광고문의 레이어 싹쓸이 (도메인 연합군 결속 버전) (제미니)
-booktoki*.*,toki*.*,tkor*.*,hoohootv*.*,tvmon*.*,tvroom*.*,tvwiki*.*,yako*.*,torrentsee*.*,torrentbot*.*##.banner2
-booktoki*.*,toki*.*,tkor*.*,hoohootv*.*,tvmon*.*,tvroom*.*,tvwiki*.*,yako*.*,torrentsee*.*,torrentbot*.*###bannerList
-booktoki*.*,toki*.*,tkor*.*,hoohootv*.*,tvmon*.*,tvroom*.*,tvwiki*.*,yako*.*,torrentsee*.*,torrentbot*.*###modal_con
-! 귀찮은 강제 팝업 2종 (DNS 우회 긴급안내, 앱 다운로드 모달) 연합군 전체 폭파 (제미니)
-booktoki*.*,toki*.*,tkor*.*,hoohootv*.*,tvmon*.*,tvroom*.*,tvwiki*.*,yako*.*,torrentsee*.*,torrentbot*.*###dnsguide-modal-overlay
-booktoki*.*,toki*.*,tkor*.*,hoohootv*.*,tvmon*.*,tvroom*.*,tvwiki*.*,yako*.*,torrentsee*.*,torrentbot*.*###appDownloadModal
-
 ! 네이버 시각적 광고 요소 정밀 타격 (제미니)
 naver.com##.veta_ad
 naver.com##.veta_ad_wrapper
@@ -263,6 +236,40 @@ m.cafe.naver.com##.ad_area
 m.cafe.naver.com##.banner_ad
 m.cafe.naver.com###articleFeedList > .ad_item
 m.cafe.naver.com##.popular_ad_area
+! 웹사이트 내부 광고 요소 숨기기 (CSS/Element Hiding)
+##.ad-view, .happy-under-player-mobile, .textwidget, [alt$='xn--299aqd'], [class*='basic-banner'][id], [class^='happy-header'], [id*='powerLink'], [id*='powerlink'], [id^='hd_pop'], div.banner_m, div[class^='AD'][style], ins.adsbyaiinad
+naver.com,daum.net,ppomppu.co.kr,ruliweb.com##[id$='_ad']
+m.dcinside.com###notice_list > li:not(:has(.ntc-line-pink))
+m.dcinside.com##.dna-group, .media-group, .layer-bottom-popup, .outside-search-box, .trend.cont
+m.cafe.naver.com###articleFeedList, .bottom.banner_add, .popular_toast_popup, .subscribe_layer_wrap
+fmkorea.com##.relevant_products_from_ad, .bd_mobile:matches-css(margin: /3px 0px/):remove()
+fmkorea.com#%#//scriptlet('set-constant', 'isAdBlockActive', false)
+quasarzone.com##.best-official-news, .new-official-news, .new-partner-saleinfo-container, .recommend-deal-wrap
+web.joongna.com##.pb-12, div:has([alt='ad']):not(:has(h2))
+
+! 그레이 연합군 배너 및 팝업 일괄 박멸 (전 브라우저 호환) (제미니)
+! 지능형 팝업 및 스크립트 우회 차단
+#%#//scriptlet('prevent-window-open', 'acceptancedishearten')
+#%#//scriptlet('prevent-popads')
+! 연합군 공통 배너 이미지 및 투명 껍데기 박스 공간 박멸]
+##.banner2
+###bannerList
+##.banner_wrap2
+##.banner-area
+##[id^="banner-row-"]
+##[id^="fixed-banner-container-"]
+##.mobile-only
+! 이름 없는 쌩 <ul> 및 고정 배너 정밀 타격
+##.bo_v_mov + ul
+##li.full.pc-only
+##li.full.mobile-only
+! 귀찮은 사설 모달 및 강제 안내 레이어 전체 폭파
+###modal_con
+###dnsguide-modal-overlay
+###appDownloadModal
+! 특정 사이트 전용 UI 강제 수정 및 잔여물 정리
+###novel_content:style(-webkit-touch-callout: default !important; -webkit-user-select: text !important; user-select: text !important;)
+###mq-notice, #n_b_2, .banners_area, .iziModal-overlay, .supermarquee-item, [id^='modal-anc-'], div.banner_l
 
 ! ## [09] 지능형 추적 및 핑거프린팅 방어 (제미니)
 ! 기기 고유 정보를 조합해 신분을 특정하는 핑거프린팅 방지 (제미니)
