@@ -84,6 +84,9 @@ $removeparam=gbraid
 ! 인스타그램 및 유튜브 최신 URL 공유 추적 파라미터 제거 (2026 추가) (제미니)
 $removeparam=igsh
 $removeparam=si
+! URL 추적 파라미터 (최신화 보완) (제미니)
+$removeparam=srsltid
+$removeparam=gad_source
 
 ! ## [03] 안티
 ! 주요 분석 및 통계 (광고 차단 감지용으로 자주 쓰임)(제미니)
@@ -322,6 +325,10 @@ booktoki*.*,toki*.*,tkor*.*,hoohootv*.*,tvmon*.*,tvroom*.*,tvwiki*.*,yako*.*,tor
 ||amazonbot.com^$important
 ||perplexity.ai/robots.txt^$important
 ||cohere.com/robots.txt^$important
+! AI 무단 스크래핑 및 봇 방어 (추가) (제미니)
+||applebot-extended.com^$important
+||facebookbot.com^$important
+||meta-externalagent.com^$important
 
 ! ## [12] 브라우저 기능 제약 및 강제 해제
 ! 우클릭 차단, 드래그 방지, 복사 방지 스크립트 강제 무력화 (제미니)
@@ -408,6 +415,8 @@ $ping,important
 ##+js(set-constant, document.browsingTopics, undefined)
 ##+js(set-constant, navigator.scheduling, undefined)
 ##+js(set-constant, navigator.userActivation, undefined)
+! 구글 프라이버시 샌드박스 (API 차단 강화) (제미니)
+##+js(set-constant, document.attributionReporting, undefined)
 
 ! ## [22] 하드웨어 자원 및 센서 무단 점유 방어
 ! 웹 채굴(Cryptojacking) 스크립트 및 높은 CPU 점유 차단 (제미니)
