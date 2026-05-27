@@ -256,7 +256,7 @@ web.joongna.com##.pb-12, div:has([alt='ad']):not(:has(h2))
 ! 지능형 팝업 및 스크립트 우회 차단
 #%#//scriptlet('prevent-window-open', 'acceptancedishearten')
 #%#//scriptlet('prevent-popads')
-! 연합군 공통 배너 이미지 및 투명 껍데기 박스 공간 박멸]
+! 연합군 공통 배너 이미지 및 투명 껍데기 박스 공간 박멸
 ##.banner2
 ###bannerList
 ##.banner_wrap2
