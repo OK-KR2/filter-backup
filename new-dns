@@ -309,7 +309,30 @@ web.joongna.com##.pb-12, div:has([alt='ad']):not(:has(h2))
 #%#//scriptlet('prevent-window-open', 'apps.apple.com')
 ! 그레이 영역 사이트 무단 팝업(Pop-under) 강제 원천 차단 (도메인 무관) (제미니)
 ! booktoki.*,toki.*,tkor.*,hoohootv.*,tvmon.*,tvroom.*,tvwiki.*,yako.*,torrentsee.*,torrentbot.*$popup,third-party
-booktoki*.*,toki*.*,tkor*.*,hoohootv*.*,tvmon*.*,tvroom*.*,tvwiki*.*,yako*.*,torrentsee*.*,torrentbot*.*$popup,third-party⁠
+! booktoki*.*,toki*.*,tkor*.*,hoohootv*.*,tvmon*.*,tvroom*.*,tvwiki*.*,yako*.*,torrentsee*.*,torrentbot*.*$popup,third-party⁠
+! 지정된 사이트들이 강제로 띄우는 무단 새창(팝업) 원천 차단 (제미니)
+||booktoki*^$popup
+||toki*^$popup
+||tkor*^$popup
+||hoohootv*^$popup
+||tvmon*^$popup
+||tvroom*^$popup
+||tvwiki*^$popup
+||yako*^$popup
+||torrentsee*^$popup
+||torrentbot*^$popup
+! 해당 사이트 내부에서 불러오는 모든 외부(서드파티) 악성 광고/스크립트 차단 (제미니)
+! (도메인 뒤에 숫자가 바뀌어도 모두 적용되도록 각 사이트별로 최적화 분할)
+*$third-party,domain=booktoki*
+*$third-party,domain=toki*
+*$third-party,domain=tkor*
+*$third-party,domain=hoohootv*
+*$third-party,domain=tvmon*
+*$third-party,domain=tvroom*
+*$third-party,domain=tvwiki*
+*$third-party,domain=yako*
+*$third-party,domain=torrentsee*
+*$third-party,domain=torrentbot*
 
 ! ## [11] 하드웨어 센서 및 AI 스크래핑 방어
 ! 배터리 상태/네트워크 정보로 기기를 식별하는 '사이드 채널' 차단 (제미니)
