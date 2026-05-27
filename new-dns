@@ -433,7 +433,7 @@ $ping,important
 ! 웹재생 허용 주석처리: ##+js(set-constant, AudioContext, undefined)
 ##+js(set-constant, webkitAudioContext, undefined)
 ! 폰트 리스트 수집을 통한 기기 식별 방지 보강 (제미니)
-##+js(set-constant, document.fonts, undefined)
+! ##+js(set-constant, document.fonts, undefined)
 
 ! ## [21] 구글 Privacy Sandbox 및 Topics API 저격
 ! 구글의 새로운 추적 기술인 Topics API 및 FLoC 비활성화 (제미니)
@@ -522,6 +522,12 @@ $ping,important
 @@||store.nintendo.co.kr^$document
 ! SVCB sni 허용 테스트 (제미니)
 @@||*^$dnstype=SVCB
+! 비공개 릴레이가 새로운 IP를 받아오는(토큰 인증 및 핸드셰이크) 핵심 주소만 쏙 (제미니)
+@@||mask.apple-dns.net^
+@@||mask-t.apple-dns.net^
+@@||mask-h.apple-dns.net^
+@@||mask-api.icloud.com^
+@@||mask-api.fe.apple-dns.net^
 
 ! ## [25] 방어선
 ! 이중잠금 (제미니)
