@@ -317,7 +317,7 @@ web.joongna.com##.pb-12, div:has([alt='ad']):not(:has(h2))
 ||hoohootv*^$popup
 ||tvmon*^$popup
 ||tvroom*^$popup
-||tvwiki*^$popup
+@@||tvwiki*^$popup
 ||yako*^$popup
 ||torrentsee*^$popup
 ||torrentbot*^$popup
