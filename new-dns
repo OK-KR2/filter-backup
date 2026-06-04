@@ -1,5 +1,5 @@
 ! Title: OK-KR2
-! Version: 26.01.01
+! Version: 26.01.02
 
 ! ## [01] 통합 추적 방지 리스트
 ! 국내 기업 전용 - 네이버, 카카오, 쿠팡 등 (제미니)
@@ -276,6 +276,12 @@ web.joongna.com##.pb-12, div:has([alt='ad']):not(:has(h2))
 ! 특정 사이트 전용 UI 강제 수정 및 잔여물 정리
 ###novel_content:style(-webkit-touch-callout: default !important; -webkit-user-select: text !important; user-select: text !important;)
 ###mq-notice, #n_b_2, .banners_area, .iziModal-overlay, .supermarquee-item, [id^='modal-anc-'], div.banner_l
+! 미러 사이트 동적 광고 스크립트 원천 차단
+||toonimg*.com/poster_js/*$script
+! 광고 영역 및 잔여 껍데기 박멸
+##.top-ad-padding
+##div[style="padding:3px;"]:has(a[target="_blank"] > img)
+##.alert-danger:has(a:has-text([AD]))
 
 ! ## [09] 지능형 추적 및 핑거프린팅 방어 (제미니)
 ! 기기 고유 정보를 조합해 신분을 특정하는 핑거프린팅 방지 (제미니)
