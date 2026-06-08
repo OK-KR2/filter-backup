@@ -1,6 +1,6 @@
 // ==UserScript==
-// @name         나무위키 파워링크 최종 처형 (목차 보호 완벽 적용)
-// @version      7.1
+// @name         NamuWiki Powerlink Kill (Fake TOC)
+// @version      8.0
 // @description  실제 목차 번호(1, 2.1 등) 완벽 보호 및 위장 앵커 타격
 // @match        *://namu.wiki/*
 // @run-at       document-start
