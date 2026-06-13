@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Mobile Custom Debugger (Sync Copy) - Advanced Pro
-// @version      9.0
+// @version      9.2
 // @match        *://*/*
 // @run-at       document-start
 // @grant        none
