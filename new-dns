@@ -1,5 +1,5 @@
 ! Title: OK-KR2
-! Version: 26.01.04
+! Version: 26.01.10
 
 ! ## [01] 통합 추적 방지 리스트
 ! 국내 기업 전용 - 네이버, 카카오, 쿠팡 등 (제미니)
@@ -196,6 +196,13 @@ etoland.co.kr#%#//scriptlet('trusted-click-element', '[data-cookie-key]', '', '3
 ! 카카오 숏폼(숏츠) 및 불필요한 기능 숨기기 (제미니)
 ||kamp.kakao.com^
 ||vs*.play.kakao.com^
+! 카카오톡 숏폼 탭 및 플레이어 차단 ver.2 (제미니)
+||play.kakao.com^
+||shortformstats.kakao.com^
+! 카카오톡 메인 뷰 / 비즈보드 광고 피드 차단 (제미니)
+||talk-pilsner.kakao.com^
+! 카나나 박멸
+||public-persona-production-*.kgns3.com^
 ! 웹페이지 카카오 광고 요소 숨기기 (제미니)
 kakao.com##.ad_unit
 kakao.com##iframe[src*="bizad"]
