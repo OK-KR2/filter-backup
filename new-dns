@@ -200,7 +200,7 @@ etoland.co.kr#%#//scriptlet('trusted-click-element', '[data-cookie-key]', '', '3
 ||play.kakao.com^
 ||shortformstats.kakao.com^
 ! 카카오톡 메인 뷰 / 비즈보드 광고 피드 차단 (제미니)
-||talk-pilsner.kakao.com^
+! ||talk-pilsner.kakao.com^
 ! 카나나 박멸
 ||public-persona-production-*.kgns3.com^
 ! 웹페이지 카카오 광고 요소 숨기기 (제미니)
