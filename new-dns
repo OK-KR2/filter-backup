@@ -1,5 +1,5 @@
 ! Title: OK-KR2
-! Version: 26.02.3442
+! Version: 26.02.3453
 
 ! ## [01] 통합 추적 방지 리스트
 ! 국내 기업 전용 - 네이버, 카카오, 쿠팡 등 (제미니)
@@ -533,7 +533,7 @@ $ping,important
 ! 닌텐도 스토어 공홈 로그인/장바구니 (제미니)
 @@||store.nintendo.co.kr^$document
 ! SVCB sni 허용 테스트 (제미니)
-@@||*^$dnstype=SVCB
+! @@||*^$dnstype=SVCB
 ! 비공개 릴레이가 새로운 IP를 받아오는(토큰 인증 및 핸드셰이크) 핵심 주소만 쏙 (제미니)
 @@||mask.apple-dns.net^
 @@||mask-t.apple-dns.net^
