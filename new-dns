@@ -1,5 +1,5 @@
 ! Title: OK-KR2
-! Version: 26.02.3464
+! Version: 26.02.3477
 
 ! ## [01] 통합 추적 방지 리스트
 ! 국내 기업 전용 - 네이버, 카카오, 쿠팡 등 (제미니)
@@ -38,12 +38,15 @@
 ||api.mixpanel.com^$important
 ||logs.adjust.com^$important
 ||cr.naver.com^$important
-! 네이버와 다음의 최신 모바일 광고 서버 주소 (Hooray804 참고) (제미니)
+! 네이버와 다음의 최신 모바일 광고 서버 주소 (제미니)
 ||ads-display.naver.com^
 ||nv.veta.naver.com^
 ||ad-m.daum.net^
 ||display.ad.daum.net^
 ! ||amapi.pstatic.net^
+! 수정 - 네이버 핵심 추적 엔진 검거 (제미니)
+||wcs.naver.net^$important
+||lcs.naver.com^$important
 
 ! ## [02] 추적
 ! 소셜 미디어 추적 위젯 차단 (제미니)
@@ -572,6 +575,9 @@ naver.com##div[id*="veta"]
 #%#//scriptlet('abort-on-property-read', 'firebase')
 ! 2026년형 백그라운드 추적 비컨 사살 (제미니)
 #%#//scriptlet('prevent-beacon')
+! 이중잠금 구역에 추가 (제미니)
+#%#//scriptlet('prevent-fetch', 'wcs.naver.net')
+#%#//scriptlet('prevent-fetch', 'lcs.naver.com')
 ! 삼중잠금 (제미니)
 #%#//scriptlet('prevent-fetch', 'veta.naver.com')
 ##.adblock-msg, .adblock-overlay
