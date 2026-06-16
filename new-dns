@@ -1,5 +1,5 @@
 ! Title: OK-KR2
-! Version: 26.02.3480
+! Version: 26.02.3499
 
 ! ## [01] 통합 추적 방지 리스트
 ! 국내 기업 전용 - 네이버, 카카오, 쿠팡 등 (제미니)
@@ -213,15 +213,15 @@ daum.net##div[id^="ad_"]
 #kakao.com##.ad_area
 ! 카카오 및 다음 앱 내부 행동 데이터 수집 트래커 광역 차단 (정밀 타격) (제미니)
 ! 카카오 카나나 차단 (제미니)
-kuid-provider.ds.kakao.com
+||kuid-provider.ds.kakao.com^
 ! 카카오 핵심 추적 엔진 티아라(Tiara) 광역 저격
-*.tiara.kakao.com
-*.tiara.daum.net
+||tiara.kakao.com^
+||tiara.daum.net^
 ! 카카오 맞춤형 광고 타겟팅용 픽셀 트래커 차단 (제미니)
-tr.kakao.com
+||tr.kakao.com^
 ! 카카오 및 다음 통계/로그 수집 서버 차단
-analytics.daum.net
-logging.kakao.com
+||analytics.daum.net^
+||logging.kakao.com^
 
 ! ## [07] 유튜브
 ! 유튜브 영상 종료 후 카드 숨기기 (제미니)
@@ -557,8 +557,8 @@ $ping,important
 
 ! ## [25] 방어선
 ! 이중잠금 (제미니)
-*.tiara.kakao.com
-*.tiara.daum.net
+||tiara.kakao.com^
+||tiara.daum.net^
 naver.com##.veta_ad
 naver.com##.veta_ad_wrapper
 naver.com##div[id*="veta"]
