@@ -1,5 +1,5 @@
 ! Title: OK-KR2
-! Version: 26.02.3553
+! Version: 26.02.3555
 
 ! ## [01] 통합 추적 방지 리스트
 ! 국내 기업 전용 - 네이버, 카카오, 쿠팡 등 (제미니)
@@ -641,3 +641,8 @@ naver.com##div[id*="veta"]
 #%#//scriptlet('prevent-fetch', 'veta.naver.com')
 ##.adblock-msg, .adblock-overlay
 #%#//scriptlet('abort-current-inline-script', 'isAdBlockActive')
+
+! 사이트 로그인 버튼이 왜 안 눌리지?" 하거나 "어? 화면이 왜 백지장이지?" 하는 순간이 온다면 확인
+! 소셜 로그인(카카오/구글로 시작하기) 버튼을 누른 건 아닌가? ⁠(16번 룰)⁠
+! 무료 포인트 충전소(앱테크)를 누른 건 아닌가? ⁠(1번 TNK 룰)⁠
+! 제휴 쇼핑 링크(텐핑 등)를 누른 건 아닌가? ⁠(4번 룰)⁠
