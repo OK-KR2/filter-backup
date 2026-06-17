@@ -1,5 +1,5 @@
 ! Title: OK-KR2
-! Version: 26.02.3533
+! Version: 26.02.3553
 
 ! ## [01] 통합 추적 방지 리스트
 ! 국내 기업 전용 - 네이버, 카카오, 쿠팡 등 (제미니)
@@ -56,6 +56,8 @@
 ! 국내 최대 모바일 앱 행동 추적 SDK (아이지에이웍스/애드브릭스) 차단 (제미니)
 ||adbrix.io^
 ||igaworks.com^
+! 국내 모바일 게임 및 리워드 앱 광고/추적 (TNK 팩토리) 설치 리워드 차단 (제미니)
+||tnkfactory.com^
 
 ! ## [02] 추적
 ! 소셜 미디어 추적 위젯 차단 (제미니)
@@ -218,6 +220,9 @@ etoland.co.kr#%#//scriptlet('trusted-click-element', '[data-cookie-key]', '', '3
 ! 알리익스프레스, 테무(Temu) 등 중국 쇼핑몰 공유 추적 파라미터 제거 (제미니)
 $removeparam=aff_fcid
 $removeparam=share_id
+! 바이두(Baidu) 및 얀덱스(Yandex) 글로벌 트래커/분석기 차단 (제미니)
+||hm.baidu.com^
+||mc.yandex.ru^
 
 ! ## [06] 카카오
 ! 카카오 비즈니스 및 광고 서버 차단 (제미니)
@@ -450,10 +455,10 @@ web.joongna.com##.pb-12, div:has([alt='ad']):not(:has(h2))
 ||lgsmartad.com^
 
 ! ## [15] 리퍼러 및 정보 누수 차단
-! 다른 사이트로 넘어갈 때 '내가 어디서 왔는지' 숨기기 (Referer 정책 강화) (제미니)
-#%#//scriptlet('set-constant', 'document.referrer', '')
-! 브라우저 창의 이름(window.name)을 이용한 사이트 간 추적 방지 (제미니)
-#%#//scriptlet('set-constant', 'window.name', '')
+! 다른 사이트로 넘어갈 때 '내가 어디서 왔는지' 숨기기 (PASS 본인인증 및 주요 결제망 예외) (제미니)
+~kmcert.com,~niceipin.co.kr,~okcert.com,~siren24.com,~inicis.com,~kcp.co.kr,~tosspayments.com,~danalpay.com,~mobilians.co.kr#%#//scriptlet('set-constant', 'document.referrer', '')
+! 브라우저 창의 이름(window.name)을 이용한 사이트 간 추적 방지 (PASS 본인인증 및 주요 결제망 예외) (제미니)
+~kmcert.com,~niceipin.co.kr,~okcert.com,~siren24.com,~inicis.com,~kcp.co.kr,~tosspayments.com,~danalpay.com,~mobilians.co.kr#%#//scriptlet('set-constant', 'window.name', '')
 ! 특정 앱/사이트가 내 폰의 '검색 히스토리'에 접근하려는 시도 차단 (제미니)
 ||history.google.com^
 ||myactivity.google.com^
@@ -482,6 +487,12 @@ web.joongna.com##.pb-12, div:has([alt='ad']):not(:has(h2))
 ! 악질적인 사용자 화면 녹화(세션 리플레이) 및 로깅 툴 차단 (제미니)
 ||fullstory.com^
 ||browser-intake-datadoghq.com^
+! 웹사이트 성능 측정을 위장한 방대한 브라우저 텔레메트리 (뉴렐릭) 정밀 타격 (제미니)
+||bam.nr-data.net^
+! 세션 리플레이(화면 녹화) 및 히트맵 분석기 추가 박멸 (제미니)
+||mouseflow.com^
+||smartlook.com^
+||smartlook.cloud^
 
 ! ## [18] 하이퍼링크 오디팅 및 미디어 분석 차단
 ! 링크 클릭 시 백그라운드에서 몰래 전송되는 클릭 신호(Ping) 차단 (제미니)
