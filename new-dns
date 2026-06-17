@@ -1,5 +1,5 @@
 ! Title: OK-KR2
-! Version: 26.02.3499
+! Version: 26.02.3524
 
 ! ## [01] 통합 추적 방지 리스트
 ! 국내 기업 전용 - 네이버, 카카오, 쿠팡 등 (제미니)
@@ -47,6 +47,12 @@
 ! 수정 - 네이버 핵심 추적 엔진 검거 (제미니)
 ||wcs.naver.net^$important
 ||lcs.naver.com^$important
+! 국내 토종 1위 웹 로그 분석 및 추적기 (에이스카운터) 원천 차단 (제미니)
+||acecounter.com^
+! 배달의민족 앱/웹 내부 행동 분석 트래커 차단 (제미니)
+||analytics.woowahan.com^
+! 글로벌 이커머스(아마존) 타겟팅 광고 및 추적기 원천 차단 (제미니)
+||amazon-adsystem.com^
 
 ! ## [02] 추적
 ! 소셜 미디어 추적 위젯 차단 (제미니)
@@ -93,6 +99,15 @@ $removeparam=si
 ! URL 추적 파라미터 (최신화 보완) (제미니)
 $removeparam=srsltid
 $removeparam=gad_source
+! 마이크로소프트, 구글 GDN, 야후 등 글로벌 웹 추적 파라미터 추가 제거 (제미니)
+$removeparam=msclkid
+$removeparam=dclid
+$removeparam=yclid
+! 틱톡 웹사이트 픽셀(다른 사이트에서의 사용자 감시용) 차단 (제미니)
+||analytics.tiktok.com^
+! 핀터레스트 및 스냅챗 범용 웹 추적 픽셀 차단 (제미니)
+||ct.pinterest.com^
+||tr.snapchat.com^
 
 ! ## [03] 안티
 ! 주요 분석 및 통계 (광고 차단 감지용으로 자주 쓰임)(제미니)
@@ -161,6 +176,18 @@ etoland.co.kr#%#//scriptlet('trusted-click-element', '[data-cookie-key]', '', '3
 ! 모바일 앱 광고의 대부: InMobi 차단 (제미니)
 ||inmobi.com^
 ||*.inmobi.com^
+! 생활/금융 밀착형 앱(토스, 당근마켓) 맞춤형 광고 서버 정밀 타격 (제미니)
+||ad.toss.im^
+||ads.daangn.com^
+! 글로벌 독립 광고 플랫폼(DSP/SSP) 및 언론사 지연 배너 트래커 차단 (제미니)
+||adsrvr.org^
+||pubmatic.com^
+||openx.net^
+! 라인(LINE) 모바일/웹 맞춤형 광고 네트워크 차단 (제미니)
+||ad.line.me^
+! 국내 언론사 및 커뮤니티 제휴 마케팅(텐핑, 링크프라이스) 기생 스크립트 차단 (제미니)
+||tenping.kr^$third-party
+||linkprice.com^$third-party
 
 ! ## [05] 중국
 ! 로보락/샤오미 데이터 수집 및 중국 서버 차단 (제미니)
@@ -178,6 +205,9 @@ etoland.co.kr#%#//scriptlet('trusted-click-element', '[data-cookie-key]', '', '3
 ||ynuf.alipay.com^
 ||is.snssdk.com^
 ||mon.snssdk.com^
+! 알리익스프레스, 테무(Temu) 등 중국 쇼핑몰 공유 추적 파라미터 제거 (제미니)
+$removeparam=aff_fcid
+$removeparam=share_id
 
 ! ## [06] 카카오
 ! 카카오 비즈니스 및 광고 서버 차단 (제미니)
@@ -405,6 +435,9 @@ web.joongna.com##.pb-12, div:has([alt='ad']):not(:has(h2))
 ||api.smoot.apple.com^
 ||telemetry.google.com^
 ||location.google.com^
+! LG 스마트TV 광고 및 시청 데이터 수집 차단 (삼성은 기존 리스트에 있음) (제미니)
+||ad.lgsmartad.com^
+||lgsmartad.com^
 
 ! ## [15] 리퍼러 및 정보 누수 차단
 ! 다른 사이트로 넘어갈 때 '내가 어디서 왔는지' 숨기기 (Referer 정책 강화) (제미니)
