@@ -1,5 +1,5 @@
 ! Title: OK-KR2
-! Version: 26.02.3524
+! Version: 26.02.3533
 
 ! ## [01] 통합 추적 방지 리스트
 ! 국내 기업 전용 - 네이버, 카카오, 쿠팡 등 (제미니)
@@ -53,6 +53,9 @@
 ||analytics.woowahan.com^
 ! 글로벌 이커머스(아마존) 타겟팅 광고 및 추적기 원천 차단 (제미니)
 ||amazon-adsystem.com^
+! 국내 최대 모바일 앱 행동 추적 SDK (아이지에이웍스/애드브릭스) 차단 (제미니)
+||adbrix.io^
+||igaworks.com^
 
 ! ## [02] 추적
 ! 소셜 미디어 추적 위젯 차단 (제미니)
@@ -108,6 +111,11 @@ $removeparam=yclid
 ! 핀터레스트 및 스냅챗 범용 웹 추적 픽셀 차단 (제미니)
 ||ct.pinterest.com^
 ||tr.snapchat.com^
+! 브랜치(Branch.io) 링크 열기(리다이렉트)는 허용하되, 백그라운드 데이터 수집(API) 서버만 정밀 타격 (제미니)
+||api.branch.io^
+||api2.branch.io^
+||api3.branch.io^
+||cdn.branch.io^
 
 ! ## [03] 안티
 ! 주요 분석 및 통계 (광고 차단 감지용으로 자주 쓰임)(제미니)
@@ -188,6 +196,8 @@ etoland.co.kr#%#//scriptlet('trusted-click-element', '[data-cookie-key]', '', '3
 ! 국내 언론사 및 커뮤니티 제휴 마케팅(텐핑, 링크프라이스) 기생 스크립트 차단 (제미니)
 ||tenping.kr^$third-party
 ||linkprice.com^$third-party
+! 국내 언론사/커뮤니티 맞춤형 기사 위장 광고 (데이블) 차단 (제미니)
+||dable.io^
 
 ! ## [05] 중국
 ! 로보락/샤오미 데이터 수집 및 중국 서버 차단 (제미니)
@@ -469,6 +479,9 @@ web.joongna.com##.pb-12, div:has([alt='ad']):not(:has(h2))
 ||bugsnag.com^$important
 ||rollbar.com^$important
 ||logrocket.com^$important (사용자 화면 녹화 및 세션 리플레이 방지)
+! 악질적인 사용자 화면 녹화(세션 리플레이) 및 로깅 툴 차단 (제미니)
+||fullstory.com^
+||browser-intake-datadoghq.com^
 
 ! ## [18] 하이퍼링크 오디팅 및 미디어 분석 차단
 ! 링크 클릭 시 백그라운드에서 몰래 전송되는 클릭 신호(Ping) 차단 (제미니)
