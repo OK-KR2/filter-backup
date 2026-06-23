@@ -1,51 +1,47 @@
 ! Title: OK-KR2
-! Version: 26.02.3559
+! Version: 26.02.3580
 
 ! ## [01] 통합 추적 방지 리스트
 ! 국내 기업 전용 - 네이버, 카카오, 쿠팡 등 (제미니)
-||veta.naver.com^
-||analytics.naver.com^
-||log.naver.com^
+||veta.naver.com^$important
+||analytics.naver.com^$important
+||log.naver.com^$important
 ||cc.naver.com^
-||tiara.kakao.com^
-||clog.kakao.com^
+||tiara.kakao.com^$important
+||clog.kakao.com^$important
 ||clog-aggregator.kakao.com^
-||ad.kakao.com^
 ||ad.kakaocorp.com^
 ||samsungads.com^
 ||samsungadhub.com^
 ||log.coupang.com^
 ||analytics.coupang.com^
+||cmg.coupang.com^
+! 쿠팡 자체 광고 시스템 및 맞춤형 추천 API 서버 (제미니)
+||ads.coupang.com^
+||ads-api.coupang.com^
+! 네이버 차세대 성과형/디스플레이 광고 시스템 (GFP) 및 트래커 (제미니)
+||gfp.naver.com^
+||gfp-logging.naver.com^
 ! 글로벌 추적 SDK - 앱 내 행동 분석 및 캡처 로그 (제미니)
 ||firebase-settings.crashlytics.com^
 ||firebaselogging-pa.googleapis.com^
-||api.amplitude.com^
-||api.mixpanel.com^
+||api.amplitude.com^$important
+||api.mixpanel.com^$important
 ||api.segment.io^
 ||telemetry.sdk.io^
 ||t.appsflyer.com^
 ||events.appsflyer.com^
 ||sdk.iad-01.braze.com^
 ||collect.tealiumiq.com^
-||logs.adjust.com^
-! 보강 - 중복이지만 보강으로 한번 더 필터링 (제미니)
-||veta.naver.com^$important
-||log.naver.com^$important
-||analytics.naver.com^$important
-||tiara.kakao.com^$important
-||clog.kakao.com^$important
-||api.amplitude.com^$important
-||api.mixpanel.com^$important
 ||logs.adjust.com^$important
 ||cr.naver.com^$important
 ! 네이버와 다음의 최신 모바일 광고 서버 주소 (제미니)
 ||ads-display.naver.com^
 ||nv.veta.naver.com^
-||ad-m.daum.net^
-||display.ad.daum.net^
 ||serv.ds.kakao.com^
+! 네이버 앱 로그인/카페 먹통 방지 주석처리 (제미니)
 ! ||amapi.pstatic.net^
-! 수정 - 네이버 핵심 추적 엔진 검거 (제미니)
+! 네이버 핵심 추적 엔진 검거 (제미니)
 ||wcs.naver.net^$important
 ||lcs.naver.com^$important
 ! 국내 토종 1위 웹 로그 분석 및 추적기 (에이스카운터) 원천 차단 (제미니)
@@ -161,14 +157,12 @@ etoland.co.kr#%#//scriptlet('trusted-click-element', '[data-cookie-key]', '', '3
 
 ! ## [04] 광고
 ! 접속 차단 및 광고 서버 (DNS/Domain)
-||veta.naver.com^
 ||ader.naver.com^
 ||ads.adoffice.11st.co.kr^
 ||digitalcamp.co.kr^
 ||targetpush.co.kr^
 ||dctrend.ai^
 ||onelink.me^
-||shortformstats.kakao.com^
 ! ||pstatic.net.topo.gscdn.net^
 ||nrc.naver.com^
 ! 광고 서버 사전 연결 시도 차단 (제미니)
@@ -228,11 +222,14 @@ $removeparam=share_id
 ! ## [06] 카카오
 ! 카카오 비즈니스 및 광고 서버 차단 (제미니)
 ||bizad-fe.kakao.com^
-||display.ad.daum.net^
 ||kaikas.kakao.com^
 ||kakaoad-fe.kakao.com^
 ||ad-stat.kakao.com^
 ||track.kakao.com^
+! 다음 광고 서버 광역 커버 (기존 세부 주소 통합 및 변종 방어) (제미니)
+||ad.daum.net^
+! 카카오 알림톡 및 비즈니스 멀티미디어 통계/추적 (제미니)
+||mms-stat.kakao.com^
 ! 카카오 광고 및 분석 보완 (제미니)
 ||ad.kakao.com^
 ||talkchannel-api.kakao.com^
@@ -261,7 +258,6 @@ daum.net##div[id^="ad_"]
 ! 카카오 카나나 차단 (제미니)
 ||kuid-provider.ds.kakao.com^
 ! 카카오 핵심 추적 엔진 티아라(Tiara) 광역 저격
-||tiara.kakao.com^
 ||tiara.daum.net^
 ! 카카오 맞춤형 광고 타겟팅용 픽셀 트래커 차단 (제미니)
 ||tr.kakao.com^
@@ -368,8 +364,8 @@ web.joongna.com##.pb-12, div:has([alt='ad']):not(:has(h2))
 ! 위치 고정(fixed) + 화면 꽉 채움 + 투명도 0인 악질 링크들만 정밀 타격
 ! ##a[style*="position:fixed"][style*="width:100%"][style*="height:100%"]:not(:has-text)
 ! ##a[style*="position: fixed"][style*="width: 100%"][style*="height: 100%"]:not(:has-text)
-! 클릭 가로채기용 초고층(z-index) 레이어 폭파 (제미니)
-! 투명도가 거의 없고 z-index가 최대치인 광고 전용 div 저격
+! 투명도가 거의 없고 클릭 가로채기용 초고층(z-index) div 레이어 폭파 (제미니)
+! 최신 스크립트릿(⁠prevent-window-open⁠)이 이 역할을 대체 (제미니)
 ! ##div[style*="opacity:0.01"][style*="z-index:2147483647"]
 ! ##div[style*="opacity: 0.01"][style*="z-index: 2147483647"]
 ! ##div[style*="opacity:0"][style*="z-index:2147483647"]
@@ -389,6 +385,7 @@ web.joongna.com##.pb-12, div:has([alt='ad']):not(:has(h2))
 ||hoohootv*^$popup
 ||tvmon*^$popup
 ||tvroom*^$popup
+! 플레이어 재생을 위한 허용 (*$third-party로 타격) (제미니)
 @@||tvwiki*^$popup
 ||yako*^$popup
 ||torrentsee*^$popup
@@ -514,9 +511,11 @@ $ping,important
 
 ! ## [20] 오디오 및 폰트 핑거프린팅 세밀 방어
 ! 기기 고유의 오디오 재생 특성으로 신분을 식별하는 행위 차단 (제미니)
-! 웹재생 허용 주석처리: ##+js(set-constant, AudioContext, undefined)
+! 하드웨어 보안 키를 쓸 때 인증 오류 복구 (제미니)
+! ##+js(set-constant, AudioContext, undefined)
 ##+js(set-constant, webkitAudioContext, undefined)
 ! 폰트 리스트 수집을 통한 기기 식별 방지 보강 (제미니)
+! 하드웨어 보안 키를 쓸 때 인증 오류 복구 (제미니)
 ! ##+js(set-constant, document.fonts, undefined)
 
 ! ## [21] 구글 Privacy Sandbox 및 Topics API 저격
@@ -533,14 +532,16 @@ $ping,important
 ||coinhive.com^$important
 ||crypto-loot.com^$important
 ! 근거리 통신(NFC/USB/Bluetooth)을 통한 기기 식별 방지 (제미니)
-! 블루투스/NFC 연결불 허용 주석처리: ##+js(set-constant, navigator.bluetooth, undefined)
-! 블루투스/NFC 연결불 허용 주석처리: ##+js(set-constant, navigator.nfc, undefined)
-! 블루투스/NFC 연결불 허용 주석처리: ##+js(set-constant, navigator.usb, undefined)
+! 하드웨어 보안 키를 쓸 때 인증 오류 복구 (제미니)
+! ##+js(set-constant, navigator.bluetooth, undefined)
+! ##+js(set-constant, navigator.nfc, undefined)
+! ##+js(set-constant, navigator.usb, undefined)
 
 ! ## [23] 글로벌 미디어 자동 재생 및 트래픽 낭비 차단 (제미니)
 ! 웹사이트 진입 시 비디오/오디오 자동 재생 강제 중지
 #%#//scriptlet('prevent-autoplay')
 ! 보이지 않는 곳에서 데이터를 갉아먹는 비디오 로딩 방지
+! 영상이 자동으로 재생되어야 하는 플랫폼 전체가 먹통 복구 (제미니)
 ! ##video[autoplay]
 ! ##video[muted][autoplay]
 ! 유튜브/포털의 넥스트 비디오 미리 로드(Preload) 차단
@@ -615,6 +616,8 @@ $ping,important
 
 ! ## [25] 방어선
 ! 이중잠금 (제미니)
+||display.ad.daum.net^
+||ad-m.daum.net^
 ||tiara.kakao.com^
 ||tiara.daum.net^
 naver.com##.veta_ad
@@ -647,3 +650,4 @@ naver.com##div[id*="veta"]
 ! 소셜 로그인(카카오/구글로 시작하기) 버튼을 누른 건 아닌가? ⁠(16번 룰)⁠
 ! 무료 포인트 충전소(앱테크)를 누른 건 아닌가? ⁠(1번 TNK 룰)⁠
 ! 제휴 쇼핑 링크(텐핑 등)를 누른 건 아닌가? ⁠(4번 룰)⁠
+! 쿠팡 광고 선택 및 링크 경유를 누른 건 아닌가? (1번 cmg)
