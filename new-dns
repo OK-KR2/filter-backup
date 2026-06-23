@@ -1,5 +1,5 @@
 ! Title: OK-KR2
-! Version: 26.02.4003
+! Version: 26.02.4007
 
 ! ## [01] 통합 추적 방지 리스트
 ! [1-1] 네이버 (Naver)
@@ -169,6 +169,10 @@ etoland.co.kr#%#//scriptlet('trusted-click-element', '[data-cookie-key]', '', '3
 ||tenping.kr^$third-party
 ||linkprice.com^$third-party
 ||dable.io^
+||ohtsfuapkah.in^
+||tsyndicate.com^
+||coverdistilltile.com^
+||g2288.com^
 
 ! [4-2] 광고 서버 사전 연결 시도 차단 스크립트릿
 #%#//scriptlet('abort-current-inline-script', 'dns-prefetch')
@@ -327,6 +331,9 @@ fmkorea.com#%#//scriptlet('set-constant', 'isAdBlockActive', false)
 ||yako*^$popup
 ||torrentsee*^$popup
 ||torrentbot*^$popup
+||ohtsfuapkah.in^$popup
+||tsyndicate.com^$popup
+||g2288.com^$popup
 *$third-party,domain=booktoki*
 *$third-party,domain=toki*
 *$third-party,domain=tkor*
