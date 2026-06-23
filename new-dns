@@ -1,28 +1,38 @@
 ! Title: OK-KR2
-! Version: 26.02.3580
+! Version: 26.02.4001
 
 ! ## [01] 통합 추적 방지 리스트
-! 국내 기업 전용 - 네이버, 카카오, 쿠팡 등 (제미니)
+! [1-1] 네이버 (Naver)
 ||veta.naver.com^$important
 ||analytics.naver.com^$important
 ||log.naver.com^$important
 ||cc.naver.com^
+||gfp.naver.com^
+||gfp-logging.naver.com^
+||ads-display.naver.com^
+||nv.veta.naver.com^
+||wcs.naver.net^$important
+||lcs.naver.com^$important
+
+! [1-2] 카카오 (Kakao)
 ||tiara.kakao.com^$important
 ||clog.kakao.com^$important
 ||clog-aggregator.kakao.com^
 ||ad.kakaocorp.com^
-||samsungads.com^
-||samsungadhub.com^
+||serv.ds.kakao.com^
+
+! [1-3] 쿠팡 (Coupang)
 ||log.coupang.com^
 ||analytics.coupang.com^
 ||cmg.coupang.com^
-! 쿠팡 자체 광고 시스템 및 맞춤형 추천 API 서버 (제미니)
 ||ads.coupang.com^
 ||ads-api.coupang.com^
-! 네이버 차세대 성과형/디스플레이 광고 시스템 (GFP) 및 트래커 (제미니)
-||gfp.naver.com^
-||gfp-logging.naver.com^
-! 글로벌 추적 SDK - 앱 내 행동 분석 및 캡처 로그 (제미니)
+
+! [1-4] 삼성 (Samsung)
+||samsungads.com^
+||samsungadhub.com^
+
+! [1-5] 글로벌 추적 SDK
 ||firebase-settings.crashlytics.com^
 ||firebaselogging-pa.googleapis.com^
 ||api.amplitude.com^$important
@@ -34,90 +44,67 @@
 ||sdk.iad-01.braze.com^
 ||collect.tealiumiq.com^
 ||logs.adjust.com^$important
-||cr.naver.com^$important
-! 네이버와 다음의 최신 모바일 광고 서버 주소 (제미니)
-||ads-display.naver.com^
-||nv.veta.naver.com^
-||serv.ds.kakao.com^
-! 네이버 앱 로그인/카페 먹통 방지 주석처리 (제미니)
-! ||amapi.pstatic.net^
-! 네이버 핵심 추적 엔진 검거 (제미니)
-||wcs.naver.net^$important
-||lcs.naver.com^$important
-! 국내 토종 1위 웹 로그 분석 및 추적기 (에이스카운터) 원천 차단 (제미니)
+
+! [1-6] 국내외 기타 타겟팅 및 추적기
 ||acecounter.com^
-! 배달의민족 앱/웹 내부 행동 분석 트래커 차단 (제미니)
 ||analytics.woowahan.com^
-! 글로벌 이커머스(아마존) 타겟팅 광고 및 추적기 원천 차단 (제미니)
 ||amazon-adsystem.com^
-! 국내 최대 모바일 앱 행동 추적 SDK (아이지에이웍스/애드브릭스) 차단 (제미니)
 ||adbrix.io^
 ||igaworks.com^
-! 국내 모바일 게임 및 리워드 앱 광고/추적 (TNK 팩토리) 설치 리워드 차단 (제미니)
 ||tnkfactory.com^
 
+
 ! ## [02] 추적
-! 소셜 미디어 추적 위젯 차단 (제미니)
+! [2-1] 소셜, 검색, 미디어 추적 도메인 차단
 ||platform.twitter.com^
 ||static.ak.facebook.com^
 ||linkedin.com/px/
-! 범용 추적 및 분석기 보완 (제미니)
 ||log.byteoversea.com^
 ||graph.facebook.com^
 ||telemetry.sdk.unityads.unity3d.com^
 ||app-measurement.com^
-! 구글 광고 서비스 및 전환 추적 차단 (제미니)
 ||googleadservices.com^
-! URL 추적 파라미터 자동 제거 (제미니)
-$removeparam=utm_source
-$removeparam=utm_medium
-$removeparam=utm_campaign
-$removeparam=fbclid
-$removeparam=gclid
-! URL 추적 파라미터 추가 (제미니)
-$removeparam=ref
-$removeparam=_hsenc
-$removeparam=_hsmi
-$removeparam=mc_cid
-$removeparam=mc_eid
-! 검색 엔진 내 추적 비컨 차단 (제미니)
 ||google.com/gen_204?*
 ||google.co.kr/gen_204?*
 ||sa.naver.com/be?*
-! 동영상 분석 및 광고용 영상 서버 차단 (재생은 허용) (제미니)
 ||vids.tapjoy.com^
 ||video-stats.video.kakao.com^
-! 추적기 암살 (주소 변경과 무관하게 글로벌 100% 적용)
 ||whoas.xyz^
-! 카카오 및 틱톡의 최신 URL 추적 파라미터 추가 (제미니)
-$removeparam=kclid
-$removeparam=ttclid
-$removeparam=twclid
-$removeparam=wbraid
-$removeparam=gbraid
-! 인스타그램 및 유튜브 최신 URL 공유 추적 파라미터 제거 (2026 추가) (제미니)
-$removeparam=igsh
-$removeparam=si
-! URL 추적 파라미터 (최신화 보완) (제미니)
-$removeparam=srsltid
-$removeparam=gad_source
-! 마이크로소프트, 구글 GDN, 야후 등 글로벌 웹 추적 파라미터 추가 제거 (제미니)
-$removeparam=msclkid
-$removeparam=dclid
-$removeparam=yclid
-! 틱톡 웹사이트 픽셀(다른 사이트에서의 사용자 감시용) 차단 (제미니)
 ||analytics.tiktok.com^
-! 핀터레스트 및 스냅챗 범용 웹 추적 픽셀 차단 (제미니)
 ||ct.pinterest.com^
 ||tr.snapchat.com^
-! 브랜치(Branch.io) 링크 열기(리다이렉트)는 허용하되, 백그라운드 데이터 수집(API) 서버만 정밀 타격 (제미니)
 ||api.branch.io^
 ||api2.branch.io^
 ||api3.branch.io^
 ||cdn.branch.io^
 
+! [2-2] URL 꼬리표(추적 파라미터) 자동 제거 통합
+$removeparam=utm_source
+$removeparam=utm_medium
+$removeparam=utm_campaign
+$removeparam=fbclid
+$removeparam=gclid
+$removeparam=ref
+$removeparam=_hsenc
+$removeparam=_hsmi
+$removeparam=mc_cid
+$removeparam=mc_eid
+$removeparam=kclid
+$removeparam=ttclid
+$removeparam=twclid
+$removeparam=wbraid
+$removeparam=gbraid
+$removeparam=igsh
+$removeparam=si
+$removeparam=srsltid
+$removeparam=gad_source
+$removeparam=msclkid
+$removeparam=dclid
+$removeparam=yclid
+
+
 ! ## [03] 안티
-! 주요 분석 및 통계 (광고 차단 감지용으로 자주 쓰임)(제미니)
+! [3-1] 주요 분석 및 감지 도메인 차단
 ||amplitude.com^
 ||appsflyer.com^
 ||hotjar.com^
@@ -127,7 +114,6 @@ $removeparam=yclid
 ||tealiumiq.com^
 ||ensighten.com^
 ||krux.com^
-! 안티-애드블록: 범용 엔진 및 감지 서버 (제미니)
 ||fundingchoicesmessages.google.com^
 ||adblock-analytics.com^
 ||blockthrough.com^
@@ -139,65 +125,58 @@ $removeparam=yclid
 ||g.doubleclick.net^
 ||google-analytics.com^
 ||pagead2.googlesyndication.com^
-! 해외 대형 사이트 안티-애드블록 우회 보완 (제미니)
 ||adnxs.com^
 ||outbrain.com^
 ||taboola.com^
 ||carbonads.net^
 ||buysellads.com^
-! 안티-애드블록 및 스크립트 우회 (#%#)
+||cdn.jsdelivr.net/npm/disable-devtool*^$3p
+
+! [3-2] 안티-애드블록 우회 스크립트릿 및 화장(Cosmetic)
 #%#//scriptlet('prevent-fetch', 'doubleclick.net')
 #%#//scriptlet('prevent-fetch', 'pagead2.googlesyndication.com')
 #%#//scriptlet('abort-current-inline-script', 'oncontextmenu')
 fmkorea.com##+js(set, link_url, )
 m.fmkorea.com##+js(set, board_block_check, noopFunc)
 etoland.co.kr#%#//scriptlet('trusted-click-element', '[data-cookie-key]', '', '300')
-! 감시관 암살 (주소 변경과 무관하게 글로벌 100% 적용)
-||cdn.jsdelivr.net/npm/disable-devtool*^$3p
+
 
 ! ## [04] 광고
-! 접속 차단 및 광고 서버 (DNS/Domain)
+! [4-1] 광고 및 리마케팅 네트워크 도메인 차단
 ||ader.naver.com^
 ||ads.adoffice.11st.co.kr^
 ||digitalcamp.co.kr^
 ||targetpush.co.kr^
 ||dctrend.ai^
 ||onelink.me^
-! ||pstatic.net.topo.gscdn.net^
 ||nrc.naver.com^
-! 광고 서버 사전 연결 시도 차단 (제미니)
-#%#//scriptlet('abort-current-inline-script', 'dns-prefetch')
-#%#//scriptlet('abort-current-inline-script', 'preconnect')
-! 국내 타겟팅 및 리마케팅 광고 서버 차단 (제미니)
 ||widerplanet.com^
 ||mobon.net^
 ||criteo.com^
 ||toast.com^
 ||cauly.co.kr^
-! 국내 리마케팅 광고 서버 보강 (제미니)
 ||nasmedia.co.kr^
 ||mezzomedia.co.kr^
 ||ad-m.naver.com^
-! 모바일 앱 광고의 대부: InMobi 차단 (제미니)
 ||inmobi.com^
 ||*.inmobi.com^
-! 생활/금융 밀착형 앱(토스, 당근마켓) 맞춤형 광고 서버 정밀 타격 (제미니)
 ||ad.toss.im^
 ||ads.daangn.com^
-! 글로벌 독립 광고 플랫폼(DSP/SSP) 및 언론사 지연 배너 트래커 차단 (제미니)
 ||adsrvr.org^
 ||pubmatic.com^
 ||openx.net^
-! 라인(LINE) 모바일/웹 맞춤형 광고 네트워크 차단 (제미니)
 ||ad.line.me^
-! 국내 언론사 및 커뮤니티 제휴 마케팅(텐핑, 링크프라이스) 기생 스크립트 차단 (제미니)
 ||tenping.kr^$third-party
 ||linkprice.com^$third-party
-! 국내 언론사/커뮤니티 맞춤형 기사 위장 광고 (데이블) 차단 (제미니)
 ||dable.io^
 
+! [4-2] 광고 서버 사전 연결 시도 차단 스크립트릿
+#%#//scriptlet('abort-current-inline-script', 'dns-prefetch')
+#%#//scriptlet('abort-current-inline-script', 'preconnect')
+
+
 ! ## [05] 중국
-! 로보락/샤오미 데이터 수집 및 중국 서버 차단 (제미니)
+! [5-1] 중국계 데이터 수집 및 트래커 도메인
 ||ot.io.mi.com^
 ||log.ad.xiaomi.com^
 ||tracking.miui.com^
@@ -205,93 +184,99 @@ etoland.co.kr#%#//scriptlet('trusted-click-element', '[data-cookie-key]', '', '3
 ||roborock.com.cn^
 ||api-pt.roborock.com^
 ||log.roborock.com^
-! 알리익스프레스 및 중국 앱 범용 트래커 차단 (제미니)
 ||acs.aliexpress.com^
 ||log.mmstat.com^
 ||amdc.m.taobao.com^
 ||ynuf.alipay.com^
 ||is.snssdk.com^
 ||mon.snssdk.com^
-! 알리익스프레스, 테무(Temu) 등 중국 쇼핑몰 공유 추적 파라미터 제거 (제미니)
-$removeparam=aff_fcid
-$removeparam=share_id
-! 바이두(Baidu) 및 얀덱스(Yandex) 글로벌 트래커/분석기 차단 (제미니)
 ||hm.baidu.com^
 ||mc.yandex.ru^
 
-! ## [06] 카카오
-! 카카오 비즈니스 및 광고 서버 차단 (제미니)
+! [5-2] 중국계 쇼핑몰 공유 추적 파라미터 제거
+$removeparam=aff_fcid
+$removeparam=share_id
+
+
+! ## [06] 카카오 (다음 포함)
+! [6-1] 광고 및 비즈니스 도메인 차단
 ||bizad-fe.kakao.com^
 ||kaikas.kakao.com^
 ||kakaoad-fe.kakao.com^
 ||ad-stat.kakao.com^
 ||track.kakao.com^
-! 다음 광고 서버 광역 커버 (기존 세부 주소 통합 및 변종 방어) (제미니)
 ||ad.daum.net^
-! 카카오 알림톡 및 비즈니스 멀티미디어 통계/추적 (제미니)
 ||mms-stat.kakao.com^
-! 카카오 광고 및 분석 보완 (제미니)
 ||ad.kakao.com^
 ||talkchannel-api.kakao.com^
 ||talkchannel-log.kakao.com^
 ||tg.kakao.com^
-! 카카오톡 PC 및 앱 내부 광고 보완 (제미니)
 ||mud-kage.kakao.co.kr/dn/^$app=KakaoTalk.exe
 ||kakao.com/kakaotalk/ads/^
 ||kakaotalk-ad.kakao.com^
-! 카카오 숏폼(숏츠) 및 불필요한 기능 숨기기 (제미니)
 ||kamp.kakao.com^
 ||vs*.play.kakao.com^
-! 카카오톡 숏폼 탭 및 플레이어 차단 ver.2 (제미니)
 ||play.kakao.com^
 ||shortformstats.kakao.com^
-! 카나나 박멸
 ||public-persona-production-*.kgns3.com^
-! 웹페이지 카카오 광고 요소 숨기기 (제미니)
+||kuid-provider.ds.kakao.com^
+||tiara.daum.net^
+||tr.kakao.com^
+||analytics.daum.net^
+||logging.kakao.com^
+
+! [6-2] 시각적 광고 요소 숨기기 (Cosmetic)
 kakao.com##.ad_unit
 kakao.com##iframe[src*="bizad"]
 daum.net##.p_ad
 daum.net##div[id^="ad_"]
-! 카카오톡 PC 하단 빈 광고 영역 숨기기 (선택 사항) (제미니)
 #kakao.com##.ad_area
-! 카카오 및 다음 앱 내부 행동 데이터 수집 트래커 광역 차단 (정밀 타격) (제미니)
-! 카카오 카나나 차단 (제미니)
-||kuid-provider.ds.kakao.com^
-! 카카오 핵심 추적 엔진 티아라(Tiara) 광역 저격
-||tiara.daum.net^
-! 카카오 맞춤형 광고 타겟팅용 픽셀 트래커 차단 (제미니)
-||tr.kakao.com^
-! 카카오 및 다음 통계/로그 수집 서버 차단
-||analytics.daum.net^
-||logging.kakao.com^
+
 
 ! ## [07] 유튜브
-! 유튜브 영상 종료 후 카드 숨기기 (제미니)
 youtube.com##.ytp-ce-element
 youtube.com##.ytp-ce-video
 youtube.com##.ytp-ce-element-show
-! 유튜브 홈 및 검색 결과 스폰서 섹션 숨기기 (제미니)
 youtube.com##ytd-ad-slot-renderer
 youtube.com##ytd-rich-item-renderer:has(> ytd-ad-slot-renderer)
 youtube.com##ytd-banner-promo-renderer
 
+
 ! ## [08] 숨기기
-! 쿠키/개인정보 동의 배너 숨기기 (제미니)
+! [8-1] 범용: 쿠키/앱 배너 및 빈 광고 영역 숨기기
 ##.cookie-banner
 ##.cookie-consent
 ##[id*="cookie-notification"]
 ##div[class*="CookieConsent"]
-! 모바일 웹 '앱 열기' 배너 숨기기 (제미니)
-naver.com##.u_cbox_ico_app
-m.cafe.naver.com##.banner_app_top
-m.dcinside.com##.app_banner_wrap
-youtube.com##.mobile-app-banner
-! 광고 제거 후 잔여 빈 상자 박멸 (제미니)
 ##.ad-unit, .ad-box, .ad-container
 ##div[class*="AdSlot"]
 ##div[id^="ad-wrapper"]
 ##.ad_box:empty, .ad_area:empty
-! 네이버 시각적 광고 요소 정밀 타격 (제미니)
+##.ad-view, .happy-under-player-mobile, .textwidget, [alt$='xn--299aqd'], [class*='basic-banner'][id], [class^='happy-header'], [id*='powerLink'], [id*='powerlink'], [id^='hd_pop'], div.banner_m, div[class^='AD'][style], ins.adsbyaiinad
+##.banner2
+###bannerList
+##.banner_wrap2
+##.banner-area
+##[id^="banner-row-"]
+##[id^="fixed-banner-container-"]
+##.mobile-only
+##.bo_v_mov + ul
+##li.full.pc-only
+##li.full.mobile-only
+###modal_con
+###dnsguide-modal-overlay
+###appDownloadModal
+###novel_content:style(-webkit-touch-callout: default !important; -webkit-user-select: text !important; user-select: text !important;)
+###mq-notice, #n_b_2, .banners_area, .iziModal-overlay, .supermarquee-item, [id^='modal-anc-'], div.banner_l
+##.top-ad-padding
+##div[style="padding:3px;"]:has(a[target="_blank"] > img)
+##.alert-danger:has(a:has-text([AD]))
+
+! [8-2] 사이트 특정: 네이버 및 커뮤니티 숨기기
+naver.com##.u_cbox_ico_app
+m.cafe.naver.com##.banner_app_top
+m.dcinside.com##.app_banner_wrap
+youtube.com##.mobile-app-banner
 naver.com##.veta_ad
 naver.com##.veta_ad_wrapper
 naver.com##div[id*="veta"]
@@ -303,95 +288,45 @@ m.cafe.naver.com##.ad_area
 m.cafe.naver.com##.banner_ad
 m.cafe.naver.com###articleFeedList > .ad_item
 m.cafe.naver.com##.popular_ad_area
-! 웹사이트 내부 광고 요소 숨기기 (CSS/Element Hiding)
-##.ad-view, .happy-under-player-mobile, .textwidget, [alt$='xn--299aqd'], [class*='basic-banner'][id], [class^='happy-header'], [id*='powerLink'], [id*='powerlink'], [id^='hd_pop'], div.banner_m, div[class^='AD'][style], ins.adsbyaiinad
 naver.com,daum.net,ppomppu.co.kr,ruliweb.com##[id$='_ad']
 m.dcinside.com###notice_list > li:not(:has(.ntc-line-pink))
 m.dcinside.com##.dna-group, .media-group, .layer-bottom-popup, .outside-search-box, .trend.cont
 m.cafe.naver.com###articleFeedList, .bottom.banner_add, .popular_toast_popup, .subscribe_layer_wrap
 fmkorea.com##.relevant_products_from_ad, .bd_mobile:matches-css(margin: /3px 0px/):remove()
-fmkorea.com#%#//scriptlet('set-constant', 'isAdBlockActive', false)
 quasarzone.com##.best-official-news, .new-official-news, .new-partner-saleinfo-container, .recommend-deal-wrap
 web.joongna.com##.pb-12, div:has([alt='ad']):not(:has(h2))
 
-! 그레이 연합군 배너 및 팝업 일괄 박멸 (전 브라우저 호환) (제미니)
-! 지능형 팝업 및 스크립트 우회 차단
+! [8-3] 스크립트릿 및 특정 도메인 차단
+||toonimg*.com/poster_js/*$script
+fmkorea.com#%#//scriptlet('set-constant', 'isAdBlockActive', false)
 #%#//scriptlet('prevent-window-open', 'acceptancedishearten')
 #%#//scriptlet('prevent-popads')
-! 연합군 공통 배너 이미지 및 투명 껍데기 박스 공간 박멸
-##.banner2
-###bannerList
-##.banner_wrap2
-##.banner-area
-##[id^="banner-row-"]
-##[id^="fixed-banner-container-"]
-##.mobile-only
-! 이름 없는 쌩 <ul> 및 고정 배너 정밀 타격
-##.bo_v_mov + ul
-##li.full.pc-only
-##li.full.mobile-only
-! 귀찮은 사설 모달 및 강제 안내 레이어 전체 폭파
-###modal_con
-###dnsguide-modal-overlay
-###appDownloadModal
-! 특정 사이트 전용 UI 강제 수정 및 잔여물 정리
-###novel_content:style(-webkit-touch-callout: default !important; -webkit-user-select: text !important; user-select: text !important;)
-###mq-notice, #n_b_2, .banners_area, .iziModal-overlay, .supermarquee-item, [id^='modal-anc-'], div.banner_l
-! 미러 사이트 동적 광고 스크립트 원천 차단
-||toonimg*.com/poster_js/*$script
-! 광고 영역 및 잔여 껍데기 박멸
-##.top-ad-padding
-##div[style="padding:3px;"]:has(a[target="_blank"] > img)
-##.alert-danger:has(a:has-text([AD]))
 
-! ## [09] 지능형 추적 및 핑거프린팅 방어 (제미니)
-! 기기 고유 정보를 조합해 신분을 특정하는 핑거프린팅 방지 (제미니)
-##+js(fp-protection)
-##+js(nowebrtc)
-! CNAME 클로킹(트래커가 1차 도메인인 척 위장) 방어 보강 (제미니)
+
+! ## [09] 지능형 추적 및 핑거프린팅 방어
 ||criteo.net^$important
 ||casalemedia.com^$important
 ||rubiconproject.com^$important
-! 구글/메타의 보이지 않는 픽셀(Pixel) 추적 원천 차단 (제미니)
 ||google.com/ads/ga-audiences^
 ||facebook.com/tr/
+##+js(fp-protection)
+##+js(nowebrtc)
+
 
 ! ## [10] 악성 레이어 및 투명 팝업 원천 차단
-! 악성 도메인 변종 및 서브도메인 광역 차단 (제미니)
+! [10-1] 악성 도메인 및 팝업
 ||acceptancedishearten.com^$important
 ||*.acceptancedishearten.com^$important
-! 화면 전체 투명 링크(Anchor) 가로채기 방지 (변종 대응) (제미니)
-! 위치 고정(fixed) + 화면 꽉 채움 + 투명도 0인 악질 링크들만 정밀 타격
-! ##a[style*="position:fixed"][style*="width:100%"][style*="height:100%"]:not(:has-text)
-! ##a[style*="position: fixed"][style*="width: 100%"][style*="height: 100%"]:not(:has-text)
-! 투명도가 거의 없고 클릭 가로채기용 초고층(z-index) div 레이어 폭파 (제미니)
-! 최신 스크립트릿(⁠prevent-window-open⁠)이 이 역할을 대체 (제미니)
-! ##div[style*="opacity:0.01"][style*="z-index:2147483647"]
-! ##div[style*="opacity: 0.01"][style*="z-index: 2147483647"]
-! ##div[style*="opacity:0"][style*="z-index:2147483647"]
-! 보이지 않는 상태로 클릭만 기다리는 팝업 스크립트 실행 방지 (이중 잠금) (제미니)
-#%#//scriptlet('prevent-window-open', 'acceptancedishearten.com')
-#%#//scriptlet('abort-on-property-read', 'openPopup')
-! 앱스토어 자동 실행(Deep Link) 시도 차단 (도메인은 살려둠) (제미니)
-#%#//scriptlet('prevent-window-open', 'itunes.apple.com')
-#%#//scriptlet('prevent-window-open', 'apps.apple.com')
-! 그레이 영역 사이트 무단 팝업(Pop-under) 강제 원천 차단 (도메인 무관) (제미니)
-! booktoki.*,toki.*,tkor.*,hoohootv.*,tvmon.*,tvroom.*,tvwiki.*,yako.*,torrentsee.*,torrentbot.*$popup,third-party
-! booktoki*.*,toki*.*,tkor*.*,hoohootv*.*,tvmon*.*,tvroom*.*,tvwiki*.*,yako*.*,torrentsee*.*,torrentbot*.*$popup,third-party⁠
-! 지정된 사이트들이 강제로 띄우는 무단 새창(팝업) 원천 차단 (제미니)
 ||booktoki*^$popup
 ||toki*^$popup
 ||tkor*^$popup
 ||hoohootv*^$popup
 ||tvmon*^$popup
 ||tvroom*^$popup
-! 플레이어 재생을 위한 허용 (*$third-party로 타격) (제미니)
 @@||tvwiki*^$popup
 ||yako*^$popup
 ||torrentsee*^$popup
 ||torrentbot*^$popup
-! 해당 사이트 내부에서 불러오는 모든 외부(서드파티) 악성 광고/스크립트 차단 (제미니)
-! (도메인 뒤에 숫자가 바뀌어도 모두 적용되도록 각 사이트별로 최적화 분할)
 *$third-party,domain=booktoki*
 *$third-party,domain=toki*
 *$third-party,domain=tkor*
@@ -403,248 +338,207 @@ web.joongna.com##.pb-12, div:has([alt='ad']):not(:has(h2))
 *$third-party,domain=torrentsee*
 *$third-party,domain=torrentbot*
 
+! [10-2] 악성 스크립트릿
+#%#//scriptlet('prevent-window-open', 'acceptancedishearten.com')
+#%#//scriptlet('abort-on-property-read', 'openPopup')
+#%#//scriptlet('prevent-window-open', 'itunes.apple.com')
+#%#//scriptlet('prevent-window-open', 'apps.apple.com')
+
+
 ! ## [11] 하드웨어 센서 및 AI 스크래핑 방어
-! 배터리 상태/네트워크 정보로 기기를 식별하는 '사이드 채널' 차단 (제미니)
-#%#//scriptlet('set-constant', 'navigator.getBattery', 'undefined')
-#%#//scriptlet('set-constant', 'navigator.connection', 'undefined')
-! 비정상적인 마우스 움직임 감지(Bot 감지용) 스크립트 무력화
-##+js(ra-mouse-move)
-! 무단 AI 크롤러 및 데이터 수집 봇 차단 보강 (제미니)
 ||gptbot.ai^$important
 ||anthropic.com/robots.txt^$important
 ||claudebot.com^$important
-! 무단 AI 크롤러 최신 봇 방어 보강 (제미니)
 ||bytespider.com^$important
 ||oabot.com^$important
 ||amazonbot.com^$important
 ||perplexity.ai/robots.txt^$important
 ||cohere.com/robots.txt^$important
-! AI 무단 스크래핑 및 봇 방어 (추가) (제미니)
 ||applebot-extended.com^$important
 ||facebookbot.com^$important
 ||meta-externalagent.com^$important
+#%#//scriptlet('set-constant', 'navigator.getBattery', 'undefined')
+#%#//scriptlet('set-constant', 'navigator.connection', 'undefined')
+##+js(ra-mouse-move)
+
 
 ! ## [12] 브라우저 기능 제약 및 강제 해제
-! 우클릭 차단, 드래그 방지, 복사 방지 스크립트 강제 무력화 (제미니)
 ##+js(allow-contextmenu)
-! 복사할 때 몰래 '출처: OOO' 문구를 클립보드에 끼워 넣는 행위 차단 (제미니)
 ##+js(prevent-clipboard-write)
 
+
 ! ## [13] 검색 엔진 프라이버시 및 누수 방지
-! 검색어 자동 완성 및 검색 결과 미리 불러오기(Leak) 차단 (제미니)
 ||google.com/complete/search?*
 ||naver.com/ac?*
 ||daum.net/suggest?*
-! 검색 결과 클릭 시 리다이렉트를 통한 추적 방지 보강 (제미니)
 ||google.com/url?*
 ||daum.net/clkt?*
-! 브라우저의 '다음 페이지 미리 로드' 기능을 통한 데이터 누수 차단 (제미니)
 #%#//scriptlet('abort-current-inline-script', 'dns-prefetch')
 #%#//scriptlet('abort-current-inline-script', 'prerender')
 
+
 ! ## [14] 시스템 텔레메트리
-! 애플/구글 시스템 레벨의 최소한의 텔레메트리 차단 보강 (제미니)
 ||is.apple.com^
 ||api.smoot.apple.com^
 ||telemetry.google.com^
 ||location.google.com^
-! LG 스마트TV 광고 및 시청 데이터 수집 차단 (삼성은 기존 리스트에 있음) (제미니)
 ||ad.lgsmartad.com^
 ||lgsmartad.com^
 
+
 ! ## [15] 리퍼러 및 정보 누수 차단
-! 다른 사이트로 넘어갈 때 '내가 어디서 왔는지' 숨기기 (PASS 본인인증 및 주요 결제망 예외) (제미니)
-~kmcert.com,~niceipin.co.kr,~okcert.com,~siren24.com,~inicis.com,~kcp.co.kr,~tosspayments.com,~danalpay.com,~mobilians.co.kr#%#//scriptlet('set-constant', 'document.referrer', '')
-! 브라우저 창의 이름(window.name)을 이용한 사이트 간 추적 방지 (PASS 본인인증 및 주요 결제망 예외) (제미니)
-~kmcert.com,~niceipin.co.kr,~okcert.com,~siren24.com,~inicis.com,~kcp.co.kr,~tosspayments.com,~danalpay.com,~mobilians.co.kr#%#//scriptlet('set-constant', 'window.name', '')
-! 특정 앱/사이트가 내 폰의 '검색 히스토리'에 접근하려는 시도 차단 (제미니)
 ||history.google.com^
 ||myactivity.google.com^
+~kmcert.com,~niceipin.co.kr,~okcert.com,~siren24.com,~inicis.com,~kcp.co.kr,~tosspayments.com,~danalpay.com,~mobilians.co.kr#%#//scriptlet('set-constant', 'document.referrer', '')
+~kmcert.com,~niceipin.co.kr,~okcert.com,~siren24.com,~inicis.com,~kcp.co.kr,~tosspayments.com,~danalpay.com,~mobilians.co.kr#%#//scriptlet('set-constant', 'window.name', '')
+
 
 ! ## [16] 소셜 로그인 및 공유 버튼 청소
-! 웹사이트 곳곳에 박힌 '소셜 로그인' 위젯 및 통신 차단 (제미니)
 ||facebook.net/en_US/sdk.js^
 ||connect.facebook.net^
 ||accounts.google.com/gsi/*
 ||kauth.kakao.com^
 ||api.twitter.com/widgets.js^
-! 화면을 가리는 '소셜 공유' 레이어 숨기기 (CSS 타격) (제미니)
 ##.social-share, .share-buttons, .sns-share
 ##div[class*="share-layer"]
 ##[id*="login-with-"]
 
+
 ! ## [17] 글로벌 개인정보 제어 및 오류 로깅 차단
-! 모든 웹사이트에 "개인정보 수집 거부(GPC)" 신호 강제 전송 (제미니)
-##+js(set-constant, navigator.globalPrivacyControl, true)
-! 오류 보고를 가장한 세션 및 기기 정보 수집 차단 (Sentry, Bugsnag 등) (제미니)
 ||sentry.io^$important
 ||browser.sentry-cdn.com^$important
 ||bugsnag.com^$important
 ||rollbar.com^$important
-||logrocket.com^$important (사용자 화면 녹화 및 세션 리플레이 방지)
-! 악질적인 사용자 화면 녹화(세션 리플레이) 및 로깅 툴 차단 (제미니)
+||logrocket.com^$important
 ||fullstory.com^
 ||browser-intake-datadoghq.com^
-! 웹사이트 성능 측정을 위장한 방대한 브라우저 텔레메트리 (뉴렐릭) 정밀 타격 (제미니)
 ||bam.nr-data.net^
-! 세션 리플레이(화면 녹화) 및 히트맵 분석기 추가 박멸 (제미니)
 ||mouseflow.com^
 ||smartlook.com^
 ||smartlook.cloud^
+##+js(set-constant, navigator.globalPrivacyControl, true)
+
 
 ! ## [18] 하이퍼링크 오디팅 및 미디어 분석 차단
-! 링크 클릭 시 백그라운드에서 몰래 전송되는 클릭 신호(Ping) 차단 (제미니)
 $ping,important
-! HTML5 비디오 플레이어의 시청 습관 분석 및 통계 전송 차단 (제미니)
 ||telemetry.video.naver.com^
 ||stats.video.kakao.com^
 ||p-events-delivery.vimeo.com^
 ||v.shopify.com/storefront/internal/video_stats^
 
+
 ! ## [19] 로컬 스토리지 및 캐시 기반 추적 방어
-! 브라우저 로컬 스토리지를 이용한 광고 식별자(ID) 저장 차단 (제미니)
 ##+js(set-constant, localStorage.ad_tracking_id, undefined)
 ##+js(set-constant, localStorage.f_cap, undefined)
-! 캐시(ETag)를 이용한 사용자 식별용 '슈퍼 쿠키' 생성 방지 + 슬랙허용 (제미니)
-! ##+js(set-constant, navigator.serviceWorker, undefined)
 ~slack.com##+js(set-constant, navigator.serviceWorker, undefined)
 
+
 ! ## [20] 오디오 및 폰트 핑거프린팅 세밀 방어
-! 기기 고유의 오디오 재생 특성으로 신분을 식별하는 행위 차단 (제미니)
-! 하드웨어 보안 키를 쓸 때 인증 오류 복구 (제미니)
-! ##+js(set-constant, AudioContext, undefined)
 ##+js(set-constant, webkitAudioContext, undefined)
-! 폰트 리스트 수집을 통한 기기 식별 방지 보강 (제미니)
-! 하드웨어 보안 키를 쓸 때 인증 오류 복구 (제미니)
-! ##+js(set-constant, document.fonts, undefined)
+
 
 ! ## [21] 구글 Privacy Sandbox 및 Topics API 저격
-! 구글의 새로운 추적 기술인 Topics API 및 FLoC 비활성화 (제미니)
 ##+js(set-constant, document.browsingTopics, undefined)
 ##+js(set-constant, navigator.scheduling, undefined)
 ##+js(set-constant, navigator.userActivation, undefined)
-! 구글 프라이버시 샌드박스 (API 차단 강화) (제미니)
 ##+js(set-constant, document.attributionReporting, undefined)
 
+
 ! ## [22] 하드웨어 자원 및 센서 무단 점유 방어
-! 웹 채굴(Cryptojacking) 스크립트 및 높은 CPU 점유 차단 (제미니)
 ||coin-hive.com^$important
 ||coinhive.com^$important
 ||crypto-loot.com^$important
-! 근거리 통신(NFC/USB/Bluetooth)을 통한 기기 식별 방지 (제미니)
-! 하드웨어 보안 키를 쓸 때 인증 오류 복구 (제미니)
-! ##+js(set-constant, navigator.bluetooth, undefined)
-! ##+js(set-constant, navigator.nfc, undefined)
-! ##+js(set-constant, navigator.usb, undefined)
+
 
 ! ## [23] 글로벌 미디어 자동 재생 및 트래픽 낭비 차단 (제미니)
-! 웹사이트 진입 시 비디오/오디오 자동 재생 강제 중지
 #%#//scriptlet('prevent-autoplay')
-! 보이지 않는 곳에서 데이터를 갉아먹는 비디오 로딩 방지
-! 영상이 자동으로 재생되어야 하는 플랫폼 전체가 먹통 복구 (제미니)
-! ##video[autoplay]
-! ##video[muted][autoplay]
-! 유튜브/포털의 넥스트 비디오 미리 로드(Preload) 차단
 #%#//scriptlet('abort-current-inline-script', 'next-video-preload')
-! 보이지 않는 곳에서 데이터를 갉아먹는 비디오 로딩 방지 최신화
 #%#//scriptlet('set-constant', 'HTMLMediaElement.prototype.preload', 'none')
 
+
 ! ## [24] 허용
-! 슬랙 완전 허용 (제미니)
+! [24-1] 도메인 및 접속 보장 예외 처리
 @@||slack.com^$important
 @@||slack-edge.com^$important
 @@||slack-msgs.com^$important
 @@||slack-files.com^$important
 @@||slack-imgs.com^$important
 @@||slack-redir.net^$important
-! 쇼핑몰 리다이렉트 추적은 막되 페이지 연결은 보장 (제미니)
 ||link.coupang.com^
 @@||link.coupang.com^$important
-@@||ad.search.naver.com^$important
-! 네이버 앱 카페 접속 등 로그인 인식 못하는 현상 허용 (제미니)
-! ||adcr.naver.com^
-! 네이버 카페/메일 로그인 세션 유지 및 기능 복구 (앱/웹 호환)
-@@||cc.naver.com^$important
-@@||cr.naver.com^$important
+||adcr.naver.com^
 @@||adcr.naver.com^$important
+||cr.naver.com^
+@@||cr.naver.com^$important
+||ad.search.naver.com^
+@@||ad.search.naver.com^$important
+@@||cc.naver.com^$important
 @@||log.naver.com^$domain=naver.com,important
-! 로보락/샤오미 로봇청소기 작동만 허용 (제미니)
 ||api.io.mi.com^
 ||cn^
 @@||api.io.mi.com^$client=Roborock-Device-IP
 @@||*.cn^$client=Roborock-Device-IP
-! 사내망 시스템 완전 허용 (제미니)
 @@||play.doingcns.co.kr^$important
 @@||mailplug.co.kr^$important
-! iOS 업데이트 확인 및 소프트웨어 다운로드 허용 (제미니)
 @@||mesu.apple.com^$important
 @@||gdmf.apple.com^$important
 @@||updates.cdn-apple.com^$important
 @@||appldnld.apple.com^$important
-! 기기 활성화 및 소프트웨어 서명/인증 (업데이트 검증 필수) (제미니)
 @@||gs.apple.com^$important
 @@||albert.apple.com^$important
-! 인증서 유효성 확인 (애플 서비스 전반의 통로) (제미니)
 @@||ocsp.apple.com^$important
 @@||ocsp2.apple.com^$important
-! 클라우드플레어 인증(Turnstile, 챌린지) 관련 도메인 완전 허용 및 스크립트 변조 예외 처리 (제미니)
-@@||challenges.cloudflare.com^$important,script,subdocument,xmlhttprequest
-@@||challenges.cloudflare.com^$jsinject,ghide,important
-@@*/cdn-cgi/challenge-platform/*$important,script,xmlhttprequest
-@@*/cdn-cgi/challenge-platform/*$jsinject,important
 @@||cloudflareinsights.com^$important
 @@||turnstile.cloudflare.com^$important
-! hCaptcha 및 reCAPTCHA(구글 봇 확인) 정상 작동 보장 및 스크립트 변조 예외 처리 (제미니)
 @@||hcaptcha.com^$important
-@@||hcaptcha.com^$jsinject,important
-@@||google.com/recaptcha/*$important
-@@||google.com/recaptcha/*$jsinject,important
 @@||recaptcha.net^$important
-@@||gstatic.com/recaptcha/*$important
-! 영상 재생 허용 (플레이어 도용 방지를 위해 스트리밍 연합군 도메인 내에서만 꽉 묶어서 허용) (제미니)
 @@||bunny-frame.online^$media,subdocument,domain=tvwiki*.*|tvmon*.*|tvroom*.*|hoohootv*.*
-! 닌텐도 스토어 공홈 로그인/장바구니 (제미니)
 @@||store.nintendo.co.kr^$document
-! SVCB sni 허용 테스트 (제미니)
-! @@||*^$dnstype=SVCB
-! 비공개 릴레이가 새로운 IP를 받아오는(토큰 인증 및 핸드셰이크) 핵심 주소만 쏙 (제미니)
 @@||mask.apple-dns.net^
 @@||mask-t.apple-dns.net^
 @@||mask-h.apple-dns.net^
 @@||mask-api.icloud.com^
 @@||mask-api.fe.apple-dns.net^
 
+! [24-2] 스크립트 변조 예외 처리 (방어선 예외)
+@@||challenges.cloudflare.com^$important,script,subdocument,xmlhttprequest
+@@||challenges.cloudflare.com^$jsinject,ghide,important
+@@*/cdn-cgi/challenge-platform/*$important,script,xmlhttprequest
+@@*/cdn-cgi/challenge-platform/*$jsinject,important
+@@||hcaptcha.com^$jsinject,important
+@@||google.com/recaptcha/*$important
+@@||google.com/recaptcha/*$jsinject,important
+@@||gstatic.com/recaptcha/*$important
+
+
 ! ## [25] 방어선
 ! 이중잠금 (제미니)
 ||display.ad.daum.net^
 ||ad-m.daum.net^
-||tiara.kakao.com^
-||tiara.daum.net^
-naver.com##.veta_ad
-naver.com##.veta_ad_wrapper
-naver.com##div[id*="veta"]
-#%#//scriptlet('set-constant', 'yt.config_.GOOGLE_ANALYTICS_ID', '')
-#%#//scriptlet('prevent-fetch', 'google-analytics.com')
 ||connect.facebook.net^
 ||facebook.com/tr/
 ||google-analytics.com/analytics.js^
 ||pagead2.googlesyndication.com/pagead/js/adsbygoogle.js^
-! 통합 추적 이중 방어 - 스크립트 실행 차단 (제미니)
+##.adblock-msg, .adblock-overlay
+
+! 통합 추적 이중 방어 - 통신(Fetch) API 강제 마비 및 스크립트 차단 (제미니)
+#%#//scriptlet('set-constant', 'yt.config_.GOOGLE_ANALYTICS_ID', '')
+#%#//scriptlet('prevent-fetch', 'google-analytics.com')
 #%#//scriptlet('prevent-fetch', 'log.naver.com')
+#%#//scriptlet('prevent-fetch', 'wcs.naver.net')
+#%#//scriptlet('prevent-fetch', 'lcs.naver.com')
+#%#//scriptlet('prevent-fetch', 'veta.naver.com')
+#%#//scriptlet('prevent-fetch', 'gfp.naver.com')
 #%#//scriptlet('prevent-fetch', 'tiara.kakao.com')
+#%#//scriptlet('prevent-fetch', 'tr.kakao.com')
+#%#//scriptlet('prevent-fetch', 'log.coupang.com')
 #%#//scriptlet('abort-on-property-read', 'amplitude')
 #%#//scriptlet('abort-on-property-read', 'mixpanel')
 #%#//scriptlet('abort-on-property-read', 'Adjust')
 #%#//scriptlet('abort-on-property-read', 'firebase')
-! 2026년형 백그라운드 추적 비컨 사살 (제미니)
-#%#//scriptlet('prevent-beacon')
-! 이중잠금 구역에 추가 (제미니)
-#%#//scriptlet('prevent-fetch', 'wcs.naver.net')
-#%#//scriptlet('prevent-fetch', 'lcs.naver.com')
-! 삼중잠금 (제미니)
-#%#//scriptlet('prevent-fetch', 'veta.naver.com')
-##.adblock-msg, .adblock-overlay
+#%#//scriptlet('abort-on-property-read', 'Sentry')
 #%#//scriptlet('abort-current-inline-script', 'isAdBlockActive')
+#%#//scriptlet('prevent-beacon')
 
 ! 사이트 로그인 버튼이 왜 안 눌리지?" 하거나 "어? 화면이 왜 백지장이지?" 하는 순간이 온다면 확인
 ! 소셜 로그인(카카오/구글로 시작하기) 버튼을 누른 건 아닌가? ⁠(16번 룰)⁠
