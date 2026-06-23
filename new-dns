@@ -1,5 +1,5 @@
 ! Title: OK-KR2
-! Version: 26.02.3555
+! Version: 26.02.3557
 
 ! ## [01] 통합 추적 방지 리스트
 ! 국내 기업 전용 - 네이버, 카카오, 쿠팡 등 (제미니)
@@ -256,6 +256,7 @@ daum.net##.p_ad
 daum.net##div[id^="ad_"]
 ! 카카오톡 PC 하단 빈 광고 영역 숨기기 (선택 사항) (제미니)
 #kakao.com##.ad_area
+||serv.ds.kakao.com^
 ! 카카오 및 다음 앱 내부 행동 데이터 수집 트래커 광역 차단 (정밀 타격) (제미니)
 ! 카카오 카나나 차단 (제미니)
 ||kuid-provider.ds.kakao.com^
