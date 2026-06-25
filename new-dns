@@ -1,5 +1,5 @@
 ! Title: OK-KR2
-! Version: 26.02.4007
+! Version: 26.02.4010
 
 ! ## [01] 통합 추적 방지 리스트
 ! [1-1] 네이버 (Naver)
@@ -13,6 +13,7 @@
 ||nv.veta.naver.com^
 ||wcs.naver.net^$important
 ||lcs.naver.com^$important
+||ai.search.naver.com^$important
 
 ! [1-2] 카카오 (Kakao)
 ||tiara.kakao.com^$important
