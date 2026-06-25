@@ -1,5 +1,5 @@
 ! Title: OK-KR2
-! Version: 26.02.4012
+! Version: 26.02.4048
 
 ! ## [01] 통합 추적 방지 리스트
 ! [1-1] 네이버 (Naver)
@@ -14,6 +14,9 @@
 ||wcs.naver.net^$important
 ||lcs.naver.com^$important
 ||ai.search.naver.com^$important
+||cue.search.naver.com^$important
+||api.clova.ai/telemetry*
+||omnilab.naver.com^
 
 ! [1-2] 카카오 (Kakao)
 ||tiara.kakao.com^$important
@@ -131,7 +134,7 @@ $removeparam=yclid
 ||taboola.com^
 ||carbonads.net^
 ||buysellads.com^
-||cdn.jsdelivr.net/npm/disable-devtool*^$3p
+||cdn.jsdelivr.net/npm/disable-devtool*^$third-party
 
 ! [3-2] 안티-애드블록 우회 스크립트릿 및 화장(Cosmetic)
 #%#//scriptlet('prevent-fetch', 'doubleclick.net')
@@ -335,16 +338,16 @@ fmkorea.com#%#//scriptlet('set-constant', 'isAdBlockActive', false)
 ||ohtsfuapkah.in^$popup
 ||tsyndicate.com^$popup
 ||g2288.com^$popup
-*$third-party,domain=booktoki*
-*$third-party,domain=toki*
-*$third-party,domain=tkor*
-*$third-party,domain=hoohootv*
-*$third-party,domain=tvmon*
-*$third-party,domain=tvroom*
-*$third-party,domain=tvwiki*
-*$third-party,domain=yako*
-*$third-party,domain=torrentsee*
-*$third-party,domain=torrentbot*
+||booktoki*^$third-party
+||toki*^$third-party
+||tkor*^$third-party
+||hoohootv*^$third-party
+||tvmon*^$third-party
+||tvroom*^$third-party
+||tvwiki*^$third-party
+||yako*^$third-party
+||torrentsee*^$third-party
+||torrentbot*^$third-party
 
 ! [10-2] 악성 스크립트릿
 #%#//scriptlet('prevent-window-open', 'acceptancedishearten.com')
@@ -365,6 +368,13 @@ fmkorea.com#%#//scriptlet('set-constant', 'isAdBlockActive', false)
 ||applebot-extended.com^$important
 ||facebookbot.com^$important
 ||meta-externalagent.com^$important
+||commoncrawl.org^$important
+||ccbot*^$important
+||diffbot.com^$important
+||images.google.com/robots.txt^$important
+||omgili.com^$important
+||turnitinbot.com^$important
+||magpie-crawler.com^$important
 #%#//scriptlet('set-constant', 'navigator.getBattery', 'undefined')
 #%#//scriptlet('set-constant', 'navigator.connection', 'undefined')
 ##+js(ra-mouse-move)
@@ -392,6 +402,62 @@ fmkorea.com#%#//scriptlet('set-constant', 'isAdBlockActive', false)
 ||location.google.com^
 ||ad.lgsmartad.com^
 ||lgsmartad.com^
+||sydney.bing.com/telemetry*
+||browser.events.data.microsoft.com^
+||vortex.data.microsoft.com^
+||vortex-win.data.microsoft.com^
+||telemetry.microsoft.com^
+||ari.microsoft.com^
+||alkali.google.com^
+||science.discord.com^$important
+||metrics.icloud.com^
+||metrics.apple.com^
+||weather-analytics.apple.com^
+||notes-analytics.apple.com^
+||books-analytics.apple.com^
+||telemetry.reddit.com^$important
+||gql.reddit.com/telemetry*
+||api.twitter.com/1.1/jot/*
+||telemetry.gfe.nvidia.com^
+||events.gfe.nvidia.com^
+||tracking.epicgames.com^
+||optimizationguide-pa.googleapis.com^
+||telemetry.mozilla.org^
+||incoming.telemetry.mozilla.org^
+||samsungcloudsolution.com^
+||snu.lge.com^
+||device-metrics-us.amazon.com^
+||fls-na.amazon.com^
+||cc-api-data.adobe.com^
+||ic.adobe.io^
+||smp-device-content.adobe.com^
+||cdp.cloud.unity3d.com^
+||data-optout-service.uca.cloud.unity3d.com^
+||config.uca.cloud.unity3d.com^
+||telemetry.origin.com^
+||pin-river.data.ea.com^
+||siri-metrics.apple.com^
+||diagnostics.apple.com^
+||rubin.samsungcloudsolution.com^
+||api.bixby.samsung.com/telemetry*
+||def-vef.osi.office.net^
+||nexusrules.officeapps.live.com^
+||edge.activity.windows.com^
+||waa-pa.googleapis.com^
+||assistant-pa.googleapis.com^
+||log.wonderlabs.com^
+||track.switch-bot.com^
+||log.tuyaus.com^
+||log.tuyaeu.com^
+||log.tuyacn.com^
+||a-log.tuyaus.com^
+||a-log.tuyaeu.com^
+||telemetry.tapo.com^
+||analytics.tplinkcloud.com^
+||track.aqara.com^
+||analytics.aqara.com^
+||analytics.wyzecam.com^
+||telemetry.ring.com^
 
 
 ! ## [15] 리퍼러 및 정보 누수 차단
@@ -424,6 +490,14 @@ fmkorea.com#%#//scriptlet('set-constant', 'isAdBlockActive', false)
 ||mouseflow.com^
 ||smartlook.com^
 ||smartlook.cloud^
+||msgstore.www.notion.so^
+||exp.notion.so^
+||statsigapi.net^
+||api.statsig.com^
+||t.chatgpt.com^
+||telemetry.anthropic.com^
+||telemetry.grammarly.io^
+||f-log-extension.grammarly.io^
 ##+js(set-constant, navigator.globalPrivacyControl, true)
 
 
@@ -433,6 +507,8 @@ $ping,important
 ||stats.video.kakao.com^
 ||p-events-delivery.vimeo.com^
 ||v.shopify.com/storefront/internal/video_stats^
+||spclient.wg.spotify.com/tracking*
+||customerevents.netflix.com^
 
 
 ! ## [19] 로컬 스토리지 및 캐시 기반 추적 방어
@@ -500,7 +576,7 @@ $ping,important
 @@||turnstile.cloudflare.com^$important
 @@||hcaptcha.com^$important
 @@||recaptcha.net^$important
-@@||bunny-frame.online^$media,subdocument,domain=tvwiki*.*|tvmon*.*|tvroom*.*|hoohootv*.*
+@@||bunny-frame.online^$media,subdocument
 @@||store.nintendo.co.kr^$document
 @@||mask.apple-dns.net^
 @@||mask-t.apple-dns.net^
@@ -532,14 +608,14 @@ $ping,important
 ! 통합 추적 이중 방어 - 통신(Fetch) API 강제 마비 및 스크립트 차단 (제미니)
 #%#//scriptlet('set-constant', 'yt.config_.GOOGLE_ANALYTICS_ID', '')
 #%#//scriptlet('prevent-fetch', 'google-analytics.com')
-#%#//scriptlet('prevent-fetch', 'log.naver.com')
-#%#//scriptlet('prevent-fetch', 'wcs.naver.net')
-#%#//scriptlet('prevent-fetch', 'lcs.naver.com')
-#%#//scriptlet('prevent-fetch', 'veta.naver.com')
-#%#//scriptlet('prevent-fetch', 'gfp.naver.com')
-#%#//scriptlet('prevent-fetch', 'tiara.kakao.com')
-#%#//scriptlet('prevent-fetch', 'tr.kakao.com')
-#%#//scriptlet('prevent-fetch', 'log.coupang.com')
+~naver.com#%#//scriptlet('prevent-fetch', 'log.naver.com')
+~naver.com#%#//scriptlet('prevent-fetch', 'wcs.naver.net')
+~naver.com#%#//scriptlet('prevent-fetch', 'lcs.naver.com')
+~naver.com#%#//scriptlet('prevent-fetch', 'veta.naver.com')
+~naver.com#%#//scriptlet('prevent-fetch', 'gfp.naver.com')
+~kakao.com,~daum.net#%#//scriptlet('prevent-fetch', 'tiara.kakao.com')
+~kakao.com,~daum.net#%#//scriptlet('prevent-fetch', 'tr.kakao.com')
+~coupang.com#%#//scriptlet('prevent-fetch', 'log.coupang.com')
 #%#//scriptlet('abort-on-property-read', 'amplitude')
 #%#//scriptlet('abort-on-property-read', 'mixpanel')
 #%#//scriptlet('abort-on-property-read', 'Adjust')
