@@ -1,5 +1,5 @@
 ! Title: OK-KR2
-! Version: 26.02.4048
+! Version: 26.02.4054
 
 ! ## [01] 통합 추적 방지 리스트
 ! [1-1] 네이버 (Naver)
@@ -17,6 +17,8 @@
 ||cue.search.naver.com^$important
 ||api.clova.ai/telemetry*
 ||omnilab.naver.com^
+||adcr.naver.com^
+||ad.search.naver.com^
 
 ! [1-2] 카카오 (Kakao)
 ||tiara.kakao.com^$important
@@ -550,12 +552,8 @@ $ping,important
 @@||slack-redir.net^$important
 ||link.coupang.com^
 @@||link.coupang.com^$important
-||adcr.naver.com^
-@@||adcr.naver.com^$important
 ||cr.naver.com^
 @@||cr.naver.com^$important
-||ad.search.naver.com^
-@@||ad.search.naver.com^$important
 @@||cc.naver.com^$important
 @@||log.naver.com^$domain=naver.com,important
 ||api.io.mi.com^
@@ -636,3 +634,4 @@ $ping,important
 ! 5. 로보락/샤오미 앱이 지도를 못 불러오고 오프라인인가? (5-1번 & 24-1번 로보락 룰)
 ! 6. '사람인지 확인합니다(캡챠)'가 무한 뺑뺑이를 도는가? (9번 핑거프린팅 & 24-1번 캡챠 룰)
 ! 7. 휴대폰 본인인증 창이나 결제창 팝업이 씹히고 안 뜨는가? (10-2번 팝업 & 15번 결제 룰)
+! 8. adcr.naver.com⁠ (쇼핑 광고) / ad.search.naver.com⁠ (검색 광고) 다시 차단
