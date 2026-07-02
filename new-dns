@@ -1,5 +1,5 @@
 ! Title: OK-KR2
-! Version: 26.02.4066
+! Version: 26.02.4069
 
 ! ## [01] 통합 추적 방지 리스트
 ! [1-1] 네이버 (Naver)
@@ -576,12 +576,15 @@ $ping,important
 @@||recaptcha.net^$important
 @@||bunny-frame.online^$media,subdocument
 @@||store.nintendo.co.kr^$document
-@@||apple-dns.net^$important
+@@||mask.apple-dns.net^
+@@||mask-t.apple-dns.net^
+@@||mask-h.apple-dns.net^
+@@||mask-api.icloud.com^
+@@||mask-api.fe.apple-dns.net^
 @@||mask.icloud.com^$important
 @@||mask-h2.icloud.com^$important
 @@||mask-api.icloud.com^$important
 @@||gateway.icloud.com^$important
-@@||configuration.ls.apple.com^$important
 
 
 ! [24-2] 스크립트 변조 예외 처리 (방어선 예외)
