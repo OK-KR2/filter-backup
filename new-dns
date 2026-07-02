@@ -1,5 +1,5 @@
 ! Title: OK-KR2
-! Version: 26.02.4069
+! Version: 26.02.4051
 
 ! ## [01] 통합 추적 방지 리스트
 ! [1-1] 네이버 (Naver)
@@ -628,8 +628,8 @@ $ping,important
 #%#//scriptlet('prevent-beacon')
 
 ! ECH 및 QUIC 활성화를 위한 SVCB/HTTPS 레코드 허용 (테스트)
-@@$$https
-@@$$svcb
+! @@$$https
+! @@$$svcb
 
 ! --- [ 🆘 갑자기 화면이 백지장이 되거나 먹통일 때 체크리스트 ] ---
 ! 1. 소셜 로그인(카카오/구글로 시작하기) 버튼을 누른 건 아닌가? ⁠(16번 룰)⁠
