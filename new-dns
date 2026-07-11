@@ -1,5 +1,5 @@
 ! Title: OK-KR2
-! Version: 26.02.4051
+! Version: 26.02.4053
 
 ! ## [01] 통합 추적 방지 리스트
 ! [1-1] 네이버 (Naver)
@@ -149,7 +149,6 @@ etoland.co.kr#%#//scriptlet('trusted-click-element', '[data-cookie-key]', '', '3
 
 ! ## [04] 광고
 ! [4-1] 광고 및 리마케팅 네트워크 도메인 차단
-||ader.naver.com^
 ||ads.adoffice.11st.co.kr^
 ||digitalcamp.co.kr^
 ||targetpush.co.kr^
@@ -552,6 +551,7 @@ $ping,important
 @@||slack-redir.net^$important
 ||link.coupang.com^
 @@||link.coupang.com^$important
+@@||ader.naver.com^
 ||cr.naver.com^
 @@||cr.naver.com^$important
 @@||cc.naver.com^$important
