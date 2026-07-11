@@ -1,5 +1,5 @@
 ! Title: OK-KR2
-! Version: 26.02.4053
+! Version: 26.02.4055
 
 ! ## [01] 통합 추적 방지 리스트
 ! [1-1] 네이버 (Naver)
@@ -552,6 +552,7 @@ $ping,important
 ||link.coupang.com^
 @@||link.coupang.com^$important
 @@||ader.naver.com^
+@@||pstatic.net^
 ||cr.naver.com^
 @@||cr.naver.com^$important
 @@||cc.naver.com^$important
