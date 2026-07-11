@@ -1,5 +1,5 @@
 ! Title: OK-KR2
-! Version: 26.02.4055
+! Version: 26.02.4057
 
 ! ## [01] 통합 추적 방지 리스트
 ! [1-1] 네이버 (Naver)
@@ -562,7 +562,8 @@ $ping,important
 @@||api.io.mi.com^$client=Roborock-Device-IP
 @@||*.cn^$client=Roborock-Device-IP
 @@||play.doingcns.co.kr^$important
-@@||mailplug.co.kr^$important
+@@||controld.com^$important,document
+@@||mailplug.co.kr^$important,document
 @@||mesu.apple.com^$important
 @@||gdmf.apple.com^$important
 @@||updates.cdn-apple.com^$important
