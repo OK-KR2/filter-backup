@@ -1,5 +1,5 @@
 ! Title: OK-KR2
-! Version: 26.02.4057
+! Version: 26.02.4062
 
 ! ## [01] 통합 추적 방지 리스트
 ! [1-1] 네이버 (Naver)
@@ -536,9 +536,10 @@ $ping,important
 
 
 ! ## [23] 글로벌 미디어 자동 재생 및 트래픽 낭비 차단 (제미니)
-#%#//scriptlet('prevent-autoplay')
-#%#//scriptlet('abort-current-inline-script', 'next-video-preload')
-#%#//scriptlet('set-constant', 'HTMLMediaElement.prototype.preload', 'none')
+! #%#//scriptlet('prevent-autoplay')
+! #%#//scriptlet('abort-current-inline-script', 'next-video-preload')
+! #%#//scriptlet('set-constant', 'HTMLMediaElement.prototype.preload', 'none')
+! 영상 재생이 안되어서 주석 진행해봄
 
 
 ! ## [24] 허용
