@@ -1,0 +1,645 @@
+! Title: OK-KR2
+! Version: 26.02.4062
+
+! ## [01] 통합 추적 방지 리스트
+! [1-1] 네이버 (Naver)
+||veta.naver.com^$important
+||analytics.naver.com^$important
+||log.naver.com^$important
+||cc.naver.com^
+||gfp.naver.com^
+||gfp-logging.naver.com^
+||ads-display.naver.com^
+||nv.veta.naver.com^
+||wcs.naver.net^$important
+||lcs.naver.com^$important
+||ai.search.naver.com^$important
+||cue.search.naver.com^$important
+||api.clova.ai/telemetry*
+||omnilab.naver.com^
+||adcr.naver.com^
+||ad.search.naver.com^
+
+! [1-2] 카카오 (Kakao)
+||tiara.kakao.com^$important
+||clog.kakao.com^$important
+||clog-aggregator.kakao.com^
+||ad.kakaocorp.com^
+||serv.ds.kakao.com^
+
+! [1-3] 쿠팡 (Coupang)
+||log.coupang.com^
+||analytics.coupang.com^
+||cmg.coupang.com^
+||ads.coupang.com^
+||ads-api.coupang.com^
+
+! [1-4] 삼성 (Samsung)
+||samsungads.com^
+||samsungadhub.com^
+
+! [1-5] 글로벌 추적 SDK
+||firebase-settings.crashlytics.com^
+||firebaselogging-pa.googleapis.com^
+||api.amplitude.com^$important
+||api.mixpanel.com^$important
+||api.segment.io^
+||telemetry.sdk.io^
+||t.appsflyer.com^
+||events.appsflyer.com^
+||sdk.iad-01.braze.com^
+||collect.tealiumiq.com^
+||logs.adjust.com^$important
+
+! [1-6] 국내외 기타 타겟팅 및 추적기
+||acecounter.com^
+||analytics.woowahan.com^
+||amazon-adsystem.com^
+||adbrix.io^
+||igaworks.com^
+||tnkfactory.com^
+
+
+! ## [02] 추적
+! [2-1] 소셜, 검색, 미디어 추적 도메인 차단
+||platform.twitter.com^
+||static.ak.facebook.com^
+||linkedin.com/px/
+||log.byteoversea.com^
+||graph.facebook.com^
+||telemetry.sdk.unityads.unity3d.com^
+||app-measurement.com^
+||googleadservices.com^
+||google.com/gen_204?*
+||google.co.kr/gen_204?*
+||sa.naver.com/be?*
+||vids.tapjoy.com^
+||video-stats.video.kakao.com^
+||whoas.xyz^
+||analytics.tiktok.com^
+||ct.pinterest.com^
+||tr.snapchat.com^
+||api.branch.io^
+||api2.branch.io^
+||api3.branch.io^
+||cdn.branch.io^
+
+! [2-2] URL 꼬리표(추적 파라미터) 자동 제거 통합
+$removeparam=utm_source
+$removeparam=utm_medium
+$removeparam=utm_campaign
+$removeparam=fbclid
+$removeparam=gclid
+$removeparam=ref
+$removeparam=_hsenc
+$removeparam=_hsmi
+$removeparam=mc_cid
+$removeparam=mc_eid
+$removeparam=kclid
+$removeparam=ttclid
+$removeparam=twclid
+$removeparam=wbraid
+$removeparam=gbraid
+$removeparam=igsh
+$removeparam=si
+$removeparam=srsltid
+$removeparam=gad_source
+$removeparam=msclkid
+$removeparam=dclid
+$removeparam=yclid
+
+
+! ## [03] 안티
+! [3-1] 주요 분석 및 감지 도메인 차단
+||amplitude.com^
+||appsflyer.com^
+||hotjar.com^
+||clarity.ms^
+||segment.com^
+||permutive.com^
+||tealiumiq.com^
+||ensighten.com^
+||krux.com^
+||fundingchoicesmessages.google.com^
+||adblock-analytics.com^
+||blockthrough.com^
+||admiral.cloud^
+||blockadblock.com^
+||detectadblock.com^
+||securepubads.g.doubleclick.net^
+||static.doubleclick.net^
+||g.doubleclick.net^
+||google-analytics.com^
+||pagead2.googlesyndication.com^
+||adnxs.com^
+||outbrain.com^
+||taboola.com^
+||carbonads.net^
+||buysellads.com^
+||cdn.jsdelivr.net/npm/disable-devtool*^$third-party
+
+! [3-2] 안티-애드블록 우회 스크립트릿 및 화장(Cosmetic)
+#%#//scriptlet('prevent-fetch', 'doubleclick.net')
+#%#//scriptlet('prevent-fetch', 'pagead2.googlesyndication.com')
+#%#//scriptlet('abort-current-inline-script', 'oncontextmenu')
+fmkorea.com##+js(set, link_url, )
+m.fmkorea.com##+js(set, board_block_check, noopFunc)
+etoland.co.kr#%#//scriptlet('trusted-click-element', '[data-cookie-key]', '', '300')
+
+
+! ## [04] 광고
+! [4-1] 광고 및 리마케팅 네트워크 도메인 차단
+||ads.adoffice.11st.co.kr^
+||digitalcamp.co.kr^
+||targetpush.co.kr^
+||dctrend.ai^
+||onelink.me^
+||nrc.naver.com^
+||widerplanet.com^
+||mobon.net^
+||criteo.com^
+||toast.com^
+||cauly.co.kr^
+||nasmedia.co.kr^
+||mezzomedia.co.kr^
+||ad-m.naver.com^
+||inmobi.com^
+||*.inmobi.com^
+||ad.toss.im^
+||ads.daangn.com^
+||adsrvr.org^
+||pubmatic.com^
+||openx.net^
+||ad.line.me^
+||tenping.kr^$third-party
+||linkprice.com^$third-party
+||dable.io^
+||ohtsfuapkah.in^
+||tsyndicate.com^
+||coverdistilltile.com^
+||g2288.com^
+
+! [4-2] 광고 서버 사전 연결 시도 차단 스크립트릿
+#%#//scriptlet('abort-current-inline-script', 'dns-prefetch')
+#%#//scriptlet('abort-current-inline-script', 'preconnect')
+
+
+! ## [05] 중국
+! [5-1] 중국계 데이터 수집 및 트래커 도메인
+||ot.io.mi.com^
+||log.ad.xiaomi.com^
+||tracking.miui.com^
+||data.mistat.xiaomi.com^
+||roborock.com.cn^
+||api-pt.roborock.com^
+||log.roborock.com^
+||acs.aliexpress.com^
+||log.mmstat.com^
+||amdc.m.taobao.com^
+||ynuf.alipay.com^
+||is.snssdk.com^
+||mon.snssdk.com^
+||hm.baidu.com^
+||mc.yandex.ru^
+
+! [5-2] 중국계 쇼핑몰 공유 추적 파라미터 제거
+$removeparam=aff_fcid
+$removeparam=share_id
+
+
+! ## [06] 카카오 (다음 포함)
+! [6-1] 광고 및 비즈니스 도메인 차단
+||bizad-fe.kakao.com^
+||kaikas.kakao.com^
+||kakaoad-fe.kakao.com^
+||ad-stat.kakao.com^
+||track.kakao.com^
+||ad.daum.net^
+||mms-stat.kakao.com^
+||ad.kakao.com^
+||talkchannel-api.kakao.com^
+||talkchannel-log.kakao.com^
+||tg.kakao.com^
+||mud-kage.kakao.co.kr/dn/^$app=KakaoTalk.exe
+||kakao.com/kakaotalk/ads/^
+||kakaotalk-ad.kakao.com^
+||kamp.kakao.com^
+||vs*.play.kakao.com^
+||play.kakao.com^
+||shortformstats.kakao.com^
+||public-persona-production-*.kgns3.com^
+||kuid-provider.ds.kakao.com^
+||tiara.daum.net^
+||tr.kakao.com^
+||analytics.daum.net^
+||logging.kakao.com^
+
+! [6-2] 시각적 광고 요소 숨기기 (Cosmetic)
+kakao.com##.ad_unit
+kakao.com##iframe[src*="bizad"]
+daum.net##.p_ad
+daum.net##div[id^="ad_"]
+#kakao.com##.ad_area
+
+
+! ## [07] 유튜브
+youtube.com##.ytp-ce-element
+youtube.com##.ytp-ce-video
+youtube.com##.ytp-ce-element-show
+youtube.com##ytd-ad-slot-renderer
+youtube.com##ytd-rich-item-renderer:has(> ytd-ad-slot-renderer)
+youtube.com##ytd-banner-promo-renderer
+
+
+! ## [08] 숨기기
+! [8-1] 범용: 쿠키/앱 배너 및 빈 광고 영역 숨기기
+##.cookie-banner
+##.cookie-consent
+##[id*="cookie-notification"]
+##div[class*="CookieConsent"]
+##.ad-unit, .ad-box, .ad-container
+##div[class*="AdSlot"]
+##div[id^="ad-wrapper"]
+##.ad_box:empty, .ad_area:empty
+##.ad-view, .happy-under-player-mobile, .textwidget, [alt$='xn--299aqd'], [class*='basic-banner'][id], [class^='happy-header'], [id*='powerLink'], [id*='powerlink'], [id^='hd_pop'], div.banner_m, div[class^='AD'][style], ins.adsbyaiinad
+##.banner2
+###bannerList
+##.banner_wrap2
+##.banner-area
+##[id^="banner-row-"]
+##[id^="fixed-banner-container-"]
+##.mobile-only
+##.bo_v_mov + ul
+##li.full.pc-only
+##li.full.mobile-only
+###modal_con
+###dnsguide-modal-overlay
+###appDownloadModal
+###novel_content:style(-webkit-touch-callout: default !important; -webkit-user-select: text !important; user-select: text !important;)
+###mq-notice, #n_b_2, .banners_area, .iziModal-overlay, .supermarquee-item, [id^='modal-anc-'], div.banner_l
+##.top-ad-padding
+##div[style="padding:3px;"]:has(a[target="_blank"] > img)
+##.alert-danger:has(a:has-text([AD]))
+
+! [8-2] 사이트 특정: 네이버 및 커뮤니티 숨기기
+naver.com##.u_cbox_ico_app
+m.cafe.naver.com##.banner_app_top
+m.dcinside.com##.app_banner_wrap
+youtube.com##.mobile-app-banner
+naver.com##.veta_ad
+naver.com##.veta_ad_wrapper
+naver.com##div[id*="veta"]
+naver.com##div[class*="ad_box"]
+naver.com##.u_ad_item
+m.cafe.naver.com##.ad_post_top
+m.cafe.naver.com##.ad_post_bottom
+m.cafe.naver.com##.ad_area
+m.cafe.naver.com##.banner_ad
+m.cafe.naver.com###articleFeedList > .ad_item
+m.cafe.naver.com##.popular_ad_area
+naver.com,daum.net,ppomppu.co.kr,ruliweb.com##[id$='_ad']
+m.dcinside.com###notice_list > li:not(:has(.ntc-line-pink))
+m.dcinside.com##.dna-group, .media-group, .layer-bottom-popup, .outside-search-box, .trend.cont
+m.cafe.naver.com###articleFeedList, .bottom.banner_add, .popular_toast_popup, .subscribe_layer_wrap
+fmkorea.com##.relevant_products_from_ad, .bd_mobile:matches-css(margin: /3px 0px/):remove()
+quasarzone.com##.best-official-news, .new-official-news, .new-partner-saleinfo-container, .recommend-deal-wrap
+web.joongna.com##.pb-12, div:has([alt='ad']):not(:has(h2))
+
+! [8-3] 스크립트릿 및 특정 도메인 차단
+||toonimg*.com/poster_js/*$script
+fmkorea.com#%#//scriptlet('set-constant', 'isAdBlockActive', false)
+#%#//scriptlet('prevent-window-open', 'acceptancedishearten')
+#%#//scriptlet('prevent-popads')
+
+
+! ## [09] 지능형 추적 및 핑거프린팅 방어
+||criteo.net^$important
+||casalemedia.com^$important
+||rubiconproject.com^$important
+||google.com/ads/ga-audiences^
+||facebook.com/tr/
+##+js(fp-protection)
+##+js(nowebrtc)
+
+
+! ## [10] 악성 레이어 및 투명 팝업 원천 차단
+! [10-1] 악성 도메인 및 팝업
+||acceptancedishearten.com^$important
+||*.acceptancedishearten.com^$important
+||booktoki*^$popup
+||toki*^$popup
+||tkor*^$popup
+||hoohootv*^$popup
+||tvmon*^$popup
+||tvroom*^$popup
+@@||tvwiki*^$popup
+||yako*^$popup
+||torrentsee*^$popup
+||torrentbot*^$popup
+||ohtsfuapkah.in^$popup
+||tsyndicate.com^$popup
+||g2288.com^$popup
+||booktoki*^$third-party
+||toki*^$third-party
+||tkor*^$third-party
+||hoohootv*^$third-party
+||tvmon*^$third-party
+||tvroom*^$third-party
+||tvwiki*^$third-party
+||yako*^$third-party
+||torrentsee*^$third-party
+||torrentbot*^$third-party
+
+! [10-2] 악성 스크립트릿
+#%#//scriptlet('prevent-window-open', 'acceptancedishearten.com')
+#%#//scriptlet('abort-on-property-read', 'openPopup')
+#%#//scriptlet('prevent-window-open', 'itunes.apple.com')
+#%#//scriptlet('prevent-window-open', 'apps.apple.com')
+
+
+! ## [11] 하드웨어 센서 및 AI 스크래핑 방어
+||gptbot.ai^$important
+||anthropic.com/robots.txt^$important
+||claudebot.com^$important
+||bytespider.com^$important
+||oabot.com^$important
+||amazonbot.com^$important
+||perplexity.ai/robots.txt^$important
+||cohere.com/robots.txt^$important
+||applebot-extended.com^$important
+||facebookbot.com^$important
+||meta-externalagent.com^$important
+||commoncrawl.org^$important
+||ccbot*^$important
+||diffbot.com^$important
+||images.google.com/robots.txt^$important
+||omgili.com^$important
+||turnitinbot.com^$important
+||magpie-crawler.com^$important
+#%#//scriptlet('set-constant', 'navigator.getBattery', 'undefined')
+#%#//scriptlet('set-constant', 'navigator.connection', 'undefined')
+##+js(ra-mouse-move)
+
+
+! ## [12] 브라우저 기능 제약 및 강제 해제
+##+js(allow-contextmenu)
+##+js(prevent-clipboard-write)
+
+
+! ## [13] 검색 엔진 프라이버시 및 누수 방지
+||google.com/complete/search?*
+||naver.com/ac?*
+||daum.net/suggest?*
+||google.com/url?*
+||daum.net/clkt?*
+#%#//scriptlet('abort-current-inline-script', 'dns-prefetch')
+#%#//scriptlet('abort-current-inline-script', 'prerender')
+
+
+! ## [14] 시스템 텔레메트리
+||is.apple.com^
+||api.smoot.apple.com^
+||telemetry.google.com^
+||location.google.com^
+||ad.lgsmartad.com^
+||lgsmartad.com^
+||sydney.bing.com/telemetry*
+||browser.events.data.microsoft.com^
+||vortex.data.microsoft.com^
+||vortex-win.data.microsoft.com^
+||telemetry.microsoft.com^
+||ari.microsoft.com^
+||alkali.google.com^
+||science.discord.com^$important
+||metrics.icloud.com^
+||metrics.apple.com^
+||weather-analytics.apple.com^
+||notes-analytics.apple.com^
+||books-analytics.apple.com^
+||telemetry.reddit.com^$important
+||gql.reddit.com/telemetry*
+||api.twitter.com/1.1/jot/*
+||telemetry.gfe.nvidia.com^
+||events.gfe.nvidia.com^
+||tracking.epicgames.com^
+||optimizationguide-pa.googleapis.com^
+||telemetry.mozilla.org^
+||incoming.telemetry.mozilla.org^
+||samsungcloudsolution.com^
+||snu.lge.com^
+||device-metrics-us.amazon.com^
+||fls-na.amazon.com^
+||cc-api-data.adobe.com^
+||ic.adobe.io^
+||smp-device-content.adobe.com^
+||cdp.cloud.unity3d.com^
+||data-optout-service.uca.cloud.unity3d.com^
+||config.uca.cloud.unity3d.com^
+||telemetry.origin.com^
+||pin-river.data.ea.com^
+||siri-metrics.apple.com^
+||diagnostics.apple.com^
+||rubin.samsungcloudsolution.com^
+||api.bixby.samsung.com/telemetry*
+||def-vef.osi.office.net^
+||nexusrules.officeapps.live.com^
+||edge.activity.windows.com^
+||waa-pa.googleapis.com^
+||assistant-pa.googleapis.com^
+||log.wonderlabs.com^
+||track.switch-bot.com^
+||log.tuyaus.com^
+||log.tuyaeu.com^
+||log.tuyacn.com^
+||a-log.tuyaus.com^
+||a-log.tuyaeu.com^
+||telemetry.tapo.com^
+||analytics.tplinkcloud.com^
+||track.aqara.com^
+||analytics.aqara.com^
+||analytics.wyzecam.com^
+||telemetry.ring.com^
+
+
+! ## [15] 리퍼러 및 정보 누수 차단
+||history.google.com^
+||myactivity.google.com^
+~kmcert.com,~niceipin.co.kr,~okcert.com,~siren24.com,~inicis.com,~kcp.co.kr,~tosspayments.com,~danalpay.com,~mobilians.co.kr#%#//scriptlet('set-constant', 'document.referrer', '')
+~kmcert.com,~niceipin.co.kr,~okcert.com,~siren24.com,~inicis.com,~kcp.co.kr,~tosspayments.com,~danalpay.com,~mobilians.co.kr#%#//scriptlet('set-constant', 'window.name', '')
+
+
+! ## [16] 소셜 로그인 및 공유 버튼 청소
+||facebook.net/en_US/sdk.js^
+||connect.facebook.net^
+||accounts.google.com/gsi/*
+||kauth.kakao.com^
+||api.twitter.com/widgets.js^
+##.social-share, .share-buttons, .sns-share
+##div[class*="share-layer"]
+##[id*="login-with-"]
+
+
+! ## [17] 글로벌 개인정보 제어 및 오류 로깅 차단
+||sentry.io^$important
+||browser.sentry-cdn.com^$important
+||bugsnag.com^$important
+||rollbar.com^$important
+||logrocket.com^$important
+||fullstory.com^
+||browser-intake-datadoghq.com^
+||bam.nr-data.net^
+||mouseflow.com^
+||smartlook.com^
+||smartlook.cloud^
+||msgstore.www.notion.so^
+||exp.notion.so^
+||statsigapi.net^
+||api.statsig.com^
+||t.chatgpt.com^
+||telemetry.anthropic.com^
+||telemetry.grammarly.io^
+||f-log-extension.grammarly.io^
+##+js(set-constant, navigator.globalPrivacyControl, true)
+
+
+! ## [18] 하이퍼링크 오디팅 및 미디어 분석 차단
+$ping,important
+||telemetry.video.naver.com^
+||stats.video.kakao.com^
+||p-events-delivery.vimeo.com^
+||v.shopify.com/storefront/internal/video_stats^
+||spclient.wg.spotify.com/tracking*
+||customerevents.netflix.com^
+
+
+! ## [19] 로컬 스토리지 및 캐시 기반 추적 방어
+##+js(set-constant, localStorage.ad_tracking_id, undefined)
+##+js(set-constant, localStorage.f_cap, undefined)
+~slack.com##+js(set-constant, navigator.serviceWorker, undefined)
+
+
+! ## [20] 오디오 및 폰트 핑거프린팅 세밀 방어
+##+js(set-constant, webkitAudioContext, undefined)
+
+
+! ## [21] 구글 Privacy Sandbox 및 Topics API 저격
+##+js(set-constant, document.browsingTopics, undefined)
+##+js(set-constant, navigator.scheduling, undefined)
+##+js(set-constant, navigator.userActivation, undefined)
+##+js(set-constant, document.attributionReporting, undefined)
+
+
+! ## [22] 하드웨어 자원 및 센서 무단 점유 방어
+||coin-hive.com^$important
+||coinhive.com^$important
+||crypto-loot.com^$important
+
+
+! ## [23] 글로벌 미디어 자동 재생 및 트래픽 낭비 차단 (제미니)
+! #%#//scriptlet('prevent-autoplay')
+! #%#//scriptlet('abort-current-inline-script', 'next-video-preload')
+! #%#//scriptlet('set-constant', 'HTMLMediaElement.prototype.preload', 'none')
+! 영상 재생이 안되어서 주석 진행해봄
+
+
+! ## [24] 허용
+! [24-1] 도메인 및 접속 보장 예외 처리
+@@||slack.com^$important
+@@||slack-edge.com^$important
+@@||slack-msgs.com^$important
+@@||slack-files.com^$important
+@@||slack-imgs.com^$important
+@@||slack-redir.net^$important
+||link.coupang.com^
+@@||link.coupang.com^$important
+@@||ader.naver.com^
+@@||pstatic.net^
+||cr.naver.com^
+@@||cr.naver.com^$important
+@@||cc.naver.com^$important
+@@||log.naver.com^$domain=naver.com,important
+||api.io.mi.com^
+||cn^
+@@||api.io.mi.com^$client=Roborock-Device-IP
+@@||*.cn^$client=Roborock-Device-IP
+@@||play.doingcns.co.kr^$important
+@@||controld.com^$important,document
+@@||mailplug.co.kr^$important,document
+@@||mesu.apple.com^$important
+@@||gdmf.apple.com^$important
+@@||updates.cdn-apple.com^$important
+@@||appldnld.apple.com^$important
+@@||gs.apple.com^$important
+@@||albert.apple.com^$important
+@@||ocsp.apple.com^$important
+@@||ocsp2.apple.com^$important
+@@||cloudflareinsights.com^$important
+@@||turnstile.cloudflare.com^$important
+@@||hcaptcha.com^$important
+@@||recaptcha.net^$important
+@@||bunny-frame.online^$media,subdocument
+@@||store.nintendo.co.kr^$document
+@@||mask.apple-dns.net^
+@@||mask-t.apple-dns.net^
+@@||mask-h.apple-dns.net^
+@@||mask-api.icloud.com^
+@@||mask-api.fe.apple-dns.net^
+@@||mask.icloud.com^$important
+@@||mask-h2.icloud.com^$important
+@@||mask-api.icloud.com^$important
+@@||gateway.icloud.com^$important
+
+
+! [24-2] 스크립트 변조 예외 처리 (방어선 예외)
+@@||challenges.cloudflare.com^$important,script,subdocument,xmlhttprequest
+@@||challenges.cloudflare.com^$jsinject,ghide,important
+@@*/cdn-cgi/challenge-platform/*$important,script,xmlhttprequest
+@@*/cdn-cgi/challenge-platform/*$jsinject,important
+@@||hcaptcha.com^$jsinject,important
+@@||google.com/recaptcha/*$important
+@@||google.com/recaptcha/*$jsinject,important
+@@||gstatic.com/recaptcha/*$important
+
+
+! ## [25] 방어선
+! 이중잠금 (제미니)
+||display.ad.daum.net^
+||ad-m.daum.net^
+||connect.facebook.net^
+||facebook.com/tr/
+||google-analytics.com/analytics.js^
+||pagead2.googlesyndication.com/pagead/js/adsbygoogle.js^
+##.adblock-msg, .adblock-overlay
+
+! 통합 추적 이중 방어 - 통신(Fetch) API 강제 마비 및 스크립트 차단 (제미니)
+#%#//scriptlet('set-constant', 'yt.config_.GOOGLE_ANALYTICS_ID', '')
+#%#//scriptlet('prevent-fetch', 'google-analytics.com')
+~naver.com#%#//scriptlet('prevent-fetch', 'log.naver.com')
+~naver.com#%#//scriptlet('prevent-fetch', 'wcs.naver.net')
+~naver.com#%#//scriptlet('prevent-fetch', 'lcs.naver.com')
+~naver.com#%#//scriptlet('prevent-fetch', 'veta.naver.com')
+~naver.com#%#//scriptlet('prevent-fetch', 'gfp.naver.com')
+~kakao.com,~daum.net#%#//scriptlet('prevent-fetch', 'tiara.kakao.com')
+~kakao.com,~daum.net#%#//scriptlet('prevent-fetch', 'tr.kakao.com')
+~coupang.com#%#//scriptlet('prevent-fetch', 'log.coupang.com')
+#%#//scriptlet('abort-on-property-read', 'amplitude')
+#%#//scriptlet('abort-on-property-read', 'mixpanel')
+#%#//scriptlet('abort-on-property-read', 'Adjust')
+#%#//scriptlet('abort-on-property-read', 'firebase')
+#%#//scriptlet('abort-on-property-read', 'Sentry')
+#%#//scriptlet('abort-current-inline-script', 'isAdBlockActive')
+#%#//scriptlet('prevent-beacon')
+
+! ECH 및 QUIC 활성화를 위한 SVCB/HTTPS 레코드 허용 (테스트)
+! @@$$https
+! @@$$svcb
+
+! --- [ 🆘 갑자기 화면이 백지장이 되거나 먹통일 때 체크리스트 ] ---
+! 1. 소셜 로그인(카카오/구글로 시작하기) 버튼을 누른 건 아닌가? ⁠(16번 룰)⁠
+! 2. 무료 포인트 충전소(앱테크)를 누른 건 아닌가? ⁠(1-6번 TNK 룰)⁠
+! 3. 제휴 쇼핑 링크(텐핑 등)를 누른 건 아닌가? ⁠(4-1번 룰)⁠
+! 4. 쿠팡 광고 선택 및 링크 경유를 누른 건 아닌가? (1-3번 cmg)
+! 5. 로보락/샤오미 앱이 지도를 못 불러오고 오프라인인가? (5-1번 & 24-1번 로보락 룰)
+! 6. '사람인지 확인합니다(캡챠)'가 무한 뺑뺑이를 도는가? (9번 핑거프린팅 & 24-1번 캡챠 룰)
+! 7. 휴대폰 본인인증 창이나 결제창 팝업이 씹히고 안 뜨는가? (10-2번 팝업 & 15번 결제 룰)
+! 8. adcr.naver.com⁠ (쇼핑 광고) / ad.search.naver.com⁠ (검색 광고) 다시 차단
