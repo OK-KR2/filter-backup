@@ -1,5 +1,5 @@
 ! Title: OK-KR2
-! Version: 26.02.5009
+! Version: 26.02.5011
 ! (Web Only)
 ! (DNS rules removed)
 
@@ -236,6 +236,9 @@ $ping,important
 
 ! ## [24] 허용
 ! [24-1] 도메인 및 접속 보장 예외 처리
+@@||play.doingcns.co.kr
+@@||controld.com
+@@||192.168.0.1
 
 ! [24-2] 스크립트 변조 예외 처리 (방어선 예외)
 
