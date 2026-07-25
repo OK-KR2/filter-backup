@@ -1,5 +1,5 @@
 ! Title: OK-KR2
-! Version: 26.02.5002
+! Version: 26.02.5005
 ! (Web Only)
 ! (DNS rules removed)
 
@@ -122,6 +122,8 @@ youtube.com##ytd-banner-promo-renderer
 ##.top-ad-padding
 ##div[style="padding:3px;"]:has(a[target="_blank"] > img)
 ##.alert-danger:has(a:has-text([AD]))
+###site-banner-4
+###site-banner-long
 
 ! [8-2] 사이트 특정: 네이버 및 커뮤니티 숨기기
 naver.com##.u_cbox_ico_app
