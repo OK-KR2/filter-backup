@@ -1,5 +1,5 @@
 ! Title: OK-KR2
-! Version: 26.02.5014
+! Version: 26.02.5023
 ! (Web Only)
 ! (DNS rules removed)
 
@@ -189,8 +189,8 @@ fmkorea.com#%#//scriptlet('set-constant', 'isAdBlockActive', false)
 
 
 ! ## [15] 리퍼러 및 정보 누수 차단
-~kmcert.com,~niceipin.co.kr,~okcert.com,~siren24.com,~inicis.com,~kcp.co.kr,~tosspayments.com,~danalpay.com,~mobilians.co.kr#%#//scriptlet('set-constant', 'document.referrer', '')
-~kmcert.com,~niceipin.co.kr,~okcert.com,~siren24.com,~inicis.com,~kcp.co.kr,~tosspayments.com,~danalpay.com,~mobilians.co.kr#%#//scriptlet('set-constant', 'window.name', '')
+! ~kmcert.com,~niceipin.co.kr,~okcert.com,~siren24.com,~inicis.com,~kcp.co.kr,~tosspayments.com,~danalpay.com,~mobilians.co.kr#%#//scriptlet('set-constant', 'document.referrer', '')
+! ~kmcert.com,~niceipin.co.kr,~okcert.com,~siren24.com,~inicis.com,~kcp.co.kr,~tosspayments.com,~danalpay.com,~mobilians.co.kr#%#//scriptlet('set-constant', 'window.name', '')
 
 
 ! ## [16] 소셜 로그인 및 공유 버튼 청소
@@ -210,17 +210,17 @@ $ping,important
 ! ## [19] 로컬 스토리지 및 캐시 기반 추적 방어
 ##+js(set-constant, localStorage.ad_tracking_id, undefined)
 ##+js(set-constant, localStorage.f_cap, undefined)
-~slack.com##+js(set-constant, navigator.serviceWorker, undefined)
+! ~slack.com##+js(set-constant, navigator.serviceWorker, undefined)
 
 
 ! ## [20] 오디오 및 폰트 핑거프린팅 세밀 방어
-##+js(set-constant, webkitAudioContext, undefined)
+! ##+js(set-constant, webkitAudioContext, undefined)
 
 
 ! ## [21] 구글 Privacy Sandbox 및 Topics API 저격
 ##+js(set-constant, document.browsingTopics, undefined)
 ##+js(set-constant, navigator.scheduling, undefined)
-##+js(set-constant, navigator.userActivation, undefined)
+! ##+js(set-constant, navigator.userActivation, undefined)
 ##+js(set-constant, document.attributionReporting, undefined)
 
 
@@ -231,14 +231,13 @@ $ping,important
 ! #%#//scriptlet('prevent-autoplay')
 ! #%#//scriptlet('abort-current-inline-script', 'next-video-preload')
 ! #%#//scriptlet('set-constant', 'HTMLMediaElement.prototype.preload', 'none')
-! 영상 재생이 안되어서 주석 진행해봄
 
 
 ! ## [24] 허용
 ! [24-1] 도메인 및 접속 보장 예외 처리
 @@||play.doingcns.co.kr^$important
 @@||controld.com^$important
-@@|http://192.168.0.1^$important
+@@192.168.0.1
 
 ! [24-2] 스크립트 변조 예외 처리 (방어선 예외)
 
@@ -275,3 +274,10 @@ $ping,important
 ! 1. 소셜 로그인(카카오/구글로 시작하기) 버튼이 안 보이는가? ⁠(16번 룰: 버튼 숨김 처리)⁠
 ! 2. '사람인지 확인합니다(캡챠)'가 무한 뺑뺑이를 도는가? (9번 룰: 핑거프린팅 방어 스크립트)
 ! 3. 휴대폰 본인인증 창이나 결제창 진행이 막히고 튕기는가? (15번 룰: 리퍼러 및 정보 누수 차단 스크립트)
+
+! 동영상/음악 재생 마비 (20번 룰) 주석처리 ⁠##+js(set-constant, webkitAudioContext, undefined)
+! 버튼 클릭/터치 먹통 (21번 룰) 주석처리 ##+js(set-constant, navigator.userActivation, undefined)⁠
+! PWA 및 백그라운드 로딩 마비 (19번 룰) 주석처리 ~slack.com##+js(set-constant, navigator.serviceWorker, undefined)
+! 한국 결제/인증 마비 (15번 룰) 주석처리 (두개 다)
+! 레코드 허용 (최하단) 주석처리 (두개 다) - 광고 누수 및 미작동
+! 글로벌 미디어 자동재생 (23번 룰) 주석처리 (세개 다) - 영상 재생 오류
