@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Safari Universal Video Optimizer (Pro Edition)
-// @version      17.0
-// @description  내장 플레이어 덮어쓰기 방지 + 스마트 메인 영상 탐지 + 볼륨/배속/전체화면 단축키 완벽 지원
+// @version      20.1
+// @description  내장 플레이어 덮어쓰기 방지 + 스마트 메인 영상 탐지 + 볼륨/배속/전체화면 단축키 완벽 지원 + 기존 커스텀 버튼 무력화
 // @author       You
 // @match        *://*/*
 // @run-at       document-idle
@@ -14,12 +14,21 @@
     const host = window.location.hostname;
 
     // ==========================================
-    // 💡 [업그레이드] 스마트 영상 탐지 로직 (가장 큰 메인 영상 찾기 + Shadow DOM 돌파)
+    // 💡 [업그레이드] 스마트 영상 탐지 로직 (성능 최적화 캐싱 + Shadow DOM 돌파)
     // ==========================================
+    let cachedVideo = null;
+    let lastVideoCheckTime = 0;
+
     const getActiveVideo = () => {
+        const now = Date.now();
+        // 2초 이내에 찾은 기록이 있고, 그 비디오가 아직 화면에 존재한다면 기존 비디오 재사용 (렉 완벽 방지)
+        if (cachedVideo && document.body.contains(cachedVideo) && (now - lastVideoCheckTime < 2000)) {
+            return cachedVideo;
+        }
+
         let videos = Array.from(document.querySelectorAll('video'));
         
-        // 숨겨진 Shadow DOM 내부의 비디오까지 전부 긁어오기
+        // 숨겨진 Shadow DOM 내부의 비디오까지 전부 긁어오기 (무거운 작업)
         document.querySelectorAll('*').forEach(el => {
             if (el.shadowRoot) {
                 videos.push(...el.shadowRoot.querySelectorAll('video'));
@@ -28,9 +37,16 @@
 
         if (videos.length === 0) return null;
 
-        // 면적(가로x세로)이 가장 큰 비디오를 진짜 '메인 영상'으로 간주하고 반환
-        return videos.sort((a, b) => (b.clientWidth * b.clientHeight) - (a.clientWidth * a.clientHeight))[0];
+        // 면적이 가장 큰 비디오를 진짜 '메인 영상'으로 간주
+        const mainVideo = videos.sort((a, b) => (b.clientWidth * b.clientHeight) - (a.clientWidth * a.clientHeight))[0];
+        
+        // 찾은 비디오를 캐시에 저장하고 시간 갱신
+        cachedVideo = mainVideo;
+        lastVideoCheckTime = now;
+        
+        return mainVideo;
     };
+
 
     // ==========================================
     // 1. DRM 사이트 예외 처리
@@ -101,14 +117,14 @@
     }
 
     // ==========================================
-    // 3. 범용 영상 처리 및 속성 방어 로직 (요청하신 대로 유지 및 주석 처리)
+    // 3. 범용 영상 처리 및 속성 방어 로직 
     // ==========================================
     const processVideo = (v) => {
         if (v.dataset.optmStatus) return;
         if (v.mediaKeys) { v.dataset.optmStatus = "drm_skipped"; return; }
         if (v.currentTime > 2 && !v.controls) { v.dataset.optmStatus = "too_late"; return; }
 
-        /* ▼▼▼▼▼ 기존의 내장 플레이어 덮어씌우기 주석 처리 ▼▼▼▼▼
+        // ▼▼▼▼▼ [요청 1] 기존의 내장 플레이어 덮어씌우기 주석 원복 완료 ▼▼▼▼▼
         const enforceControls = () => {
             if (!v.controls) { v.controls = true; v.setAttribute('controls', 'controls'); }
             v.style.setProperty('z-index', '2147483647', 'important');
@@ -123,7 +139,66 @@
             });
         });
         attributeLock.observe(v, { attributes: true, attributeFilter: ['controls'] });
-        */ // ▲▲▲▲▲ 여기까지 주석 처리 ▲▲▲▲▲
+        // ▲▲▲▲▲ 여기까지 주석 원복 완료 ▲▲▲▲▲
+
+
+        // ▼▼▼▼▼ [요청 2] 최적화된 재생/일시정지 버튼 무력화 로직 ▼▼▼▼▼
+        // 공통 검사 함수: 요소에 play나 pause 키워드가 있는지 확인
+        const isPlayPauseElement = (el) => {
+            if (!el || !el.getAttribute) return false;
+            const attrs = (el.getAttribute('class') || '') + ' ' + 
+                          (el.id || '') + ' ' + 
+                          (el.getAttribute('aria-label') || '');
+            const lowerAttrs = attrs.toLowerCase();
+            return lowerAttrs.includes('play') || lowerAttrs.includes('pause');
+        };
+
+        const disableCustomControls = () => {
+            if (!v.parentElement) return;
+            const elements = v.parentElement.querySelectorAll('*');
+            elements.forEach(el => {
+                if (el.tagName === 'VIDEO') return;
+                if (isPlayPauseElement(el)) {
+                    // 1차 차단: 마우스 이벤트 원천 무력화
+                    el.style.setProperty('pointer-events', 'none', 'important');
+                }
+            });
+        };
+        disableCustomControls(); 
+
+        if (v.parentElement) {
+            // [성능 최적화]: DOM이 아무리 자주 변해도 0.2초에 1번만 실행되도록 디바운스 적용 (렉 방지)
+            let timer = null;
+            const btnLock = new MutationObserver(() => {
+                if (timer) clearTimeout(timer);
+                timer = setTimeout(disableCustomControls, 200);
+            });
+            btnLock.observe(v.parentElement, { childList: true, subtree: true });
+
+            // [방어력 강화]: SVG 아이콘 클릭 방어 및 모든 마우스/터치 이벤트 차단 함수
+            const blockEvent = (e) => {
+                if (e.target.tagName === 'VIDEO') return; // 영상 자체 클릭은 허용
+                
+                // 클릭된 요소부터 부모(버튼 등)로 올라가며 play/pause가 있는지 탐색
+                let current = e.target;
+                while (current && current !== v.parentElement) {
+                    if (isPlayPauseElement(current)) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        e.stopImmediatePropagation(); // 다른 확장프로그램/스크립트의 실행까지 완벽 차단
+                        return;
+                    }
+                    current = current.parentElement;
+                }
+            };
+            
+            // 2차 차단: click뿐만 아니라 최신 프레임워크가 쓰는 down 이벤트까지 캡처링 차단
+            v.parentElement.addEventListener('click', blockEvent, true);
+            v.parentElement.addEventListener('mousedown', blockEvent, true);
+            v.parentElement.addEventListener('pointerdown', blockEvent, true);
+        }
+        // ▲▲▲▲▲ 추가된 스크립트 끝 ▲▲▲▲▲
+
 
         v.addEventListener('contextmenu', e => e.stopPropagation(), true);
         v.dataset.optmStatus = "success_locked";
