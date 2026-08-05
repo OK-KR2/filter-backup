@@ -1,12 +1,12 @@
 // ==UserScript==
 // @name         chzzk 1080p (Advanced)
-// @version      2.1
+// @version      2.2
 // @description  User-Agent 및 최신 Client-Hints(UA-CH)까지 Mac 환경으로 완벽히 위장합니다.
 // @match        https://chzzk.naver.com/*
 // @match        https://*.naver.com/*
 // @run-at       document-start
 // @grant        none
-// ==UserScript==
+// ==/UserScript==
 
 (function () {
     'use strict';
