@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Safari Universal Video Optimizer (Pro Edition)
-// @version      20.1
+// @version      20.3
 // @description  내장 플레이어 덮어쓰기 방지 + 스마트 메인 영상 탐지 + 볼륨/배속/전체화면 단축키 완벽 지원 + 기존 커스텀 버튼 무력화
 // @author       You
 // @match        *://*/*
@@ -124,7 +124,8 @@
         if (v.mediaKeys) { v.dataset.optmStatus = "drm_skipped"; return; }
         if (v.currentTime > 2 && !v.controls) { v.dataset.optmStatus = "too_late"; return; }
 
-        // ▼▼▼▼▼ [요청 1] 기존의 내장 플레이어 덮어씌우기 주석 원복 완료 ▼▼▼▼▼
+        // ▼▼▼▼▼ [요청 1] 기존의 내장 플레이어 덮어씌우기 주석 처리 완료 ▼▼▼▼▼
+        /*
         const enforceControls = () => {
             if (!v.controls) { v.controls = true; v.setAttribute('controls', 'controls'); }
             v.style.setProperty('z-index', '2147483647', 'important');
@@ -139,7 +140,8 @@
             });
         });
         attributeLock.observe(v, { attributes: true, attributeFilter: ['controls'] });
-        // ▲▲▲▲▲ 여기까지 주석 원복 완료 ▲▲▲▲▲
+        */
+        // ▲▲▲▲▲ 여기까지 주석 처리 완료 ▲▲▲▲▲
 
 
         // ▼▼▼▼▼ [요청 2] 최적화된 재생/일시정지 버튼 무력화 로직 ▼▼▼▼▼
