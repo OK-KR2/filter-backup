@@ -1,12 +1,9 @@
 // ==UserScript==
 // @name         chzzk 1080p  (Advanced)
-// @namespace    https://chzzk.naver.com/
-// @version      2.0
+// @version      2.1
 // @description  User-Agent 및 최신 Client-Hints(UA-CH)까지 Mac 환경으로 완벽히 위장합니다.
-// @author       Gemini
 // @match        https://chzzk.naver.com/*
 // @match        https://*.naver.com/*
-// @icon         https://chzzk.naver.com/favicon.ico
 // @run-at       document-start
 // @grant        none
 // ==UserScript==
