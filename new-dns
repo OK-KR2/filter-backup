@@ -1,5 +1,5 @@
 ! Title: OK-KR2
-! Version: 26.02.5025
+! Version: 26.02.5033
 ! (Web Only)
 ! (DNS rules removed)
 
@@ -119,7 +119,7 @@ youtube.com##ytd-banner-promo-renderer
 ###appDownloadModal
 ###novel_content:style(-webkit-touch-callout: default !important; -webkit-user-select: text !important; user-select: text !important;)
 ###mq-notice, #n_b_2, .banners_area, .iziModal-overlay, .supermarquee-item, [id^='modal-anc-'], div.banner_l
-##.top-ad-padding
+! ##.top-ad-padding
 ##div[style="padding:3px;"]:has(a[target="_blank"] > img)
 ##.alert-danger:has(a:has-text([AD]))
 ###site-banner-4
@@ -209,7 +209,7 @@ $ping,important
 
 ! ## [19] 로컬 스토리지 및 캐시 기반 추적 방어
 ##+js(set-constant, localStorage.ad_tracking_id, undefined)
-##+js(set-constant, localStorage.f_cap, undefined)
+! ##+js(set-constant, localStorage.f_cap, undefined)
 ! ~slack.com##+js(set-constant, navigator.serviceWorker, undefined)
 
 
@@ -257,11 +257,11 @@ $ping,important
 ~kakao.com,~daum.net#%#//scriptlet('prevent-fetch', 'tiara.kakao.com')
 ~kakao.com,~daum.net#%#//scriptlet('prevent-fetch', 'tr.kakao.com')
 ~coupang.com#%#//scriptlet('prevent-fetch', 'log.coupang.com')
-! #%#//scriptlet('abort-on-property-read', 'amplitude')
-! #%#//scriptlet('abort-on-property-read', 'mixpanel')
-! #%#//scriptlet('abort-on-property-read', 'Adjust')
-! #%#//scriptlet('abort-on-property-read', 'firebase')
-! #%#//scriptlet('abort-on-property-read', 'Sentry')
+#%#//scriptlet('abort-on-property-read', 'amplitude')
+#%#//scriptlet('abort-on-property-read', 'mixpanel')
+#%#//scriptlet('abort-on-property-read', 'Adjust')
+#%#//scriptlet('abort-on-property-read', 'firebase')
+#%#//scriptlet('abort-on-property-read', 'Sentry')
 #%#//scriptlet('abort-current-inline-script', 'isAdBlockActive')
 #%#//scriptlet('prevent-beacon')
 
