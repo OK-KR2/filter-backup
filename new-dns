@@ -1,5 +1,5 @@
 ! Title: OK-KR2
-! Version: 26.02.5053
+! Version: 26.02.5068
 ! (Web Only)
 ! (DNS rules removed)
 
@@ -155,8 +155,8 @@ fmkorea.com#%#//scriptlet('set-constant', 'isAdBlockActive', false)
 
 
 ! ## [09] 지능형 추적 및 핑거프린팅 방어
-! ##+js(fp-protection)
-! ##+js(nowebrtc)
+##+js(fp-protection)
+##+js(nowebrtc)
 
 
 ! ## [10] 악성 레이어 및 투명 팝업 원천 차단
@@ -262,7 +262,7 @@ $ping,important
 #%#//scriptlet('abort-on-property-read', 'Adjust')
 #%#//scriptlet('abort-on-property-read', 'firebase')
 #%#//scriptlet('abort-on-property-read', 'Sentry')
-#%#//scriptlet('abort-current-inline-script', 'isAdBlockActive')
+! #%#//scriptlet('abort-current-inline-script', 'isAdBlockActive')
 #%#//scriptlet('prevent-beacon')
 
 ! ECH 및 QUIC 활성화를 위한 SVCB/HTTPS 레코드 허용 (테스트)
