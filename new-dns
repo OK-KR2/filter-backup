@@ -1,5 +1,5 @@
 ! Title: OK-KR2
-! Version: 26.02.5033
+! Version: 26.02.5053
 ! (Web Only)
 ! (DNS rules removed)
 
@@ -119,7 +119,7 @@ youtube.com##ytd-banner-promo-renderer
 ###appDownloadModal
 ###novel_content:style(-webkit-touch-callout: default !important; -webkit-user-select: text !important; user-select: text !important;)
 ###mq-notice, #n_b_2, .banners_area, .iziModal-overlay, .supermarquee-item, [id^='modal-anc-'], div.banner_l
-! ##.top-ad-padding
+##.top-ad-padding
 ##div[style="padding:3px;"]:has(a[target="_blank"] > img)
 ##.alert-danger:has(a:has-text([AD]))
 ###site-banner-4
@@ -155,8 +155,8 @@ fmkorea.com#%#//scriptlet('set-constant', 'isAdBlockActive', false)
 
 
 ! ## [09] 지능형 추적 및 핑거프린팅 방어
-##+js(fp-protection)
-##+js(nowebrtc)
+! ##+js(fp-protection)
+! ##+js(nowebrtc)
 
 
 ! ## [10] 악성 레이어 및 투명 팝업 원천 차단
@@ -209,7 +209,7 @@ $ping,important
 
 ! ## [19] 로컬 스토리지 및 캐시 기반 추적 방어
 ##+js(set-constant, localStorage.ad_tracking_id, undefined)
-! ##+js(set-constant, localStorage.f_cap, undefined)
+##+js(set-constant, localStorage.f_cap, undefined)
 ! ~slack.com##+js(set-constant, navigator.serviceWorker, undefined)
 
 
