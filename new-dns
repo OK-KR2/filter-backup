@@ -1,5 +1,5 @@
 ! Title: OK-KR2
-! Version: 26.02.5075
+! Version: 26.02.5082
 ! (Web Only)
 ! (DNS rules removed)
 
@@ -51,7 +51,7 @@ $removeparam=yclid
 ! [3-2] 안티-애드블록 우회 스크립트릿 및 화장(Cosmetic)
 #%#//scriptlet('prevent-fetch', 'doubleclick.net')
 #%#//scriptlet('prevent-fetch', 'pagead2.googlesyndication.com')
-#%#//scriptlet('abort-current-inline-script', 'oncontextmenu')
+! #%#//scriptlet('abort-current-inline-script', 'oncontextmenu')
 fmkorea.com##+js(set, link_url, )
 m.fmkorea.com##+js(set, board_block_check, noopFunc)
 etoland.co.kr#%#//scriptlet('trusted-click-element', '[data-cookie-key]', '', '300')
@@ -172,7 +172,7 @@ fmkorea.com#%#//scriptlet('set-constant', 'isAdBlockActive', false)
 ! ## [11] 하드웨어 센서 및 AI 스크래핑 방어
 #%#//scriptlet('set-constant', 'navigator.getBattery', 'undefined')
 #%#//scriptlet('set-constant', 'navigator.connection', 'undefined')
-##+js(ra-mouse-move)
+! ##+js(ra-mouse-move)
 
 
 ! ## [12] 브라우저 기능 제약 및 강제 해제
