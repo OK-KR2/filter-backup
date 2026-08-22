@@ -1,5 +1,5 @@
 ! Title: OK-KR2
-! Version: 26.02.5023
+! Version: 26.02.5025
 ! (Web Only)
 ! (DNS rules removed)
 
@@ -257,11 +257,11 @@ $ping,important
 ~kakao.com,~daum.net#%#//scriptlet('prevent-fetch', 'tiara.kakao.com')
 ~kakao.com,~daum.net#%#//scriptlet('prevent-fetch', 'tr.kakao.com')
 ~coupang.com#%#//scriptlet('prevent-fetch', 'log.coupang.com')
-#%#//scriptlet('abort-on-property-read', 'amplitude')
-#%#//scriptlet('abort-on-property-read', 'mixpanel')
-#%#//scriptlet('abort-on-property-read', 'Adjust')
-#%#//scriptlet('abort-on-property-read', 'firebase')
-#%#//scriptlet('abort-on-property-read', 'Sentry')
+! #%#//scriptlet('abort-on-property-read', 'amplitude')
+! #%#//scriptlet('abort-on-property-read', 'mixpanel')
+! #%#//scriptlet('abort-on-property-read', 'Adjust')
+! #%#//scriptlet('abort-on-property-read', 'firebase')
+! #%#//scriptlet('abort-on-property-read', 'Sentry')
 #%#//scriptlet('abort-current-inline-script', 'isAdBlockActive')
 #%#//scriptlet('prevent-beacon')
 
