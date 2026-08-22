@@ -1,5 +1,5 @@
 ! Title: OK-KR2
-! Version: 26.02.5099
+! Version: 26.02.5101
 ! (Web Only)
 ! (DNS rules removed)
 
@@ -240,12 +240,6 @@ $ping,important
 @@192.168.0.1
 
 ! [24-2] 스크립트 변조 예외 처리 (방어선 예외)
-
-! [24-3] 도메인 및 접속 보장 예외 처리(추가)
-@@||speedwebgo.com/style/js/$script,important
-@@||speedwebgo.com/data/$script,important
-@@||ttjsde.speedwebgo.com^$script,important
-@@||blacktoon66.com^$subdocument,important
 
 
 ! ## [25] 방어선
