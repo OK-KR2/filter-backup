@@ -1,5 +1,5 @@
 ! Title: OK-KR2
-! Version: 26.02.5092
+! Version: 26.02.5099
 ! (Web Only)
 ! (DNS rules removed)
 
@@ -51,7 +51,7 @@ $removeparam=yclid
 ! [3-2] 안티-애드블록 우회 스크립트릿 및 화장(Cosmetic)
 #%#//scriptlet('prevent-fetch', 'doubleclick.net')
 #%#//scriptlet('prevent-fetch', 'pagead2.googlesyndication.com')
-!! #%#//scriptlet('abort-current-inline-script', 'oncontextmenu')
+#%#//scriptlet('abort-current-inline-script', 'oncontextmenu')
 fmkorea.com##+js(set, link_url, )
 m.fmkorea.com##+js(set, board_block_check, noopFunc)
 etoland.co.kr#%#//scriptlet('trusted-click-element', '[data-cookie-key]', '', '300')
@@ -61,8 +61,8 @@ etoland.co.kr#%#//scriptlet('trusted-click-element', '[data-cookie-key]', '', '3
 ! [4-1] 광고 및 리마케팅 네트워크 도메인 차단
 
 ! [4-2] 광고 서버 사전 연결 시도 차단 스크립트릿
-!! #%#//scriptlet('abort-current-inline-script', 'dns-prefetch')
-!! #%#//scriptlet('abort-current-inline-script', 'preconnect')
+#%#//scriptlet('abort-current-inline-script', 'dns-prefetch')
+#%#//scriptlet('abort-current-inline-script', 'preconnect')
 
 
 ! ## [05] 중국
@@ -164,25 +164,25 @@ fmkorea.com#%#//scriptlet('set-constant', 'isAdBlockActive', false)
 
 ! [10-2] 악성 스크립트릿
 #%#//scriptlet('prevent-window-open', 'acceptancedishearten.com')
-!! #%#//scriptlet('abort-on-property-read', 'openPopup')
+#%#//scriptlet('abort-on-property-read', 'openPopup')
 #%#//scriptlet('prevent-window-open', 'itunes.apple.com')
 #%#//scriptlet('prevent-window-open', 'apps.apple.com')
 
 
 ! ## [11] 하드웨어 센서 및 AI 스크래핑 방어
-!! #%#//scriptlet('set-constant', 'navigator.getBattery', 'undefined')
-!! #%#//scriptlet('set-constant', 'navigator.connection', 'undefined')
-!! ##+js(ra-mouse-move)
+#%#//scriptlet('set-constant', 'navigator.getBattery', 'undefined')
+#%#//scriptlet('set-constant', 'navigator.connection', 'undefined')
+##+js(ra-mouse-move)
 
 
 ! ## [12] 브라우저 기능 제약 및 강제 해제
-!! ##+js(allow-contextmenu)
-!! ##+js(prevent-clipboard-write)
+##+js(allow-contextmenu)
+##+js(prevent-clipboard-write)
 
 
 ! ## [13] 검색 엔진 프라이버시 및 누수 방지
-!! #%#//scriptlet('abort-current-inline-script', 'dns-prefetch')
-!! #%#//scriptlet('abort-current-inline-script', 'prerender')
+#%#//scriptlet('abort-current-inline-script', 'dns-prefetch')
+#%#//scriptlet('abort-current-inline-script', 'prerender')
 
 
 ! ## [14] 시스템 텔레메트리
@@ -218,10 +218,10 @@ $ping,important
 
 
 ! ## [21] 구글 Privacy Sandbox 및 Topics API 저격
-!! ##+js(set-constant, document.browsingTopics, undefined)
-!! ##+js(set-constant, navigator.scheduling, undefined)
+##+js(set-constant, document.browsingTopics, undefined)
+##+js(set-constant, navigator.scheduling, undefined)
 ! ##+js(set-constant, navigator.userActivation, undefined)
-!! ##+js(set-constant, document.attributionReporting, undefined)
+##+js(set-constant, document.attributionReporting, undefined)
 
 
 ! ## [22] 하드웨어 자원 및 센서 무단 점유 방어
@@ -240,6 +240,12 @@ $ping,important
 @@192.168.0.1
 
 ! [24-2] 스크립트 변조 예외 처리 (방어선 예외)
+
+! [24-3] 도메인 및 접속 보장 예외 처리(추가)
+@@||speedwebgo.com/style/js/$script,important
+@@||speedwebgo.com/data/$script,important
+@@||ttjsde.speedwebgo.com^$script,important
+@@||blacktoon66.com^$subdocument,important
 
 
 ! ## [25] 방어선
