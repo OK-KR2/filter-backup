@@ -1,5 +1,5 @@
 ! Title: OK-KR2
-! Version: 26.02.5117
+! Version: 26.02.5119
 ! (Web Only)
 ! (DNS rules removed)
 
@@ -244,6 +244,7 @@ $ping,important
 @@||ssl.pstatic.net/tveta/libs/glad/*$domain=m.cafe.naver.com
 @@||blog.naver.com/*/postwrite^$document
 @@||blog.naver.com/PostWriteForm.naver*$document
+@@||blog.editor.naver.com/editor?*$subdocument,domain=blog.naver.com
 
 
 ! [24-2] 스크립트 변조 예외 처리 (방어선 예외)
