@@ -1,5 +1,5 @@
 ! Title: OK-KR2
-! Version: 26.02.5122
+! Version: 26.02.5125
 ! (Web Only)
 ! (DNS rules removed)
 
@@ -157,7 +157,7 @@ fmkorea.com#%#//scriptlet('set-constant', 'isAdBlockActive', false)
 
 
 ! ## [09] 지능형 추적 및 핑거프린팅 방어
-##+js(fp-protection)
+! ##+js(fp-protection)
 ##+js(nowebrtc)
 
 
@@ -279,7 +279,7 @@ $ping,important
 
 ! --- [ 🆘 웹 필터 전용: 특정 기능이 안 될 때 체크리스트 ] ---
 ! 1. 소셜 로그인(카카오/구글로 시작하기) 버튼이 안 보이는가? ⁠(16번 룰: 버튼 숨김 처리)⁠
-! 2. '사람인지 확인합니다(캡챠)'가 무한 뺑뺑이를 도는가? (9번 룰: 핑거프린팅 방어 스크립트)
+! 2. '사람인지 확인합니다(캡챠)'가 무한 뺑뺑이를 도는가? (9번 룰: 핑거프린팅 방어 스크립트) - 1줄 주석처리
 ! 3. 휴대폰 본인인증 창이나 결제창 진행이 막히고 튕기는가? (15번 룰: 리퍼러 및 정보 누수 차단 스크립트)
 
 ! 동영상/음악 재생 마비 (20번 룰) 주석처리 ⁠##+js(set-constant, webkitAudioContext, undefined)
