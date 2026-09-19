@@ -1,5 +1,5 @@
 ! Title: OK-KR2
-! Version: 26.02.5133
+! Version: 26.02.5135
 ! (Web Only)
 ! (DNS rules removed)
 
@@ -125,6 +125,7 @@ youtube.com##ytd-banner-promo-renderer
 ###site-banner-4
 ###nad, #bo_list > div.clearfix:nth-child(2), nav.navbar.navbar-default.navbar-static-top:nth-child(2) > div.container:first-child > div.navbar-header.pull-left:first-child, #thema_wrapper > div.wrapper.boxed > div > div.at-content > div.bottom-navbar:nth-child(6), #thema_wrapper > div.wrapper.boxed > div > div.at-content > div.view-wrap:nth-child(4) > div.contents.panel.panel-default.view-head.no-attach.content-zoom:last-child > :is(a:nth-child(3), a:nth-child(4), div.bn.bnt:nth-child(10), div.bn.bnt:nth-child(11))
 ! ###nad, #bo_list > div.clearfix:nth-child(2), nav.navbar.navbar-default.navbar-static-top:nth-child(2), #thema_wrapper > div.wrapper.boxed > div > div.at-content > div.bottom-navbar:nth-child(6), #thema_wrapper > div.wrapper.boxed > div > div.at-content > div.view-wrap:nth-child(4) > div.contents.panel.panel-default.view-head.no-attach.content-zoom:last-child > :is(a:nth-child(3), a:nth-child(4), div.bn.bnt:nth-child(10), div.bn.bnt:nth-child(11))
+##.section.mobile-banner.top_hr .col-md-12.mobile-banner
 
 ! [8-2] 사이트 특정: 네이버 및 커뮤니티 숨기기
 naver.com##.u_cbox_ico_app
