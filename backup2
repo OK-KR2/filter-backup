@@ -1,0 +1,293 @@
+! Title: OK-KR2
+! Version: 26.02.5135
+! (Web Only)
+! (DNS rules removed)
+
+! ## [01] 통합 추적 방지 리스트
+! [1-1] 네이버 (Naver)
+
+! [1-2] 카카오 (Kakao)
+
+! [1-3] 쿠팡 (Coupang)
+
+! [1-4] 삼성 (Samsung)
+
+! [1-5] 글로벌 추적 SDK
+
+! [1-6] 국내외 기타 타겟팅 및 추적기
+
+
+! ## [02] 추적
+! [2-1] 소셜, 검색, 미디어 추적 도메인 차단
+
+! [2-2] URL 꼬리표(추적 파라미터) 자동 제거 통합
+$removeparam=utm_source
+$removeparam=utm_medium
+$removeparam=utm_campaign
+$removeparam=fbclid
+$removeparam=gclid
+$removeparam=ref
+$removeparam=_hsenc
+$removeparam=_hsmi
+$removeparam=mc_cid
+$removeparam=mc_eid
+$removeparam=kclid
+$removeparam=ttclid
+$removeparam=twclid
+$removeparam=wbraid
+$removeparam=gbraid
+$removeparam=igsh
+$removeparam=si
+$removeparam=srsltid
+$removeparam=gad_source
+$removeparam=msclkid
+$removeparam=dclid
+$removeparam=yclid
+
+
+! ## [03] 안티
+! [3-1] 주요 분석 및 감지 도메인 차단
+
+! [3-2] 안티-애드블록 우회 스크립트릿 및 화장(Cosmetic)
+#%#//scriptlet('prevent-fetch', 'doubleclick.net')
+#%#//scriptlet('prevent-fetch', 'pagead2.googlesyndication.com')
+#%#//scriptlet('abort-current-inline-script', 'oncontextmenu')
+fmkorea.com##+js(set, link_url, )
+m.fmkorea.com##+js(set, board_block_check, noopFunc)
+etoland.co.kr#%#//scriptlet('trusted-click-element', '[data-cookie-key]', '', '300')
+
+
+! ## [04] 광고
+! [4-1] 광고 및 리마케팅 네트워크 도메인 차단
+
+! [4-2] 광고 서버 사전 연결 시도 차단 스크립트릿
+#%#//scriptlet('abort-current-inline-script', 'dns-prefetch')
+#%#//scriptlet('abort-current-inline-script', 'preconnect')
+
+
+! ## [05] 중국
+! [5-1] 중국계 데이터 수집 및 트래커 도메인
+
+! [5-2] 중국계 쇼핑몰 공유 추적 파라미터 제거
+$removeparam=aff_fcid
+$removeparam=share_id
+
+
+! ## [06] 카카오 (다음 포함)
+! [6-1] 광고 및 비즈니스 도메인 차단
+
+! [6-2] 시각적 광고 요소 숨기기 (Cosmetic)
+kakao.com##.ad_unit
+kakao.com##iframe[src*="bizad"]
+daum.net##.p_ad
+daum.net##div[id^="ad_"]
+#kakao.com##.ad_area
+
+
+! ## [07] 유튜브
+youtube.com##.ytp-ce-element
+youtube.com##.ytp-ce-video
+youtube.com##.ytp-ce-element-show
+youtube.com##ytd-ad-slot-renderer
+youtube.com##ytd-rich-item-renderer:has(> ytd-ad-slot-renderer)
+youtube.com##ytd-banner-promo-renderer
+
+
+! ## [08] 숨기기
+! [8-1] 범용: 쿠키/앱 배너 및 빈 광고 영역 숨기기
+##.cookie-banner
+##.cookie-consent
+##[id*="cookie-notification"]
+##div[class*="CookieConsent"]
+##.ad-unit, .ad-box, .ad-container
+##div[class*="AdSlot"]
+##div[id^="ad-wrapper"]
+##.ad_box:empty, .ad_area:empty
+##.ad-view, .happy-under-player-mobile, .textwidget, [alt$='xn--299aqd'], [class*='basic-banner'][id], [class^='happy-header'], [id*='powerLink'], [id*='powerlink'], [id^='hd_pop'], div.banner_m, div[class^='AD'][style], ins.adsbyaiinad
+##.banner2
+###bannerList
+##.banner_wrap2
+##.banner-area
+##[id^="banner-row-"]
+##[id^="fixed-banner-container-"]
+##.mobile-only
+##.bo_v_mov + ul
+##li.full.pc-only
+##li.full.mobile-only
+###modal_con
+###dnsguide-modal-overlay
+###appDownloadModal
+###novel_content:style(-webkit-touch-callout: default !important; -webkit-user-select: text !important; user-select: text !important;)
+###mq-notice, #n_b_2, .banners_area, .iziModal-overlay, .supermarquee-item, [id^='modal-anc-'], div.banner_l
+##.top-ad-padding
+##div[style="padding:3px;"]:has(a[target="_blank"] > img)
+##.alert-danger:has(a:has-text([AD]))
+###site-banner-4
+###nad, #bo_list > div.clearfix:nth-child(2), nav.navbar.navbar-default.navbar-static-top:nth-child(2) > div.container:first-child > div.navbar-header.pull-left:first-child, #thema_wrapper > div.wrapper.boxed > div > div.at-content > div.bottom-navbar:nth-child(6), #thema_wrapper > div.wrapper.boxed > div > div.at-content > div.view-wrap:nth-child(4) > div.contents.panel.panel-default.view-head.no-attach.content-zoom:last-child > :is(a:nth-child(3), a:nth-child(4), div.bn.bnt:nth-child(10), div.bn.bnt:nth-child(11))
+! ###nad, #bo_list > div.clearfix:nth-child(2), nav.navbar.navbar-default.navbar-static-top:nth-child(2), #thema_wrapper > div.wrapper.boxed > div > div.at-content > div.bottom-navbar:nth-child(6), #thema_wrapper > div.wrapper.boxed > div > div.at-content > div.view-wrap:nth-child(4) > div.contents.panel.panel-default.view-head.no-attach.content-zoom:last-child > :is(a:nth-child(3), a:nth-child(4), div.bn.bnt:nth-child(10), div.bn.bnt:nth-child(11))
+##.section.mobile-banner.top_hr .col-md-12.mobile-banner
+
+! [8-2] 사이트 특정: 네이버 및 커뮤니티 숨기기
+naver.com##.u_cbox_ico_app
+m.cafe.naver.com##.banner_app_top
+m.dcinside.com##.app_banner_wrap
+youtube.com##.mobile-app-banner
+naver.com##.veta_ad
+naver.com##.veta_ad_wrapper
+naver.com##div[id*="veta"]
+naver.com##div[class*="ad_box"]
+naver.com##.u_ad_item
+m.cafe.naver.com##.ad_post_top
+m.cafe.naver.com##.ad_post_bottom
+m.cafe.naver.com##.ad_area
+m.cafe.naver.com##.banner_ad
+m.cafe.naver.com###articleFeedList > .ad_item
+m.cafe.naver.com##.popular_ad_area
+naver.com,daum.net,ppomppu.co.kr,ruliweb.com##[id$='_ad']
+m.dcinside.com###notice_list > li:not(:has(.ntc-line-pink))
+m.dcinside.com##.dna-group, .media-group, .layer-bottom-popup, .outside-search-box, .trend.cont
+m.cafe.naver.com###articleFeedList, .bottom.banner_add, .popular_toast_popup, .subscribe_layer_wrap
+fmkorea.com##.relevant_products_from_ad, .bd_mobile:matches-css(margin: /3px 0px/):remove()
+quasarzone.com##.best-official-news, .new-official-news, .new-partner-saleinfo-container, .recommend-deal-wrap
+web.joongna.com##.pb-12, div:has([alt='ad']):not(:has(h2))
+
+! [8-3] 스크립트릿 및 특정 도메인 차단
+fmkorea.com#%#//scriptlet('set-constant', 'isAdBlockActive', false)
+#%#//scriptlet('prevent-window-open', 'acceptancedishearten')
+#%#//scriptlet('prevent-popads')
+
+
+! ## [09] 지능형 추적 및 핑거프린팅 방어
+! ##+js(fp-protection)
+! ##+js(nowebrtc)
+~google.com,~google.co.kr,~recaptcha.net,~recaptcha.com,~hcaptcha.com,~challenges.cloudflare.com,~turnstile.cloudflare.com##+js(fp-protection)
+~google.com,~google.co.kr,~recaptcha.net,~recaptcha.com,~hcaptcha.com,~challenges.cloudflare.com,~turnstile.cloudflare.com##+js(nowebrtc)
+
+
+! ## [10] 악성 레이어 및 투명 팝업 원천 차단
+! [10-1] 악성 도메인 및 팝업
+
+! [10-2] 악성 스크립트릿
+#%#//scriptlet('prevent-window-open', 'acceptancedishearten.com')
+#%#//scriptlet('abort-on-property-read', 'openPopup')
+#%#//scriptlet('prevent-window-open', 'itunes.apple.com')
+#%#//scriptlet('prevent-window-open', 'apps.apple.com')
+
+
+! ## [11] 하드웨어 센서 및 AI 스크래핑 방어
+#%#//scriptlet('set-constant', 'navigator.getBattery', 'undefined')
+#%#//scriptlet('set-constant', 'navigator.connection', 'undefined')
+##+js(ra-mouse-move)
+
+
+! ## [12] 브라우저 기능 제약 및 강제 해제
+##+js(allow-contextmenu)
+##+js(prevent-clipboard-write)
+
+
+! ## [13] 검색 엔진 프라이버시 및 누수 방지
+#%#//scriptlet('abort-current-inline-script', 'dns-prefetch')
+#%#//scriptlet('abort-current-inline-script', 'prerender')
+
+
+! ## [14] 시스템 텔레메트리
+
+
+! ## [15] 리퍼러 및 정보 누수 차단
+! ~kmcert.com,~niceipin.co.kr,~okcert.com,~siren24.com,~inicis.com,~kcp.co.kr,~tosspayments.com,~danalpay.com,~mobilians.co.kr#%#//scriptlet('set-constant', 'document.referrer', '')
+! ~kmcert.com,~niceipin.co.kr,~okcert.com,~siren24.com,~inicis.com,~kcp.co.kr,~tosspayments.com,~danalpay.com,~mobilians.co.kr#%#//scriptlet('set-constant', 'window.name', '')
+
+
+! ## [16] 소셜 로그인 및 공유 버튼 청소
+##.social-share, .share-buttons, .sns-share
+##div[class*="share-layer"]
+##[id*="login-with-"]
+
+
+! ## [17] 글로벌 개인정보 제어 및 오류 로깅 차단
+##+js(set-constant, navigator.globalPrivacyControl, true)
+
+
+! ## [18] 하이퍼링크 오디팅 및 미디어 분석 차단
+$ping,important
+
+
+! ## [19] 로컬 스토리지 및 캐시 기반 추적 방어
+##+js(set-constant, localStorage.ad_tracking_id, undefined)
+##+js(set-constant, localStorage.f_cap, undefined)
+! ~slack.com##+js(set-constant, navigator.serviceWorker, undefined)
+
+
+! ## [20] 오디오 및 폰트 핑거프린팅 세밀 방어
+! ##+js(set-constant, webkitAudioContext, undefined)
+
+
+! ## [21] 구글 Privacy Sandbox 및 Topics API 저격
+##+js(set-constant, document.browsingTopics, undefined)
+##+js(set-constant, navigator.scheduling, undefined)
+! ##+js(set-constant, navigator.userActivation, undefined)
+##+js(set-constant, document.attributionReporting, undefined)
+
+
+! ## [22] 하드웨어 자원 및 센서 무단 점유 방어
+
+
+! ## [23] 글로벌 미디어 자동 재생 및 트래픽 낭비 차단 (제미니)
+! #%#//scriptlet('prevent-autoplay')
+! #%#//scriptlet('abort-current-inline-script', 'next-video-preload')
+! #%#//scriptlet('set-constant', 'HTMLMediaElement.prototype.preload', 'none')
+
+
+! ## [24] 허용
+! [24-1] 도메인 및 접속 보장 예외 처리
+@@||play.doingcns.co.kr^$important
+@@||controld.com^$important
+@@192.168.0.1
+@@||m.cafe.naver.com/ca-fe/web/cafes/*/articles/write^$document
+@@||ssl.pstatic.net/tveta/libs/glad/*$domain=m.cafe.naver.com
+@@||blog.naver.com/*/postwrite^$document
+@@||blog.naver.com/PostWriteForm.naver*$document
+
+
+! [24-2] 스크립트 변조 예외 처리 (방어선 예외)
+
+
+! ## [25] 방어선
+! 이중잠금 (제미니)
+##.adblock-msg, .adblock-overlay
+
+! 통합 추적 이중 방어 - 통신(Fetch) API 강제 마비 및 스크립트 차단 (제미니)
+#%#//scriptlet('set-constant', 'yt.config_.GOOGLE_ANALYTICS_ID', '')
+#%#//scriptlet('prevent-fetch', 'google-analytics.com')
+~naver.com#%#//scriptlet('prevent-fetch', 'log.naver.com')
+~naver.com#%#//scriptlet('prevent-fetch', 'wcs.naver.net')
+~naver.com#%#//scriptlet('prevent-fetch', 'lcs.naver.com')
+~naver.com#%#//scriptlet('prevent-fetch', 'veta.naver.com')
+~naver.com#%#//scriptlet('prevent-fetch', 'gfp.naver.com')
+~kakao.com,~daum.net#%#//scriptlet('prevent-fetch', 'tiara.kakao.com')
+~kakao.com,~daum.net#%#//scriptlet('prevent-fetch', 'tr.kakao.com')
+~coupang.com#%#//scriptlet('prevent-fetch', 'log.coupang.com')
+#%#//scriptlet('abort-on-property-read', 'amplitude')
+#%#//scriptlet('abort-on-property-read', 'mixpanel')
+#%#//scriptlet('abort-on-property-read', 'Adjust')
+#%#//scriptlet('abort-on-property-read', 'firebase')
+#%#//scriptlet('abort-on-property-read', 'Sentry')
+#%#//scriptlet('abort-current-inline-script', 'isAdBlockActive')
+#%#//scriptlet('prevent-beacon')
+
+! ECH 및 QUIC 활성화를 위한 SVCB/HTTPS 레코드 허용 (테스트)
+! @@$$https
+! @@$$svcb
+
+
+! --- [ 🆘 웹 필터 전용: 특정 기능이 안 될 때 체크리스트 ] ---
+! 1. 소셜 로그인(카카오/구글로 시작하기) 버튼이 안 보이는가? ⁠(16번 룰: 버튼 숨김 처리)⁠
+! 2. '사람인지 확인합니다(캡챠)'가 무한 뺑뺑이를 도는가? (9번 룰: 핑거프린팅 방어 스크립트) - 주석처리 후 변경
+! 3. 휴대폰 본인인증 창이나 결제창 진행이 막히고 튕기는가? (15번 룰: 리퍼러 및 정보 누수 차단 스크립트)
+
+! 동영상/음악 재생 마비 (20번 룰) 주석처리 ⁠##+js(set-constant, webkitAudioContext, undefined)
+! 버튼 클릭/터치 먹통 (21번 룰) 주석처리 ##+js(set-constant, navigator.userActivation, undefined)⁠
+! PWA 및 백그라운드 로딩 마비 (19번 룰) 주석처리 ~slack.com##+js(set-constant, navigator.serviceWorker, undefined)
+! 한국 결제/인증 마비 (15번 룰) 주석처리 (두개 다)
+! 레코드 허용 (최하단) 주석처리 (두개 다) - 광고 누수 및 미작동
+! 글로벌 미디어 자동재생 (23번 룰) 주석처리 (세개 다) - 영상 재생 오류
