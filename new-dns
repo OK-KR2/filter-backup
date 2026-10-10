@@ -1,5 +1,5 @@
 ! Title: OK-KR2
-! Version: 26.02.7218
+! Version: 26.02.7221
 ! (Web Only)
 ! (DNS rules removed)
 
@@ -161,14 +161,14 @@ m.cafe.naver.com###articleFeedList, .bottom.banner_add, .popular_toast_popup, .s
 fmkorea.com##.relevant_products_from_ad, .bd_mobile:matches-css(margin: /3px 0px/):remove()
 quasarzone.com##.best-official-news, .new-official-news, .new-partner-saleinfo-container, .recommend-deal-wrap
 web.joongna.com##.pb-12, div:has([alt='ad']):not(:has(h2))
-! ~naver.com,~coupang.com##d
-! ~naver.com,~coupang.com##k
-! ~naver.com,~coupang.com##ll
-! ~naver.com,~coupang.com##eiv
-! ~naver.com,~coupang.com##div:has(> d)
-! ~naver.com,~coupang.com##div:has(> k)
-! ~naver.com,~coupang.com##div:has(> ll)
-! ~naver.com,~coupang.com##div:has(> eiv)
+~naver.com,~coupang.com##d
+~naver.com,~coupang.com##k
+~naver.com,~coupang.com##ll
+~naver.com,~coupang.com##eiv
+~naver.com,~coupang.com##div:has(> d)
+~naver.com,~coupang.com##div:has(> k)
+~naver.com,~coupang.com##div:has(> ll)
+~naver.com,~coupang.com##div:has(> eiv)
 
 ! [8-3] 스크립트릿 및 특정 도메인 차단
 fmkorea.com#%#//scriptlet('set-constant', 'isAdBlockActive', false)
@@ -308,7 +308,7 @@ $ping,important
 ! 5. 커뮤니티에서 클릭한 쿠팡/쇼핑몰 링크가 '사이트에 연결할 수 없음'으로 뜨는가? (1-3번, 25번 룰: 중간 리다이렉트 서버 통신 전면 마비 위험)
 ! 6. 쿠팡 본 사이트나 네이버 메인 화면 레이아웃이 찢어지거나 깨지는가? (8-2번 룰: 쇼핑몰 자체 커스텀 웹 컴포넌트 태그 무단 숨김에 따른 프론트엔드 오류 위험)
 ! 7. 쿠팡 파트너스 우회 및 제휴 배너 로드만 차단 (1-3번 룰: 의도적인 링크 이동은 허용)
-! 8. 비표준 HTML 태그(<d>, <k>, <ll>, <eiv>)를 악용하는 우회 스크립트 배너 원천 차단 (8-2번 룰: 쇼핑몰 메인 도메인 오탐 방지) -주석
+! 8. 비표준 HTML 태그(<d>, <k>, <ll>, <eiv>)를 악용하는 우회 스크립트 배너 원천 차단 (8-2번 룰: 쇼핑몰 메인 도메인 오탐 방지)
 
 ! 동영상/음악 재생 마비 (20번 룰) 주석처리 - 오디오 API 핑거프린팅 차단으로 인한 미디어 재생 엔진 무력화 위험
 ! 버튼 클릭/터치 먹통 (21번 룰) 주석처리 - 사용자 상호작용(User Activation) 객체 무효화로 인한 웹사이트 클릭 스크립트 마비 위험
