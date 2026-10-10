@@ -1,17 +1,14 @@
 ! Title: OK-KR2
-! Version: 26.02.7221
+! Version: 26.02.7231
 ! (Web Only)
 ! (DNS rules removed)
 
 ! ## [01] 통합 추적 방지 리스트
 ! [1-1] 네이버 (Naver)
-||ssl.pstatic.net/adimg3.search/adpost/js/adpost_show_ads_v2*.js$script
 
 ! [1-2] 카카오 (Kakao)
-||t1.daumcdn.net/kas/static/ba.min.js$script
 
 ! [1-3] 쿠팡 (Coupang)
-||cache.ggeal.com/banner/*
 
 ! [1-4] 삼성 (Samsung)
 
@@ -129,14 +126,6 @@ youtube.com##ytd-banner-promo-renderer
 ###nad, #bo_list > div.clearfix:nth-child(2), nav.navbar.navbar-default.navbar-static-top:nth-child(2) > div.container:first-child > div.navbar-header.pull-left:first-child, #thema_wrapper > div.wrapper.boxed > div > div.at-content > div.bottom-navbar:nth-child(6), #thema_wrapper > div.wrapper.boxed > div > div.at-content > div.view-wrap:nth-child(4) > div.contents.panel.panel-default.view-head.no-attach.content-zoom:last-child > :is(a:nth-child(3), a:nth-child(4), div.bn.bnt:nth-child(10), div.bn.bnt:nth-child(11))
 ! ###nad, #bo_list > div.clearfix:nth-child(2), nav.navbar.navbar-default.navbar-static-top:nth-child(2), #thema_wrapper > div.wrapper.boxed > div > div.at-content > div.bottom-navbar:nth-child(6), #thema_wrapper > div.wrapper.boxed > div > div.at-content > div.view-wrap:nth-child(4) > div.contents.panel.panel-default.view-head.no-attach.content-zoom:last-child > :is(a:nth-child(3), a:nth-child(4), div.bn.bnt:nth-child(10), div.bn.bnt:nth-child(11))
 ##.section.mobile-banner.top_hr .col-md-12.mobile-banner
-##.adsbygoogle
-##.kakao_ad_area
-##div[id*="naver_adpost"]
-##iframe[src*="/banner/"]
-##div:has(a[href*="coupang.com/re/"]):has-text(/\[AD\]|\(AD\)/)
-##div:has(> span:has-text(쿠팡 인기상품))
-##div:has(> div:has-text(인기상품)):has(a[href*="alzzabaegi.com"])
-! ##div.box:has(> span:has-text(인기상품))
 
 ! [8-2] 사이트 특정: 네이버 및 커뮤니티 숨기기
 naver.com##.u_cbox_ico_app
@@ -161,14 +150,6 @@ m.cafe.naver.com###articleFeedList, .bottom.banner_add, .popular_toast_popup, .s
 fmkorea.com##.relevant_products_from_ad, .bd_mobile:matches-css(margin: /3px 0px/):remove()
 quasarzone.com##.best-official-news, .new-official-news, .new-partner-saleinfo-container, .recommend-deal-wrap
 web.joongna.com##.pb-12, div:has([alt='ad']):not(:has(h2))
-~naver.com,~coupang.com##d
-~naver.com,~coupang.com##k
-~naver.com,~coupang.com##ll
-~naver.com,~coupang.com##eiv
-~naver.com,~coupang.com##div:has(> d)
-~naver.com,~coupang.com##div:has(> k)
-~naver.com,~coupang.com##div:has(> ll)
-~naver.com,~coupang.com##div:has(> eiv)
 
 ! [8-3] 스크립트릿 및 특정 도메인 차단
 fmkorea.com#%#//scriptlet('set-constant', 'isAdBlockActive', false)
@@ -301,18 +282,13 @@ $ping,important
 
 
 ! --- [ 🆘 웹 필터 전용: 특정 기능이 안 될 때 체크리스트 ] ---
-! 1. 소셜 로그인(카카오/구글로 시작하기) 버튼이 안 보이는가? (16번 룰: 공유/로그인 위젯 범용 숨김 처리로 인한 로그인 불가 위험)
-! 2. '사람인지 확인합니다(캡챠)'가 무한 뺑뺑이를 도는가? (9번 룰: 핑거프린팅 방어 스크립트 개입으로 인한 캡챠 인증 통과 실패 위험)
-! 3. 휴대폰 본인인증 창이나 결제창 진행이 막히고 튕기는가? (15번 룰: 리퍼러 및 윈도우 네임 블라인드로 인한 결제 세션 끊김 위험)
-! 4. 네이버 쇼핑 검색 결과 클릭 시 빈 화면이 뜨는가? (DNS 허용과 별개로, 브라우저 자체의 파라미터 추적 방지 기능 충돌 위험)
-! 5. 커뮤니티에서 클릭한 쿠팡/쇼핑몰 링크가 '사이트에 연결할 수 없음'으로 뜨는가? (1-3번, 25번 룰: 중간 리다이렉트 서버 통신 전면 마비 위험)
-! 6. 쿠팡 본 사이트나 네이버 메인 화면 레이아웃이 찢어지거나 깨지는가? (8-2번 룰: 쇼핑몰 자체 커스텀 웹 컴포넌트 태그 무단 숨김에 따른 프론트엔드 오류 위험)
-! 7. 쿠팡 파트너스 우회 및 제휴 배너 로드만 차단 (1-3번 룰: 의도적인 링크 이동은 허용)
-! 8. 비표준 HTML 태그(<d>, <k>, <ll>, <eiv>)를 악용하는 우회 스크립트 배너 원천 차단 (8-2번 룰: 쇼핑몰 메인 도메인 오탐 방지)
+! 1. 소셜 로그인(카카오/구글로 시작하기) 버튼이 안 보이는가? ⁠(16번 룰: 버튼 숨김 처리)⁠
+! 2. '사람인지 확인합니다(캡챠)'가 무한 뺑뺑이를 도는가? (9번 룰: 핑거프린팅 방어 스크립트) - 주석처리 후 변경
+! 3. 휴대폰 본인인증 창이나 결제창 진행이 막히고 튕기는가? (15번 룰: 리퍼러 및 정보 누수 차단 스크립트)
 
-! 동영상/음악 재생 마비 (20번 룰) 주석처리 - 오디오 API 핑거프린팅 차단으로 인한 미디어 재생 엔진 무력화 위험
-! 버튼 클릭/터치 먹통 (21번 룰) 주석처리 - 사용자 상호작용(User Activation) 객체 무효화로 인한 웹사이트 클릭 스크립트 마비 위험
-! PWA 및 백그라운드 로딩 마비 (19번 룰) 주석처리 - 서비스 워커(ServiceWorker) 차단으로 인한 웹 앱 오프라인/알림 기능 장애 위험
-! 한국 결제/인증 마비 (15번 룰) 주석처리 - 외부 PG사로 넘어갈 때 필수적인 이전 페이지 정보(Referrer) 유실 위험
-! 레코드 허용 (최하단) 주석처리 - ECH/SVCB 통신 우회 시도로 인한 DNS 필터링 누수 및 초기 연결 지연 위험
-! 글로벌 미디어 자동재생 (23번 룰) 주석처리 - 미디어 프리로드 강제 차단으로 인한 영상 재생 무한 로딩 및 버퍼링 위험
+! 동영상/음악 재생 마비 (20번 룰) 주석처리 ⁠##+js(set-constant, webkitAudioContext, undefined)
+! 버튼 클릭/터치 먹통 (21번 룰) 주석처리 ##+js(set-constant, navigator.userActivation, undefined)⁠
+! PWA 및 백그라운드 로딩 마비 (19번 룰) 주석처리 ~slack.com##+js(set-constant, navigator.serviceWorker, undefined)
+! 한국 결제/인증 마비 (15번 룰) 주석처리 (두개 다)
+! 레코드 허용 (최하단) 주석처리 (두개 다) - 광고 누수 및 미작동
+! 글로벌 미디어 자동재생 (23번 룰) 주석처리 (세개 다) - 영상 재생 오류
