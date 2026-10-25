@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         [통합] 내 전용 웹사이트 편의성 & 광고 차단팩
 // @namespace    http://tampermonkey.net/
-// @version      1.7
-// @description  1.나무위키 광고차단(최적화) | 2.툰코 스크롤 메뉴 | 3.유튜브 PiP | 4.디시 스텔스·IP식별·원본이미지 | 5.블로그·티스토리 복사 해제
+// @version      1.8
+// @description  1.나무위키 광고차단 | 2.툰코 스크롤 메뉴 | 3.유튜브 PiP(/watch 전용) | 4.디시 스텔스·IP·원본짤 | 5.블로그·티스토리 복사 해제
 //
 // --- [1. 나무위키 주소 규칙] ---
 // @match        *://namu.wiki/*
@@ -35,9 +35,9 @@
     // 🎛️ [통합 관리 스위치] 특정 기능만 잠시 끄려면 true를 false로 바꾸세요.
     // =========================================================================
     const ENABLE_MODULES = {
-        namuwiki:     true, // 모듈 1: 나무위키 파워링크(위장 목차) 제거 (배터리 최적화)
+        namuwiki:     true, // 모듈 1: 나무위키 파워링크(위장 목차) 제거
         toonkor:      true, // 모듈 2: 툰코 뷰어 스크롤 메뉴 숨김/표시
-        youtube:      true, // 모듈 3: 유튜브 전용 PiP 버튼 및 단축키(Ctrl+P)
+        youtube:      true, // 모듈 3: 유튜브 전용 PiP 버튼(/watch 전용) 및 단축키(Ctrl+P)
         dcinside:     true, // 모듈 4: 디시 스텔스 & 실시간 IP 식별 & 원본 이미지 자동 로드
         copyUnlocker: true  // 모듈 5: 네이버 블로그 & 티스토리 복사 방지 해제 (무소음)
     };
@@ -66,9 +66,8 @@
 
 
     // =========================================================================
-    // 📦 [모듈 1] NamuWiki Powerlink Kill (Fake TOC) v8.1 (배터리 최적화 버전)
+    // 📦 [모듈 1] NamuWiki Powerlink Kill (Fake TOC) v8.2 (무한 타이머 제거)
     // - 작동 조건: namu.wiki 접속 시
-    // - 개선 사항: 0.3초 무한 setInterval 제거 -> DOM 변화 시에만 프레임 단위로 1회 스캔
     // =========================================================================
     if (ENABLE_MODULES.namuwiki && currentHost.includes('namu.wiki')) {
         (function() {
@@ -134,12 +133,18 @@
                 });
             };
 
-            // DOM에 실제 추가된 노드가 있을 때만 화면 주사율(rAF)에 맞춰 1회 실행 (무한 타이머 제거)
             const scheduleScan = () => {
                 if (!scanScheduled) {
                     scanScheduled = true;
                     window.requestAnimationFrame(scan);
                 }
+            };
+
+            // 실시간 DOM 감지 + 페이지 전환 시 지연 팝업 2단 확인 사살 (무한 setInterval 대체)
+            const triggerDelayedSafetyScan = () => {
+                scheduleScan();
+                setTimeout(scheduleScan, 500);
+                setTimeout(scheduleScan, 1500);
             };
 
             const observer = new MutationObserver((mutations) => {
@@ -151,12 +156,15 @@
             const start = () => {
                 if (document.body) {
                     observer.observe(document.body, { childList: true, subtree: true });
-                    scan();
+                    triggerDelayedSafetyScan();
                 } else {
                     window.requestAnimationFrame(start);
                 }
             };
             start();
+
+            window.addEventListener('popstate', triggerDelayedSafetyScan);
+            window.addEventListener('load', triggerDelayedSafetyScan, { once: true });
         })();
     }
     // ======================= [모듈 1: 나무위키 끝] ============================
@@ -285,14 +293,19 @@
 
 
     // =========================================================================
-    // 📦 [모듈 3] YouTube PiP Only v31.0
+    // 📦 [모듈 3] YouTube PiP Only v32.0 (/watch 전용 표시 & 무타이머 최적화)
     // - 작동 조건: youtube.com 접속 시
+    // - 개선 사항: 1.5초 setInterval 제거, 영상 재생(/watch) 화면에서만 버튼 표시
     // =========================================================================
     if (ENABLE_MODULES.youtube && currentHost.includes('youtube.com')) {
         runAtDocumentIdle(function() {
             let cachedVideo = null;
             let lastVideoCheckTime = 0;
 
+            // 현재 페이지가 일반 영상 시청 페이지(/watch)인지 확인 (홈, 쇼츠 등 제외)
+            const isWatchPage = () => window.location.pathname.startsWith('/watch');
+
+            // 실제 버튼을 누르거나 단축키를 누를 때만 호출되는 스마트 영상 탐지 함수
             const getActiveVideo = () => {
                 const now = Date.now();
                 if (cachedVideo && document.body.contains(cachedVideo) && (now - lastVideoCheckTime < 2000)) {
@@ -300,11 +313,14 @@
                 }
 
                 let videos = Array.from(document.querySelectorAll('video'));
-                document.querySelectorAll('*').forEach(el => {
-                    if (el.shadowRoot) {
-                        videos.push(...el.shadowRoot.querySelectorAll('video'));
-                    }
-                });
+                if (videos.length === 0) {
+                    // 기본 탐색으로 못 찾았을 때만 Shadow DOM 탐색 수행 (평소 성능 완벽 보호)
+                    document.querySelectorAll('*').forEach(el => {
+                        if (el.shadowRoot) {
+                            videos.push(...el.shadowRoot.querySelectorAll('video'));
+                        }
+                    });
+                }
 
                 if (videos.length === 0) return null;
 
@@ -314,54 +330,88 @@
                 return mainVideo;
             };
 
+            // PiP 실행 공통 함수
+            const togglePiP = () => {
+                const v = getActiveVideo();
+                if (!v) return;
+
+                if (typeof v.webkitSetPresentationMode === 'function') {
+                    v.webkitSetPresentationMode(v.webkitPresentationMode === 'picture-in-picture' ? 'inline' : 'picture-in-picture');
+                } else if (document.pictureInPictureElement) {
+                    document.exitPictureInPicture().catch(console.error);
+                } else if (document.pictureInPictureEnabled) {
+                    v.requestPictureInPicture().catch(console.error);
+                }
+            };
+
+            // 단축키 (Ctrl + P)
             window.addEventListener('keydown', (e) => {
                 if (e.ctrlKey && e.key.toLowerCase() === 'p') {
-                    const video = getActiveVideo();
-                    if (video) {
-                        if (typeof video.webkitSetPresentationMode === 'function') {
-                            video.webkitSetPresentationMode(video.webkitPresentationMode === 'picture-in-picture' ? 'inline' : 'picture-in-picture');
-                        } else if (document.pictureInPictureElement) {
-                            document.exitPictureInPicture();
-                        } else {
-                            video.requestPictureInPicture().catch(console.error);
-                        }
-                    }
+                    togglePiP();
                 }
             });
 
-            const addPipButton = () => {
-                const video = getActiveVideo();
-                if (!video || !document.body || document.getElementById('force-pip-btn')) return;
+            // PiP 버튼 상태 업데이트 (/watch 에서는 표시, 그 외 페이지에서는 즉시 숨김)
+            let pipCheckScheduled = false;
+            const updatePipButton = () => {
+                pipCheckScheduled = false;
+                if (!document.body) return;
 
-                const btn = document.createElement('button');
-                btn.id = 'force-pip-btn';
-                btn.innerText = 'PiP 모드';
-                btn.style.cssText = `
-                    position: fixed !important; bottom: 80px !important; right: 20px !important;
-                    z-index: 2147483647 !important; padding: 12px 18px !important;
-                    background: rgba(220, 38, 38, 0.9) !important; color: white !important;
-                    border: 1px solid rgba(255, 255, 255, 0.3) !important; border-radius: 10px !important;
-                    cursor: pointer !important; font-weight: bold !important; font-size: 14px !important;
-                    backdrop-filter: blur(8px) !important; -webkit-backdrop-filter: blur(8px) !important;
-                    box-shadow: 0 4px 12px rgba(0,0,0,0.5) !important; display: block !important;
-                `;
+                let btn = document.getElementById('force-pip-btn');
 
-                btn.onclick = (e) => {
-                    e.preventDefault(); e.stopPropagation();
-                    const v = getActiveVideo();
-                    if (!v) return;
+                if (!isWatchPage()) {
+                    if (btn) btn.style.setProperty('display', 'none', 'important');
+                    return;
+                }
 
-                    if (typeof v.webkitSetPresentationMode === 'function') {
-                        v.webkitSetPresentationMode(v.webkitPresentationMode === 'picture-in-picture' ? 'inline' : 'picture-in-picture');
-                    } else if (document.pictureInPictureEnabled) {
-                        document.pictureInPictureElement ? document.exitPictureInPicture() : v.requestPictureInPicture();
-                    }
-                };
-                document.body.appendChild(btn);
+                // /watch 페이지이고 영상 태그가 존재할 때만 버튼 생성/표시
+                if (!document.querySelector('video')) return;
+
+                if (!btn) {
+                    btn = document.createElement('button');
+                    btn.id = 'force-pip-btn';
+                    btn.innerText = 'PiP 모드';
+                    btn.style.cssText = `
+                        position: fixed !important; bottom: 80px !important; right: 20px !important;
+                        z-index: 2147483647 !important; padding: 12px 18px !important;
+                        background: rgba(220, 38, 38, 0.9) !important; color: white !important;
+                        border: 1px solid rgba(255, 255, 255, 0.3) !important; border-radius: 10px !important;
+                        cursor: pointer !important; font-weight: bold !important; font-size: 14px !important;
+                        backdrop-filter: blur(8px) !important; -webkit-backdrop-filter: blur(8px) !important;
+                        box-shadow: 0 4px 12px rgba(0,0,0,0.5) !important; display: block !important;
+                    `;
+                    btn.onclick = (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        togglePiP();
+                    };
+                    document.body.appendChild(btn);
+                } else {
+                    btn.style.setProperty('display', 'block', 'important');
+                }
             };
 
-            setInterval(addPipButton, 1500);
-            window.addEventListener('yt-navigate-finish', addPipButton);
+            const schedulePipUpdate = () => {
+                if (!pipCheckScheduled) {
+                    pipCheckScheduled = true;
+                    window.requestAnimationFrame(updatePipButton);
+                }
+            };
+
+            // 유튜브 PC & 모바일(m.youtube.com) SPA 페이지 이동 이벤트 및 DOM 감지 연동
+            ['yt-navigate-finish', 'yt-page-data-updated', 'state-navigateend', 'popstate'].forEach(evt => {
+                window.addEventListener(evt, schedulePipUpdate);
+            });
+
+            const ytObserver = new MutationObserver((mutations) => {
+                if (mutations.some(m => m.addedNodes.length > 0)) {
+                    schedulePipUpdate();
+                }
+            });
+            if (document.body) {
+                ytObserver.observe(document.body, { childList: true, subtree: true });
+            }
+            updatePipButton();
         });
     }
     // ======================= [모듈 3: 유튜브 끝] ==============================
@@ -371,11 +421,9 @@
     // =========================================================================
     // 📦 [모듈 4] Dcinside Stealth, IP Tagger & Original Image Loader v3.1
     // - 작동 조건: dcinside.com 접속 시
-    // - 포함 기능: 애드블록 감지 무력화 + 실시간 IP 식별 + 모바일/PC 원본 이미지 즉시 로드
     // =========================================================================
     if (ENABLE_MODULES.dcinside && currentHost.includes('dcinside.com')) {
         (function() {
-            // [4-1] 스텔스 & 애드블록 감지 무력화 (document-start 즉시 실행)
             const lock = (p, v) => {
                 try { Object.defineProperty(window, p, { value: v, writable: false, configurable: false }); } catch (e) {}
             };
@@ -418,7 +466,6 @@
                 return originalFetch.apply(window, args);
             };
 
-            // [4-2] 실시간 IP 식별 & 본문 원본 이미지 즉시 로드 (DOM 로드 완료 후 실행)
             runAtDocumentEnd(() => {
                 laundryDC();
 
@@ -450,12 +497,10 @@
                     });
                 }
 
-                // 본문 내 지연 로딩(data-original) 이미지를 즉시 원본 소스로 강제 전환
                 function loadOriginalImages() {
                     const targetSelectors = '.thum-txtin img, .write_div img, .gallview_contents img';
                     document.querySelectorAll(targetSelectors).forEach(img => {
                         if (img.dataset.origLoaded === "true") return;
-                        // 디시콘 및 기본 아이콘은 제외
                         if (img.classList.contains('written_dccon') || (img.src && img.src.includes('dcinside_icon'))) return;
 
                         const realSrc = img.getAttribute('data-original') || img.getAttribute('data-src');
