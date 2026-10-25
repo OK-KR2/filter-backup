@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Mobile Absolute Copy Unlocker 🔓 (YouTube 우회 버전)
-// @version      9.9
+// @version      10.0
 // @match        *://*/*
 // @run-at       document-start
 // @grant        none
@@ -11,7 +11,8 @@
 
     // 1. 강제 텍스트 선택 CSS 주입 (innerHTML 대신 textContent 사용!)
     function injectCSS() {
-        if (document.getElementById('unlock-copy-css')) return;
+        const root = document.head || document.documentElement;
+        if (!root || document.getElementById('unlock-copy-css')) return;
         const style = document.createElement('style');
         style.id = 'unlock-copy-css';
         // 유튜브 CSP(보안) 우회를 위해 innerHTML 대신 textContent로 텍스트만 안전하게 주입
@@ -24,10 +25,10 @@
                 -webkit-touch-callout: default !important;
             }
         `;
-        (document.head || document.documentElement).appendChild(style);
+        root.appendChild(style);
     }
 
-    // 2. 복사 방지 자바스크립트 이벤트 무력화 (이건 문제없음)
+    // 2. 복사 방지 자바스크립트 이벤트 무력화
     const blockedEvents = ['contextmenu', 'selectstart', 'dragstart', 'copy', 'cut', 'paste'];
     blockedEvents.forEach(event => {
         document.addEventListener(event, function(e) {
@@ -35,8 +36,18 @@
         }, true);
     });
 
-    // 3. 네이버 등 방어막 재생성 무력화
-    setInterval(injectCSS, 1000);
+    // 3. [최적화] setInterval(1초 주기 연산) 제거 -> 즉시 주입 및 태그 삭제 시에만 반응
+    injectCSS();
+    const cssObserver = new MutationObserver(() => {
+        if (!document.getElementById('unlock-copy-css')) injectCSS();
+    });
+    if (document.documentElement) {
+        cssObserver.observe(document.documentElement, { childList: true });
+    }
+    window.addEventListener('DOMContentLoaded', () => {
+        injectCSS();
+        if (document.head) cssObserver.observe(document.head, { childList: true });
+    }, { once: true });
 
     // 4. iOS 리퀴드 토스트 (innerHTML 원천 제거 후 순수 조립)
     function showToast() {
@@ -103,7 +114,7 @@
 
     // 유튜브는 페이지 로딩이 비동기라 body가 늦게 뜰 수 있어서 감시
     if (document.readyState === 'loading') {
-        window.addEventListener('DOMContentLoaded', showToast);
+        window.addEventListener('DOMContentLoaded', showToast, { once: true });
     } else {
         setTimeout(showToast, 300);
     }
