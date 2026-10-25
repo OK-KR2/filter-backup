@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         [통합] 내 전용 웹사이트 편의성 & 광고 차단팩
 // @namespace    http://tampermonkey.net/
-// @version      1.6
-// @description  1.나무위키 광고차단 | 2.툰코 스크롤 메뉴 | 3.유튜브 PiP | 4.디시 스텔스&IP식별 | 5.네이버블로그·티스토리 복사 해제
+// @version      1.7
+// @description  1.나무위키 광고차단(최적화) | 2.툰코 스크롤 메뉴 | 3.유튜브 PiP | 4.디시 스텔스·IP식별·원본이미지 | 5.블로그·티스토리 복사 해제
 //
 // --- [1. 나무위키 주소 규칙] ---
 // @match        *://namu.wiki/*
@@ -23,7 +23,7 @@
 // @match        *://*.blog.naver.com/*
 // @match        *://*.tistory.com/*
 //
-// --- [공통 실행 시점 및 권한 (샌드박스 해제로 성능·호환성 극대화)] ---
+// --- [공통 실행 시점 및 권한] ---
 // @run-at       document-start
 // @grant        none
 // ==/UserScript==
@@ -35,10 +35,10 @@
     // 🎛️ [통합 관리 스위치] 특정 기능만 잠시 끄려면 true를 false로 바꾸세요.
     // =========================================================================
     const ENABLE_MODULES = {
-        namuwiki:     true, // 모듈 1: 나무위키 파워링크(위장 목차) 제거
+        namuwiki:     true, // 모듈 1: 나무위키 파워링크(위장 목차) 제거 (배터리 최적화)
         toonkor:      true, // 모듈 2: 툰코 뷰어 스크롤 메뉴 숨김/표시
         youtube:      true, // 모듈 3: 유튜브 전용 PiP 버튼 및 단축키(Ctrl+P)
-        dcinside:     true, // 모듈 4: 디시인사이드 애드블록 스텔스 & 실시간 IP 식별
+        dcinside:     true, // 모듈 4: 디시 스텔스 & 실시간 IP 식별 & 원본 이미지 자동 로드
         copyUnlocker: true  // 모듈 5: 네이버 블로그 & 티스토리 복사 방지 해제 (무소음)
     };
     // =========================================================================
@@ -66,8 +66,9 @@
 
 
     // =========================================================================
-    // 📦 [모듈 1] NamuWiki Powerlink Kill (Fake TOC) v8.0
+    // 📦 [모듈 1] NamuWiki Powerlink Kill (Fake TOC) v8.1 (배터리 최적화 버전)
     // - 작동 조건: namu.wiki 접속 시
+    // - 개선 사항: 0.3초 무한 setInterval 제거 -> DOM 변화 시에만 프레임 단위로 1회 스캔
     // =========================================================================
     if (ENABLE_MODULES.namuwiki && currentHost.includes('namu.wiki')) {
         (function() {
@@ -108,7 +109,11 @@
                 }
             };
 
+            let scanScheduled = false;
             const scan = () => {
+                scanScheduled = false;
+
+                // [패턴 1] 가짜 앵커 추적 (실제 목차 번호 완벽 보호)
                 document.querySelectorAll('a[href^="#s-"]').forEach(a => {
                     const text = a.textContent.trim();
                     if (!text) return;
@@ -118,29 +123,40 @@
                     nuke(a);
                 });
 
+                // [패턴 2] 허니팟(워터마크) 텍스트 추적
                 document.querySelectorAll('div, span').forEach(el => {
                     if (el.childNodes.length === 1 && el.firstChild.nodeType === Node.TEXT_NODE) {
                         const text = el.textContent.trim();
-                        if (text.length >= 6 && text.length <= 15) {
-                            if (el.classList.contains(text)) {
-                                nuke(el);
-                            }
+                        if (text.length >= 6 && text.length <= 15 && el.classList.contains(text)) {
+                            nuke(el);
                         }
                     }
                 });
             };
 
-            const observer = new MutationObserver(() => { scan(); });
+            // DOM에 실제 추가된 노드가 있을 때만 화면 주사율(rAF)에 맞춰 1회 실행 (무한 타이머 제거)
+            const scheduleScan = () => {
+                if (!scanScheduled) {
+                    scanScheduled = true;
+                    window.requestAnimationFrame(scan);
+                }
+            };
+
+            const observer = new MutationObserver((mutations) => {
+                if (mutations.some(m => m.addedNodes.length > 0)) {
+                    scheduleScan();
+                }
+            });
+
             const start = () => {
                 if (document.body) {
                     observer.observe(document.body, { childList: true, subtree: true });
                     scan();
                 } else {
-                    requestAnimationFrame(start);
+                    window.requestAnimationFrame(start);
                 }
             };
             start();
-            setInterval(scan, 300);
         })();
     }
     // ======================= [모듈 1: 나무위키 끝] ============================
@@ -353,9 +369,9 @@
 
 
     // =========================================================================
-    // 📦 [모듈 4] Dcinside Stealth & IP Tagger v3.0 (정화 · 최적화 버전)
+    // 📦 [모듈 4] Dcinside Stealth, IP Tagger & Original Image Loader v3.1
     // - 작동 조건: dcinside.com 접속 시
-    // - 변경 사항: 고장 난 우회(Bypass) 및 불필요한 서버 요청(RateLimit/Cache) 완전 제거
+    // - 포함 기능: 애드블록 감지 무력화 + 실시간 IP 식별 + 모바일/PC 원본 이미지 즉시 로드
     // =========================================================================
     if (ENABLE_MODULES.dcinside && currentHost.includes('dcinside.com')) {
         (function() {
@@ -402,9 +418,9 @@
                 return originalFetch.apply(window, args);
             };
 
-            // [4-2] 실시간 IP 식별 로직 (DOM 로드 완료 후 실행)
+            // [4-2] 실시간 IP 식별 & 본문 원본 이미지 즉시 로드 (DOM 로드 완료 후 실행)
             runAtDocumentEnd(() => {
-                laundryDC(); // 로드 완료 시점 1회 추가 세탁 (무한 setInterval 제거)
+                laundryDC();
 
                 const ipCategories = [
                     { label: "통피", ips: ["39.7", "39.119", "106.101", "106.102", "110.70", "114.200", "114.201", "117.111", "118.235", "125.188", "175.223", "175.252", "210.125", "211.36", "211.234", "211.246", "223.32", "223.33", "223.38", "223.39", "223.62"] },
@@ -434,9 +450,39 @@
                     });
                 }
 
+                // 본문 내 지연 로딩(data-original) 이미지를 즉시 원본 소스로 강제 전환
+                function loadOriginalImages() {
+                    const targetSelectors = '.thum-txtin img, .write_div img, .gallview_contents img';
+                    document.querySelectorAll(targetSelectors).forEach(img => {
+                        if (img.dataset.origLoaded === "true") return;
+                        // 디시콘 및 기본 아이콘은 제외
+                        if (img.classList.contains('written_dccon') || (img.src && img.src.includes('dcinside_icon'))) return;
+
+                        const realSrc = img.getAttribute('data-original') || img.getAttribute('data-src');
+                        if (realSrc) {
+                            img.src = realSrc;
+                            img.removeAttribute('data-original');
+                            img.removeAttribute('data-src');
+                            img.classList.remove('lazy');
+                        }
+                        img.loading = 'eager';
+                        img.dataset.origLoaded = "true";
+                    });
+                }
+
                 tagIPs();
+                loadOriginalImages();
+
+                let dcScheduled = false;
                 const dcObserver = new MutationObserver((mutations) => {
-                    if (mutations.some(m => m.addedNodes.length > 0)) tagIPs();
+                    if (!dcScheduled && mutations.some(m => m.addedNodes.length > 0)) {
+                        dcScheduled = true;
+                        window.requestAnimationFrame(() => {
+                            dcScheduled = false;
+                            tagIPs();
+                            loadOriginalImages();
+                        });
+                    }
                 });
                 if (document.body) {
                     dcObserver.observe(document.body, { childList: true, subtree: true });
