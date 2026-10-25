@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         [통합] 내 전용 웹사이트 편의성 & 광고 차단팩
 // @namespace    http://tampermonkey.net/
-// @version      1.3
-// @description  1.나무위키 광고차단 | 2.툰코 스크롤 메뉴 | 3.유튜브 PiP | 4.디시인사이드 올인원 | 5.전 사이트 복사 해제(v10.0 최적화)
+// @version      1.4
+// @description  1.나무위키 광고차단 | 2.툰코 스크롤 메뉴 | 3.유튜브 PiP | 4.디시인사이드 올인원 | 5.전 사이트 복사 해제(무소음 최적화)
 //
 // --- [통합 주소 규칙 (전 사이트 복사 해제 포함)] ---
 // @match        *://*/*
@@ -23,7 +23,7 @@
         toonkor:      true, // 모듈 2: 툰코 뷰어 스크롤 메뉴 숨김/표시
         youtube:      true, // 모듈 3: 유튜브 전용 PiP 버튼 및 단축키(Ctrl+P)
         dcinside:     true, // 모듈 4: 디시인사이드 차단우회, IP식별, 레이트리밋/캐시
-        copyUnlocker: true  // 모듈 5: 전 사이트 우클릭/드래그/복사 방지 해제 (v10.0)
+        copyUnlocker: true  // 모듈 5: 전 사이트 우클릭/드래그/복사 방지 해제 (무소음)
     };
     // =========================================================================
 
@@ -52,7 +52,6 @@
     // =========================================================================
     // 📦 [모듈 1] NamuWiki Powerlink Kill (Fake TOC) v8.0
     // - 작동 조건: namu.wiki 접속 시
-    // - 실행 시점: 즉시 (document-start)
     // =========================================================================
     if (ENABLE_MODULES.namuwiki && currentHost.includes('namu.wiki')) {
         (function() {
@@ -135,7 +134,6 @@
     // =========================================================================
     // 📦 [모듈 2] 툰코(Toonkor) 뷰어 스크롤 메뉴 숨김/표시 v1.1
     // - 작동 조건: toonkor 도메인 접속 시
-    // - 실행 시점: 페이지 요소 로드 완료 후 (document-end)
     // =========================================================================
     if (ENABLE_MODULES.toonkor && /toonkor/i.test(currentHost)) {
         runAtDocumentEnd(function() {
@@ -257,7 +255,6 @@
     // =========================================================================
     // 📦 [모듈 3] YouTube PiP Only v31.0
     // - 작동 조건: youtube.com 접속 시
-    // - 실행 시점: 페이지 완전히 로드 후 (document-idle)
     // =========================================================================
     if (ENABLE_MODULES.youtube && currentHost.includes('youtube.com')) {
         runAtDocumentIdle(function() {
@@ -341,7 +338,7 @@
 
     // =========================================================================
     // 📦 [모듈 4] Dcinside All-in-One Ultimate Pack (Stable Rev.) v2.1
-    // - 작동 조건: dcinside.com 접속 시 (document-start 및 DOMContentLoaded 복합 적용)
+    // - 작동 조건: dcinside.com 접속 시
     // =========================================================================
     if (ENABLE_MODULES.dcinside && currentHost.includes('dcinside.com')) {
         (function() {
@@ -548,13 +545,13 @@
 
 
     // =========================================================================
-    // 📦 [모듈 5] Mobile Absolute Copy Unlocker 🔓 v10.0 (최적화 버전)
+    // 📦 [모듈 5] Mobile Absolute Copy Unlocker 🔓 v10.1 (무소음 · 경량화 버전)
     // - 작동 조건: 모든 사이트 (*://*/*)
-    // - 실행 시점: 즉시 (document-start) + MutationObserver 감시
+    // - 변경 사항: 페이지 이동 시마다 뜨던 리퀴드 토스트 알림 완전 제거
     // =========================================================================
     if (ENABLE_MODULES.copyUnlocker) {
         (function() {
-            // 1. 강제 텍스트 선택 CSS 주입 (innerHTML 대신 textContent 사용)
+            // 1. 강제 텍스트 선택 CSS 주입
             function injectCSS() {
                 const root = document.head || document.documentElement;
                 if (!root || document.getElementById('unlock-copy-css')) return;
@@ -580,7 +577,7 @@
                 }, true);
             });
 
-            // 3. [최적화] setInterval(1초 주기 연산) 제거 -> 즉시 주입 및 태그 삭제 시에만 반응
+            // 3. 즉시 주입 및 태그 삭제 시에만 재주입 (MutationObserver)
             injectCSS();
             const cssObserver = new MutationObserver(() => {
                 if (!document.getElementById('unlock-copy-css')) injectCSS();
@@ -592,73 +589,6 @@
                 injectCSS();
                 if (document.head) cssObserver.observe(document.head, { childList: true });
             }, { once: true });
-
-            // 4. iOS 리퀴드 토스트 (최상위 프레임에서만 1회 표시)
-            function showToast() {
-                if (window.top !== window.self) return; // iframe 내부 중복 실행 방지
-                if (document.getElementById('liquid-toast')) return;
-                if (!document.body) return;
-
-                const toast = document.createElement('div');
-                toast.id = 'liquid-toast';
-
-                const iconSpan = document.createElement('span');
-                iconSpan.textContent = '🔓';
-                iconSpan.style.cssText = 'margin-right:8px; filter: drop-shadow(0 0 2px rgba(0,0,0,0.3));';
-
-                const textNode = document.createTextNode('복사 해제됨');
-
-                toast.appendChild(iconSpan);
-                toast.appendChild(textNode);
-
-                toast.style.cssText = `
-                    position: fixed; 
-                    top: 25px; 
-                    left: 50%; 
-                    transform: translateX(-50%) scale(0.6); 
-                    opacity: 0;
-                    background: rgba(255, 255, 255, 0.1); 
-                    backdrop-filter: blur(15px) saturate(180%) brightness(0.92);
-                    -webkit-backdrop-filter: blur(15px) saturate(180%) brightness(0.92);
-                    border: 0.5px solid rgba(0, 0, 0, 0.08); 
-                    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15), inset 0 0 0 0.5px rgba(255, 255, 255, 0.2); 
-                    color: #ffffff; 
-                    text-shadow: 0 1px 4px rgba(0,0,0,0.3);
-                    padding: 10px 24px; 
-                    border-radius: 60px; 
-                    font-size: 13px; 
-                    font-weight: 600;
-                    display: flex;
-                    align-items: center;
-                    z-index: 2147483647; 
-                    pointer-events: none; 
-                    transition: all 0.75s cubic-bezier(0.2, 1.4, 0.3, 1);
-                `;
-
-                document.body.appendChild(toast);
-
-                setTimeout(() => {
-                    if (toast) {
-                        toast.style.opacity = '1';
-                        toast.style.transform = 'translateX(-50%) scale(1) translateY(10px)';
-                    }
-                }, 50);
-
-                setTimeout(() => {
-                    if (toast) {
-                        toast.style.opacity = '0';
-                        toast.style.transform = 'translateX(-50%) scale(0.9) translateY(-10px)';
-                    }
-                }, 2000);
-
-                setTimeout(() => { if (toast) toast.remove(); }, 2900);
-            }
-
-            if (document.readyState === 'loading') {
-                window.addEventListener('DOMContentLoaded', showToast, { once: true });
-            } else {
-                setTimeout(showToast, 300);
-            }
         })();
     }
     // ====================== [모듈 5: 복사 해제 끝] ============================
