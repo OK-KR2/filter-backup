@@ -1,11 +1,27 @@
 // ==UserScript==
 // @name         [통합] 내 전용 웹사이트 편의성 & 광고 차단팩
 // @namespace    http://tampermonkey.net/
-// @version      1.4
-// @description  1.나무위키 광고차단 | 2.툰코 스크롤 메뉴 | 3.유튜브 PiP | 4.디시인사이드 올인원 | 5.전 사이트 복사 해제(무소음 최적화)
+// @version      1.5
+// @description  1.나무위키 광고차단 | 2.툰코 스크롤 메뉴 | 3.유튜브 PiP | 4.디시인사이드 올인원 | 5.네이버블로그·티스토리 복사 해제
 //
-// --- [통합 주소 규칙 (전 사이트 복사 해제 포함)] ---
-// @match        *://*/*
+// --- [1. 나무위키 주소 규칙] ---
+// @match        *://namu.wiki/*
+//
+// --- [2. 툰코 주소 규칙] ---
+// @match        *://*.toonkor*/*
+// @match        *://toonkor*/*
+// @include      /^https?:\/\/(www\.)?toonkor[0-9]*\.[a-z]+\/.*$/
+//
+// --- [3. 유튜브 주소 규칙] ---
+// @match        *://*.youtube.com/*
+//
+// --- [4. 디시인사이드 주소 규칙] ---
+// @match        *://*.dcinside.com/*
+//
+// --- [5. 복사 해제(네이버 블로그 & 티스토리) 주소 규칙] ---
+// @match        *://blog.naver.com/*
+// @match        *://*.blog.naver.com/*
+// @match        *://*.tistory.com/*
 //
 // --- [공통 실행 시점 및 권한] ---
 // @run-at       document-start
@@ -23,7 +39,7 @@
         toonkor:      true, // 모듈 2: 툰코 뷰어 스크롤 메뉴 숨김/표시
         youtube:      true, // 모듈 3: 유튜브 전용 PiP 버튼 및 단축키(Ctrl+P)
         dcinside:     true, // 모듈 4: 디시인사이드 차단우회, IP식별, 레이트리밋/캐시
-        copyUnlocker: true  // 모듈 5: 전 사이트 우클릭/드래그/복사 방지 해제 (무소음)
+        copyUnlocker: true  // 모듈 5: 네이버 블로그 & 티스토리 복사 방지 해제 (무소음)
     };
     // =========================================================================
 
@@ -546,10 +562,11 @@
 
     // =========================================================================
     // 📦 [모듈 5] Mobile Absolute Copy Unlocker 🔓 v10.1 (무소음 · 경량화 버전)
-    // - 작동 조건: 모든 사이트 (*://*/*)
-    // - 변경 사항: 페이지 이동 시마다 뜨던 리퀴드 토스트 알림 완전 제거
+    // - 작동 조건: 네이버 블로그(blog.naver.com) & 티스토리(tistory.com) 접속 시
     // =========================================================================
-    if (ENABLE_MODULES.copyUnlocker) {
+    const isCopyUnlockTarget = currentHost.includes('blog.naver.com') || currentHost.includes('tistory.com');
+
+    if (ENABLE_MODULES.copyUnlocker && isCopyUnlockTarget) {
         (function() {
             // 1. 강제 텍스트 선택 CSS 주입
             function injectCSS() {
