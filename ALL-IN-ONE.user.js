@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         [통합] 내 전용 웹사이트 편의성 & 광고 차단팩
 // @namespace    http://tampermonkey.net/
-// @version      2.2
-// @description  1.나무위키 광고차단 | 2.툰코 스크롤 메뉴 | 3.유튜브 PiP·백그라운드·최고화질 | 4.디시 스텔스·IP·원본짤·차단관리창 | 5.블로그·티스토리 복사 해제
+// @version      2.3
+// @description  1.나무위키 광고차단 | 2.툰코 스크롤 메뉴 | 3.유튜브 PiP·백그라운드·최고화질 | 4.디시 스텔스·짧은IP·원본짤·키워드/유저차단 | 5.블로그·티스토리 복사 해제
 //
 // --- [1. 나무위키 주소 규칙] ---
 // @match        *://namu.wiki/*
@@ -38,7 +38,7 @@
         namuwiki:     true, // 모듈 1: 나무위키 파워링크(위장 목차) 제거
         toonkor:      true, // 모듈 2: 툰코 뷰어 스크롤 메뉴 숨김/표시
         youtube:      true, // 모듈 3: 유튜브 백그라운드 재생 + 최고화질 고정 + PiP 버튼
-        dcinside:     true, // 모듈 4: 디시 스텔스 + IP 식별 + 원본 이미지 + 원터치 차단 관리창
+        dcinside:     true, // 모듈 4: 디시 스텔스 + 짧은 IP 식별 + 원본 이미지 + 키워드/유저 차단창
         copyUnlocker: true  // 모듈 5: 네이버 블로그 & 티스토리 복사 방지 해제 (무소음)
     };
     // =========================================================================
@@ -502,30 +502,32 @@
 
 
     // =========================================================================
-    // 📦 [모듈 4] Dcinside Stealth, IP Tagger, Original Image & Hybrid Mute Manager v5.0
+    // 📦 [모듈 4] Dcinside Stealth, Short IP Tagger, Original Image & Mute Manager v5.1
     // - 작동 조건: dcinside.com 접속 시
-    // - 특징: @grant none 기반 브라우저 하이브리드 저장(localStorage + .dcinside.com 루트 쿠키 동기화)
-    //         + 하단 차단 관리 모달창(개별 차단 해제, 클립보드 백업 복사/복원, 전체 초기화)
+    // - v5.1 개선:
+    //   1) 짧은 IP 표기: [통피], [비공개], [개인], [VPN] + 모바일 작성자 칸 잘림(overflow) 해제
+    //   2) 마이너갤 말머리([?질문] 등)를 닉네임으로 오인식하던 버그 완벽 수정 (날짜 앞 칸 정확 타겟팅)
+    //   3) 하단 차단 관리 모달창에 '차단 키워드 직접 입력/추가/삭제' 기능 탑재
     // =========================================================================
     if (ENABLE_MODULES.dcinside && currentHost.includes('dcinside.com')) {
         (function() {
             // ⚙️ [디시인사이드 뮤트(차단) 기본 설정 구역]
-            // 클립보드 백업 기능으로 복사한 배열을 아래 ips, nicks에 붙여넣으면 코드 자체에 영구 박제할 수도 있습니다.
             const DC_MUTE_CONFIG = {
                 confirmBeforeMute: true,  // [차단] 터치 시 확인 창 띄우기 (바로 차단하려면 false)
                 autoBackOnPostMute: false,// 글 본문 상단에서 작성자 [차단] 시 자동으로 뒤로 가기 여부
-                ips: [],                  // 코드 고정 차단 IP (예: ['58.120', '223.38'])
+                ips: [],                  // 코드 고정 차단 IP (예: ['58.120'])
                 keywords: [],             // 코드 고정 차단 키워드 (예: ['카지노', '도박'])
                 nicks: [],                // 코드 고정 차단 닉네임 (예: ['어그로닉'])
-                categories: []            // 카테고리 통째 차단 ('통피', '비공개/WARP', 'VPN/우회', '개인/기타')
+                categories: []            // 카테고리 통째 차단 ('통피', '비공개', 'VPN', '개인')
             };
 
             const STORAGE_KEY = 'dc_custom_mute_v1';
 
-            // [하이브리드 저장소 엔진] localStorage + .dcinside.com 루트 도메인 쿠키 양방향 타임스탬프 동기화
+            // [하이브리드 저장소 엔진] localStorage + .dcinside.com 루트 쿠키 양방향 동기화 (ips, nicks, keywords 모두 포함)
             const normalizeData = (obj) => ({
                 ips: (obj && Array.isArray(obj.ips)) ? Array.from(new Set(obj.ips)) : [],
                 nicks: (obj && Array.isArray(obj.nicks)) ? Array.from(new Set(obj.nicks)) : [],
+                keywords: (obj && Array.isArray(obj.keywords)) ? Array.from(new Set(obj.keywords)) : [],
                 t: (obj && typeof obj.t === 'number') ? obj.t : 0
             });
 
@@ -549,14 +551,13 @@
                 const payload = {
                     ips: Array.from(new Set(data.ips || [])),
                     nicks: Array.from(new Set(data.nicks || [])),
+                    keywords: Array.from(new Set(data.keywords || [])),
                     t: Date.now()
                 };
                 const jsonStr = JSON.stringify(payload);
 
-                // 1. 브라우저 localStorage 저장
                 try { localStorage.setItem(STORAGE_KEY, jsonStr); } catch (e) {}
 
-                // 2. .dcinside.com 루트 쿠키 동기화 (m.dcinside.com <-> gall.dcinside.com 공유용)
                 try {
                     const encoded = encodeURIComponent(jsonStr);
                     if (encoded.length < 3800) {
@@ -572,7 +573,6 @@
                 const ck = readRootCookie();
 
                 if (ls && ck) {
-                    // 타임스탬프(t) 비교: 모바일(m.)이나 PC(gall.) 중 더 최근에 수정된 데이터를 기준으로 자동 동기화
                     if (ck.t > ls.t) {
                         try { localStorage.setItem(STORAGE_KEY, JSON.stringify(ck)); } catch (e) {}
                         return ck;
@@ -588,7 +588,7 @@
                     writeHybridStore(ls);
                     return ls;
                 }
-                return { ips: [], nicks: [], t: 0 };
+                return { ips: [], nicks: [], keywords: [], t: 0 };
             };
 
             let dynamicMutes = loadSavedMutes();
@@ -639,19 +639,29 @@
                     width: 1px !important; height: 1px !important; overflow: hidden !important; 
                     opacity: 0 !important; pointer-events: none !important;
                 }
+                /* 모바일 글 목록에서 작성자 칸 가로 길이 제한 해제 (유동닉 차단 버튼 잘림 완벽 방지) */
+                ul.gall-detail-lst ul.ginfo > li {
+                    max-width: none !important;
+                    overflow: visible !important;
+                }
+                .dc-ip-tag-span {
+                    font-size: 11px;
+                    opacity: 0.85;
+                }
                 .dc-one-touch-mute-btn {
                     display: inline-block;
-                    margin-left: 5px;
-                    padding: 1px 5px;
-                    font-size: 11px !important;
+                    margin-left: 3px;
+                    margin-right: 2px;
+                    padding: 0px 4px;
+                    font-size: 10.5px !important;
                     font-weight: normal !important;
-                    line-height: 1.3 !important;
+                    line-height: 1.35 !important;
                     color: #d9534f !important;
                     border: 1px solid rgba(217, 83, 79, 0.45);
-                    border-radius: 4px;
+                    border-radius: 3px;
                     background: rgba(217, 83, 79, 0.08);
                     cursor: pointer;
-                    vertical-align: middle;
+                    vertical-align: baseline;
                     user-select: none;
                 }
                 .dc-one-touch-mute-btn.is-muted {
@@ -692,8 +702,8 @@
                 }
                 #dc-mute-modal {
                     width: 100%;
-                    max-width: 400px;
-                    max-height: 80vh;
+                    max-width: 410px;
+                    max-height: 82vh;
                     background: #fff;
                     color: #222;
                     border-radius: 12px;
@@ -704,7 +714,7 @@
                     font-family: -apple-system, BlinkMacSystemFont, "Malgun Gothic", sans-serif;
                 }
                 .dc-mm-head {
-                    padding: 14px 16px;
+                    padding: 13px 16px;
                     background: #2b303a;
                     color: #fff;
                     font-size: 14px;
@@ -729,9 +739,34 @@
                 }
                 .dc-mm-sec-title {
                     font-weight: 700;
-                    margin: 0 0 8px 0;
+                    margin: 0 0 6px 0;
                     color: #444;
                     font-size: 12px;
+                }
+                .dc-mm-kw-row {
+                    display: flex;
+                    gap: 6px;
+                    margin-bottom: 10px;
+                }
+                .dc-mm-kw-row input {
+                    flex: 1 1 auto;
+                    padding: 6px 10px;
+                    border: 1px solid #ced4da;
+                    border-radius: 6px;
+                    font-size: 13px;
+                    color: #222;
+                    background: #fff;
+                }
+                .dc-mm-kw-row button {
+                    flex: 0 0 auto;
+                    padding: 6px 12px;
+                    border: 0;
+                    border-radius: 6px;
+                    background: #3b5998;
+                    color: #fff;
+                    font-size: 12px;
+                    font-weight: 600;
+                    cursor: pointer;
                 }
                 .dc-mm-chips {
                     display: flex;
@@ -745,12 +780,12 @@
                     background: #f1f3f5;
                     border: 1px solid #dee2e6;
                     border-radius: 16px;
-                    padding: 4px 10px;
+                    padding: 3px 9px;
                     font-size: 12px;
                     color: #333;
                 }
                 .dc-mm-chip button {
-                    margin-left: 6px;
+                    margin-left: 5px;
                     border: 0;
                     background: none;
                     color: #d9534f;
@@ -799,21 +834,22 @@
                 return originalFetch.apply(window, args);
             };
 
-            // [4-2] IP 식별, 원본 이미지 로드, 원터치 차단 & 관리 모달
+            // [4-2] 짧은 IP 식별, 원본 이미지 로드, 정확한 작성자 타겟팅 원터치 차단 & 관리 모달
             runAtDocumentEnd(() => {
                 laundryDC();
 
+                // 요청하신 짧은 표기 적용: [통피], [비공개], [VPN], [개인]
                 const ipCategories = [
                     { label: "통피", ips: ["39.7", "39.119", "106.101", "106.102", "110.70", "114.200", "114.201", "117.111", "118.235", "125.188", "175.223", "175.252", "210.125", "211.36", "211.234", "211.246", "223.32", "223.33", "223.38", "223.39", "223.62"] },
-                    { label: "비공개/WARP", ips: ["104.28", "172.225", "172.226", "172.227", "8.20", "8.21", "8.22", "8.23", "162.158", "188.114", "104.16", "104.17", "162.159", "172.64", "172.65", "172.66", "172.67", "172.68", "172.69", "172.70", "172.71"] },
-                    { label: "VPN/우회", ips: ["140.248", "185.123", "185.240", "185.244", "185.156", "185.212", "194.33", "194.226", "156.146", "212.102", "193.176", "89.39", "37.19", "37.120", "84.17", "103.153", "103.208", "149.28", "45.32", "207.246", "104.238", "139.180", "13.124", "13.125", "3.34", "3.35", "34.64", "35.216", "45.13", "45.14", "45.89", "192.145", "108.162", "141.101", "173.245", "198.41", "138.199", "146.70", "169.150", "217.138", "185.242", "149.34", "89.40", "152.233"] }
+                    { label: "비공개", ips: ["104.28", "172.225", "172.226", "172.227", "8.20", "8.21", "8.22", "8.23", "162.158", "188.114", "104.16", "104.17", "162.159", "172.64", "172.65", "172.66", "172.67", "172.68", "172.69", "172.70", "172.71"] },
+                    { label: "VPN", ips: ["140.248", "185.123", "185.240", "185.244", "185.156", "185.212", "194.33", "194.226", "156.146", "212.102", "193.176", "89.39", "37.19", "37.120", "84.17", "103.153", "103.208", "149.28", "45.32", "207.246", "104.238", "139.180", "13.124", "13.125", "3.34", "3.35", "34.64", "35.216", "45.13", "45.14", "45.89", "192.145", "108.162", "141.101", "173.245", "198.41", "138.199", "146.70", "169.150", "217.138", "185.242", "149.34", "89.40", "152.233"] }
                 ];
 
                 const getIpLabel = (ip) => {
                     for (const category of ipCategories) {
                         if (category.ips.includes(ip)) return category.label;
                     }
-                    return "개인/기타";
+                    return "개인";
                 };
 
                 const getCleanText = (el) => {
@@ -821,6 +857,22 @@
                     const clone = el.cloneNode(true);
                     clone.querySelectorAll('.dc-ip-tag-span, .dc-one-touch-mute-btn, .sp-nick').forEach(n => n.remove());
                     return clone.textContent.trim();
+                };
+
+                // 모바일 글 목록(ul.ginfo)에서 말머리([?질문] 등)를 피해 실제 작성자 <li>만 정확히 찾는 함수
+                const findMobileWriterLi = (ginfoUl) => {
+                    if (!ginfoUl) return null;
+                    const lis = Array.from(ginfoUl.children);
+                    // 1순위: 고닉/반고닉 아이콘(.sp-nick)이나 유동 IP 괄호가 들어있는 li
+                    for (let i = 0; i < lis.length; i++) {
+                        if (lis[i].querySelector('.sp-nick') || /\(\d{1,3}\.\d{1,3}\)/.test(lis[i].textContent)) {
+                            return lis[i];
+                        }
+                    }
+                    // 2순위: 날짜/시간(03:28, 10.25, 24.10.25 등) 바로 앞 칸의 li가 무조건 작성자 칸
+                    const dateIdx = lis.findIndex(li => /^(\d{2}:\d{2}|\d{2}\.\d{2}|\d{4}\.\d{2}\.\d{2})/.test(li.textContent.trim()));
+                    if (dateIdx > 0) return lis[dateIdx - 1];
+                    return lis[0] || null;
                 };
 
                 function tagIPs() {
@@ -834,7 +886,7 @@
                             const label = getIpLabel(ip);
                             const tagSpan = document.createElement('span');
                             tagSpan.className = 'dc-ip-tag-span';
-                            tagSpan.innerText = ` [${label}]`;
+                            tagSpan.innerText = `[${label}]`;
                             el.appendChild(tagSpan);
                             el.dataset.ipTagged = "true";
                             el.dataset.rawIp = ip;
@@ -861,7 +913,6 @@
                     });
                 }
 
-                // 클립보드 복사 유틸리티 (iOS 사파리 호환 폴백 포함)
                 const copyTextToClipboard = async (text) => {
                     try {
                         if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -884,7 +935,6 @@
                     }
                 };
 
-                // 차단 해제 시 숨겨졌던 게시글/댓글 즉시 재표시 후 재검사
                 const refreshAllMuteStates = () => {
                     document.querySelectorAll('[data-muted-hidden="true"]').forEach(el => {
                         el.style.removeProperty('display');
@@ -893,7 +943,7 @@
                     runDcTasks();
                 };
 
-                // 차단 관리 모달창 생성 및 렌더링
+                // 차단 관리 모달창 (키워드 직접 입력 추가/삭제 + IP/닉네임 개별 해제 + 백업/복원)
                 let modalBackdrop = null;
                 function openMuteManagerModal() {
                     dynamicMutes = loadSavedMutes();
@@ -903,13 +953,21 @@
                         modalBackdrop.innerHTML = `
                             <div id="dc-mute-modal" role="dialog" aria-label="차단 목록 관리">
                                 <div class="dc-mm-head">
-                                    <span>🚫 디시 원터치 차단 관리</span>
+                                    <span>🚫 디시 차단 관리 (키워드 / IP / 닉네임)</span>
                                     <button type="button" class="dc-mm-close" aria-label="닫기">✕</button>
                                 </div>
                                 <div class="dc-mm-body">
-                                    <div class="dc-mm-sec-title">차단된 유동 IP (터치 시 개별 해제)</div>
+                                    <div class="dc-mm-sec-title">차단 키워드 추가 (제목·댓글 포함 시 숨김, 쉼표 구분 가능)</div>
+                                    <div class="dc-mm-kw-row">
+                                        <input type="text" id="dc-mm-kw-input" placeholder="예: 카지노, 도박, 스포" autocomplete="off">
+                                        <button type="button" id="dc-mm-kw-add-btn">+ 추가</button>
+                                    </div>
+                                    <div id="dc-mm-kw-list" class="dc-mm-chips"></div>
+
+                                    <div class="dc-mm-sec-title">차단된 유동 IP (✕ 터치 시 개별 해제)</div>
                                     <div id="dc-mm-ip-list" class="dc-mm-chips"></div>
-                                    <div class="dc-mm-sec-title">차단된 닉네임 (터치 시 개별 해제)</div>
+
+                                    <div class="dc-mm-sec-title">차단된 닉네임 (✕ 터치 시 개별 해제)</div>
                                     <div id="dc-mm-nick-list" class="dc-mm-chips"></div>
                                 </div>
                                 <div class="dc-mm-foot">
@@ -927,26 +985,54 @@
                             }
                         });
 
-                        // [📋 백업 복사] 버튼 동작
+                        // 키워드 추가 핸들러
+                        const kwInput = modalBackdrop.querySelector('#dc-mm-kw-input');
+                        const handleAddKeywords = () => {
+                            const raw = kwInput.value.trim();
+                            if (!raw) return;
+                            raw.split(',').forEach(part => {
+                                const clean = part.trim();
+                                if (clean) addMuteItem('keywords', clean);
+                            });
+                            kwInput.value = '';
+                            renderModalLists();
+                            refreshAllMuteStates();
+                        };
+                        modalBackdrop.querySelector('#dc-mm-kw-add-btn').addEventListener('click', handleAddKeywords);
+                        kwInput.addEventListener('keydown', (e) => {
+                            if (e.key === 'Enter') {
+                                e.preventDefault();
+                                handleAddKeywords();
+                            }
+                        });
+
+                        // [📋 백업 복사]
                         modalBackdrop.querySelector('#dc-mm-copy-btn').addEventListener('click', async () => {
                             dynamicMutes = loadSavedMutes();
-                            const exportObj = { ips: dynamicMutes.ips, nicks: dynamicMutes.nicks };
+                            const exportObj = {
+                                keywords: dynamicMutes.keywords,
+                                ips: dynamicMutes.ips,
+                                nicks: dynamicMutes.nicks
+                            };
                             const exportStr = JSON.stringify(exportObj);
                             const ok = await copyTextToClipboard(exportStr);
                             if (ok) {
-                                alert(`✅ 클립보드에 차단 목록이 복사되었습니다!\n\n${exportStr}\n\n(메모장에 보관하거나 [📥 복원] 버튼으로 언제든 다시 불러올 수 있습니다.)`);
+                                alert(`✅ 클립보드에 차단 목록이 복사되었습니다!\n\n${exportStr}`);
                             } else {
                                 prompt('아래 텍스트를 복사해 보관하세요:', exportStr);
                             }
                         });
 
-                        // [📥 복원(붙여넣기)] 버튼 동작
+                        // [📥 복원(붙여넣기)]
                         modalBackdrop.querySelector('#dc-mm-restore-btn').addEventListener('click', () => {
-                            const input = prompt('백업해 둔 JSON 텍스트를 붙여넣으세요:\n예: {"ips":["39.7"],"nicks":["어그로"]}');
+                            const input = prompt('백업해 둔 JSON 텍스트를 붙여넣으세요:\n예: {"keywords":["도박"],"ips":["39.7"],"nicks":["어그로"]}');
                             if (!input) return;
                             try {
                                 const parsed = JSON.parse(input.trim());
                                 dynamicMutes = loadSavedMutes();
+                                if (Array.isArray(parsed.keywords)) {
+                                    parsed.keywords.forEach(kw => { if (!dynamicMutes.keywords.includes(kw)) dynamicMutes.keywords.push(String(kw).trim()); });
+                                }
                                 if (Array.isArray(parsed.ips)) {
                                     parsed.ips.forEach(ip => { if (!dynamicMutes.ips.includes(ip)) dynamicMutes.ips.push(String(ip).trim()); });
                                 }
@@ -956,16 +1042,16 @@
                                 dynamicMutes = writeHybridStore(dynamicMutes);
                                 renderModalLists();
                                 refreshAllMuteStates();
-                                alert('✅ 차단 목록이 성공적으로 복원 및 병합되었습니다!');
+                                alert('✅ 차단 목록이 성공적으로 복원되었습니다!');
                             } catch (err) {
                                 alert('❌ 올바른 백업 형식(JSON)이 아닙니다.');
                             }
                         });
 
-                        // [🗑️ 전체 초기화] 버튼 동작
+                        // [🗑️ 전체 초기화]
                         modalBackdrop.querySelector('#dc-mm-clear-btn').addEventListener('click', () => {
-                            if (confirm('저장된 모든 원터치 차단 목록을 초기화하시겠습니까?')) {
-                                dynamicMutes = writeHybridStore({ ips: [], nicks: [] });
+                            if (confirm('저장된 모든 차단 목록(키워드·IP·닉네임)을 초기화하시겠습니까?')) {
+                                dynamicMutes = writeHybridStore({ ips: [], nicks: [], keywords: [] });
                                 renderModalLists();
                                 refreshAllMuteStates();
                             }
@@ -979,10 +1065,32 @@
                 function renderModalLists() {
                     if (!modalBackdrop) return;
                     dynamicMutes = loadSavedMutes();
+                    const kwBox = modalBackdrop.querySelector('#dc-mm-kw-list');
                     const ipBox = modalBackdrop.querySelector('#dc-mm-ip-list');
                     const nickBox = modalBackdrop.querySelector('#dc-mm-nick-list');
+                    kwBox.innerHTML = '';
                     ipBox.innerHTML = '';
                     nickBox.innerHTML = '';
+
+                    if (dynamicMutes.keywords.length === 0) {
+                        kwBox.innerHTML = '<span class="dc-mm-empty">등록된 차단 키워드가 없습니다.</span>';
+                    } else {
+                        dynamicMutes.keywords.forEach(kw => {
+                            const chip = document.createElement('span');
+                            chip.className = 'dc-mm-chip';
+                            chip.textContent = kw;
+                            const delBtn = document.createElement('button');
+                            delBtn.type = 'button';
+                            delBtn.textContent = '✕';
+                            delBtn.onclick = () => {
+                                removeMuteItem('keywords', kw);
+                                renderModalLists();
+                                refreshAllMuteStates();
+                            };
+                            chip.appendChild(delBtn);
+                            kwBox.appendChild(chip);
+                        });
+                    }
 
                     if (dynamicMutes.ips.length === 0) {
                         ipBox.innerHTML = '<span class="dc-mm-empty">차단된 IP가 없습니다.</span>';
@@ -990,11 +1098,10 @@
                         dynamicMutes.ips.forEach(ip => {
                             const chip = document.createElement('span');
                             chip.className = 'dc-mm-chip';
-                            chip.textContent = `${ip} (${getIpLabel(ip)})`;
+                            chip.textContent = `${ip}[${getIpLabel(ip)}]`;
                             const delBtn = document.createElement('button');
                             delBtn.type = 'button';
                             delBtn.textContent = '✕';
-                            delBtn.title = '차단 해제';
                             delBtn.onclick = () => {
                                 removeMuteItem('ips', ip);
                                 renderModalLists();
@@ -1015,7 +1122,6 @@
                             const delBtn = document.createElement('button');
                             delBtn.type = 'button';
                             delBtn.textContent = '✕';
-                            delBtn.title = '차단 해제';
                             delBtn.onclick = () => {
                                 removeMuteItem('nicks', nk);
                                 renderModalLists();
@@ -1027,10 +1133,9 @@
                     }
                 }
 
-                // 페이지 하단 차단 관리 호출 바 업데이트 (0건이어도 복원 기능을 쓸 수 있게 항상 표시)
                 function updateManageBar() {
                     dynamicMutes = loadSavedMutes();
-                    const totalCount = dynamicMutes.ips.length + dynamicMutes.nicks.length;
+                    const totalCount = dynamicMutes.ips.length + dynamicMutes.nicks.length + dynamicMutes.keywords.length;
                     let bar = document.getElementById('dc-mute-manage-bar');
                     if (!bar && document.body) {
                         bar = document.createElement('div');
@@ -1042,7 +1147,7 @@
                         document.body.appendChild(bar);
                     }
                     if (bar) {
-                        bar.querySelector('button').textContent = `🚫 원터치 차단 관리 / 백업 (${totalCount}건 차단 중)`;
+                        bar.querySelector('button').textContent = `🚫 차단 관리 / 키워드 추가 (${totalCount}건 적용 중)`;
                     }
                 }
 
@@ -1087,7 +1192,6 @@
 
                                 const currentlyMuted = muteBtn.classList.contains('is-muted');
                                 if (currentlyMuted) {
-                                    // 이미 차단된 상태에서 다시 누르면 즉시 차단 해제!
                                     if (ip) removeMuteItem('ips', ip);
                                     else if (nick) removeMuteItem('nicks', nick);
                                     refreshAllMuteStates();
@@ -1121,36 +1225,38 @@
                     });
                 }
 
-                // 게시글 목록 및 댓글에서 유저 정보 추출 + 원터치 [차단] 버튼 장착 + 뮤트 실행
+                // 게시글 목록 및 댓글에서 정확한 작성자 추출 + 원터치 [차단] 버튼 장착 + 뮤트 실행
                 function processItemsAndMute() {
                     const allMutedIps = [...DC_MUTE_CONFIG.ips, ...dynamicMutes.ips];
                     const allMutedNicks = [...DC_MUTE_CONFIG.nicks, ...dynamicMutes.nicks];
+                    const allMutedKeywords = [...DC_MUTE_CONFIG.keywords, ...dynamicMutes.keywords];
 
                     const itemSelectors = 'ul.gall-detail-lst > li, tr.ub-content, ul.all-comment-lst > li, .cmt_list > li.ub-content, .reply_list > li.ub-content';
                     document.querySelectorAll(itemSelectors).forEach(item => {
                         const writerEl = item.querySelector('.gall_writer');
-                        let ipEl = item.querySelector('.ip, .block-ip, [data-raw-ip]');
+                        const ginfoUl = item.querySelector('ul.ginfo');
+                        const mobileWriterLi = findMobileWriterLi(ginfoUl);
 
-                        if (!ipEl) {
-                            item.querySelectorAll('ul.ginfo > li').forEach(li => {
-                                if (/\(\d{1,3}\.\d{1,3}\)/.test(li.textContent)) {
-                                    ipEl = li;
-                                }
-                            });
+                        let ipEl = item.querySelector('.ip, .block-ip, [data-raw-ip]');
+                        if (!ipEl && mobileWriterLi && /\(\d{1,3}\.\d{1,3}\)/.test(mobileWriterLi.textContent)) {
+                            ipEl = mobileWriterLi;
                         }
 
+                        // 1. IP 추출
                         let ip = (writerEl && writerEl.getAttribute('data-ip')) || (ipEl && ipEl.dataset.rawIp) || '';
                         if (!ip && ipEl) {
                             const m = getCleanText(ipEl).match(/\(?(\d{1,3}\.\d{1,3})\)?/);
                             if (m) ip = m[1];
                         }
 
+                        // 2. 닉네임 추출 (마이너갤 말머리 완벽 제외, 실제 작성자 칸에서만 추출)
+                        let nickTargetEl = item.querySelector('a.nick, .nick, .gall_writer') || mobileWriterLi;
                         let nick = (writerEl && writerEl.getAttribute('data-nick')) || '';
-                        let nickTargetEl = item.querySelector('.nick, .gall_writer, ul.ginfo > li:first-child');
                         if (!nick && nickTargetEl) {
                             nick = getCleanText(nickTargetEl).replace(/\(\d{1,3}\.\d{1,3}\).*$/, '').trim();
                         }
 
+                        // 3. 원터치 [차단] 버튼 주입
                         const btnAnchor = ipEl || nickTargetEl;
                         if (btnAnchor && !item.querySelector('.dc-one-touch-mute-btn') && (ip || nick)) {
                             const muteBtn = document.createElement('span');
@@ -1166,7 +1272,7 @@
                                         runDcTasks();
                                     }
                                 } else if (nick) {
-                                    if (!DC_MUTE_CONFIG.confirmBeforeMute || confirm(`닉네임 [${nick}] 유저를 차단하시겠습니까?`)) {
+                                    if (!DC_MUTE_CONFIG.confirmBeforeMute || confirm(`닉네임 [${nick}] (고닉/반고닉) 유저를 차단하시겠습니까?`)) {
                                         addMuteItem('nicks', nick);
                                         runDcTasks();
                                     }
@@ -1175,9 +1281,11 @@
                             btnAnchor.appendChild(muteBtn);
                         }
 
+                        // 4. 본문/제목 텍스트 추출 (말머리는 빼고 순수 글 제목·댓글 내용만 추출)
                         const textEl = item.querySelector('.subjectin, .gall_tit, .txt, .usertxt');
                         const contentText = textEl ? textEl.textContent : '';
 
+                        // 5. 뮤트 조건 검사 (유동닉은 IP로만 판별, 고닉/반고닉은 닉네임으로 판별)
                         let shouldMute = false;
                         if (ip && allMutedIps.some(targetIp => ip.startsWith(targetIp))) {
                             shouldMute = true;
@@ -1185,9 +1293,7 @@
                             shouldMute = true;
                         } else if (!ip && nick && allMutedNicks.some(targetNick => nick === targetNick)) {
                             shouldMute = true;
-                        } else if (nick && DC_MUTE_CONFIG.nicks.some(targetNick => nick.includes(targetNick))) {
-                            shouldMute = true;
-                        } else if (contentText && DC_MUTE_CONFIG.keywords.some(kw => contentText.includes(kw))) {
+                        } else if (contentText && allMutedKeywords.some(kw => contentText.includes(kw))) {
                             shouldMute = true;
                         }
 
