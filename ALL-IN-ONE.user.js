@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         [통합] 내 전용 웹사이트 편의성 & 광고 차단팩
 // @namespace    http://tampermonkey.net/
-// @version      2.3
-// @description  1.나무위키 광고차단 | 2.툰코 스크롤 메뉴 | 3.유튜브 PiP·백그라운드·최고화질 | 4.디시 스텔스·짧은IP·원본짤·키워드/유저차단 | 5.블로그·티스토리 복사 해제
+// @version      2.5
+// @description  1.나무위키 광고차단 | 2.툰코 스크롤메뉴·배너/팝업제거 | 3.유튜브 PiP(자동숨김)·백그라운드·최고화질 | 4.디시 스텔스·IP/반고닉식별·원본짤·차단관리 | 5.블로그·티스토리 복사해제
 //
 // --- [1. 나무위키 주소 규칙] ---
 // @match        *://namu.wiki/*
@@ -36,9 +36,9 @@
     // =========================================================================
     const ENABLE_MODULES = {
         namuwiki:     true, // 모듈 1: 나무위키 파워링크(위장 목차) 제거
-        toonkor:      true, // 모듈 2: 툰코 뷰어 스크롤 메뉴 숨김/표시
-        youtube:      true, // 모듈 3: 유튜브 백그라운드 재생 + 최고화질 고정 + PiP 버튼
-        dcinside:     true, // 모듈 4: 디시 스텔스 + 짧은 IP 식별 + 원본 이미지 + 키워드/유저 차단창
+        toonkor:      true, // 모듈 2: 툰코 뷰어 스크롤 메뉴 + 도박 배너/팝업 제거
+        youtube:      true, // 모듈 3: 유튜브 백그라운드 재생 + 최고화질 + 반투명/자동숨김 PiP 버튼
+        dcinside:     true, // 모듈 4: 디시 스텔스 + IP/반고닉 식별 + 원본 이미지 + 통합 차단 관리
         copyUnlocker: true  // 모듈 5: 네이버 블로그 & 티스토리 복사 방지 해제 (무소음)
     };
     // =========================================================================
@@ -169,135 +169,169 @@
 
 
     // =========================================================================
-    // 📦 [모듈 2] 툰코(Toonkor) 뷰어 스크롤 메뉴 숨김/표시 v1.1
+    // 📦 [모듈 2] 툰코(Toonkor) 배너/팝업 차단 & 뷰어 스크롤 메뉴 숨김/표시 v1.2
     // - 작동 조건: toonkor 도메인 접속 시
     // =========================================================================
     if (ENABLE_MODULES.toonkor && /toonkor/i.test(currentHost)) {
-        runAtDocumentEnd(function() {
+        (function() {
             const CONFIG = {
-                hideSensitivity: 20,      // 아래로 스크롤 시 숨김 예민감도 (px)
-                showSensitivity: 40,      // 위로 스크롤 시 표시 예민감도 (px)
+                hideSensitivity: 20,      // 아래로 스크롤 시 메뉴 숨김 예민감도 (px)
+                showSensitivity: 40,      // 위로 스크롤 시 메뉴 표시 예민감도 (px)
                 topAlwaysShowOffset: 80,  // 최상단 항상 표시 영역 (px)
-                disableTouchToggle: false // 기존 화면 터치 토글 비활성화 여부
+                disableTouchToggle: false,// 기존 화면 터치 토글 비활성화 여부
+                blockBannersAndPopup: true// 상·하단 도박 배너 및 텔레그램 팝업 자동 제거
             };
 
-            const isViewerPage = document.getElementById('toon_img') || document.querySelector('.bottom-navbar');
-            if (!isViewerPage) return;
-
-            if (CONFIG.disableTouchToggle && window.jQuery) {
-                window.jQuery('.contents').off('click');
+            // [2-1] 상·하단 도박 배너 및 텔레그램 안내 팝업 즉시 제거 (document-start)
+            if (CONFIG.blockBannersAndPopup) {
+                const tkCleanStyle = document.createElement('style');
+                tkCleanStyle.textContent = `
+                    .col-md-12.mobile-banner,
+                    section.top_banner,
+                    .main_top_bann,
+                    .main_top_bann2,
+                    .banner_m,
+                    #banner_21_img,
+                    a:has(> #banner_21_img),
+                    div.bn.bnt,
+                    #nad,
+                    .ad-zone,
+                    #tkpopOv,
+                    .tkpop-overlay {
+                        display: none !important;
+                        width: 0 !important;
+                        height: 0 !important;
+                        margin: 0 !important;
+                        padding: 0 !important;
+                        pointer-events: none !important;
+                        visibility: hidden !important;
+                    }
+                `;
+                (document.head || document.documentElement).appendChild(tkCleanStyle);
             }
 
-            let isMenuVisible = true;
+            // [2-2] 웹툰 뷰어 스크롤 메뉴 숨김/표시 (document-end)
+            runAtDocumentEnd(function() {
+                const isViewerPage = document.getElementById('toon_img') || document.querySelector('.bottom-navbar');
+                if (!isViewerPage) return;
 
-            function setMenuVisibility(show) {
-                const epPanel = document.getElementById('tk-ep-panel');
-                if (!show && epPanel && epPanel.classList.contains('on')) {
-                    return;
+                if (CONFIG.disableTouchToggle && window.jQuery) {
+                    window.jQuery('.contents').off('click');
                 }
 
-                const $ = window.jQuery;
-                const currentY = window.pageYOffset || document.documentElement.scrollTop || 0;
+                let isMenuVisible = true;
 
-                if ($) {
-                    if (!show) {
-                        if (currentY > 100) $('.at-navbar').hide();
-                        $('.btn-resource').hide();
-                        $('.bottom-navbar').hide();
-                        $('#asideMenu').hide();
-                    } else {
-                        $('.at-navbar').show();
-                        $('.btn-resource').show();
-                        $('.bottom-navbar').show();
-                        $('#asideMenu').show();
+                function setMenuVisibility(show) {
+                    const epPanel = document.getElementById('tk-ep-panel');
+                    if (!show && epPanel && epPanel.classList.contains('on')) {
+                        return;
                     }
-                } else {
-                    const displayVal = show ? '' : 'none';
-                    document.querySelectorAll('.bottom-navbar, .btn-resource, .at-navbar, #asideMenu').forEach(el => {
-                        el.style.display = displayVal;
+
+                    const $ = window.jQuery;
+                    const currentY = window.pageYOffset || document.documentElement.scrollTop || 0;
+
+                    if ($) {
+                        if (!show) {
+                            if (currentY > 100) $('.at-navbar').hide();
+                            $('.btn-resource').hide();
+                            $('.bottom-navbar').hide();
+                            $('#asideMenu').hide();
+                        } else {
+                            $('.at-navbar').show();
+                            $('.btn-resource').show();
+                            $('.bottom-navbar').show();
+                            $('#asideMenu').show();
+                        }
+                    } else {
+                        const displayVal = show ? '' : 'none';
+                        document.querySelectorAll('.bottom-navbar, .btn-resource, .at-navbar, #asideMenu').forEach(el => {
+                            el.style.display = displayVal;
+                        });
+                    }
+
+                    isMenuVisible = show;
+                    if (typeof window._show_menu !== 'undefined') {
+                        window._show_menu = show;
+                    }
+                }
+
+                const contentsEl = document.querySelector('.contents');
+                if (contentsEl && !CONFIG.disableTouchToggle) {
+                    contentsEl.addEventListener('click', function() {
+                        setTimeout(() => {
+                            if (typeof window._show_menu !== 'undefined') {
+                                isMenuVisible = window._show_menu;
+                            }
+                        }, 10);
                     });
                 }
 
-                isMenuVisible = show;
-                if (typeof window._show_menu !== 'undefined') {
-                    window._show_menu = show;
-                }
-            }
+                let lastScrollY = window.pageYOffset || document.documentElement.scrollTop || 0;
+                let accumulatedDown = 0;
+                let accumulatedUp = 0;
+                let ticking = false;
 
-            const contentsEl = document.querySelector('.contents');
-            if (contentsEl && !CONFIG.disableTouchToggle) {
-                contentsEl.addEventListener('click', function() {
-                    setTimeout(() => {
-                        if (typeof window._show_menu !== 'undefined') {
-                            isMenuVisible = window._show_menu;
-                        }
-                    }, 10);
-                });
-            }
+                function onScrollUpdate() {
+                    ticking = false;
+                    const currentY = window.pageYOffset || document.documentElement.scrollTop || 0;
+                    const maxScrollY = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight) - window.innerHeight;
 
-            let lastScrollY = window.pageYOffset || document.documentElement.scrollTop || 0;
-            let accumulatedDown = 0;
-            let accumulatedUp = 0;
-            let ticking = false;
+                    if (currentY < 0 || (maxScrollY > 0 && currentY > maxScrollY)) {
+                        lastScrollY = Math.max(0, Math.min(currentY, maxScrollY));
+                        return;
+                    }
 
-            function onScrollUpdate() {
-                ticking = false;
-                const currentY = window.pageYOffset || document.documentElement.scrollTop || 0;
-                const maxScrollY = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight) - window.innerHeight;
-
-                if (currentY < 0 || (maxScrollY > 0 && currentY > maxScrollY)) {
-                    lastScrollY = Math.max(0, Math.min(currentY, maxScrollY));
-                    return;
-                }
-
-                if (currentY <= CONFIG.topAlwaysShowOffset) {
-                    if (!isMenuVisible) setMenuVisibility(true);
-                    accumulatedDown = 0;
-                    accumulatedUp = 0;
-                    lastScrollY = currentY;
-                    return;
-                }
-
-                const delta = currentY - lastScrollY;
-                if (delta > 0) {
-                    accumulatedDown += delta;
-                    accumulatedUp = 0;
-                    if (isMenuVisible && accumulatedDown >= CONFIG.hideSensitivity) {
-                        setMenuVisibility(false);
+                    if (currentY <= CONFIG.topAlwaysShowOffset) {
+                        if (!isMenuVisible) setMenuVisibility(true);
                         accumulatedDown = 0;
-                    }
-                } else if (delta < 0) {
-                    accumulatedUp += Math.abs(delta);
-                    accumulatedDown = 0;
-                    if (!isMenuVisible && accumulatedUp >= CONFIG.showSensitivity) {
-                        setMenuVisibility(true);
                         accumulatedUp = 0;
+                        lastScrollY = currentY;
+                        return;
                     }
-                }
-                lastScrollY = currentY;
-            }
 
-            window.addEventListener('scroll', function() {
-                if (!ticking) {
-                    ticking = true;
-                    window.requestAnimationFrame(onScrollUpdate);
+                    const delta = currentY - lastScrollY;
+                    if (delta > 0) {
+                        accumulatedDown += delta;
+                        accumulatedUp = 0;
+                        if (isMenuVisible && accumulatedDown >= CONFIG.hideSensitivity) {
+                            setMenuVisibility(false);
+                            accumulatedDown = 0;
+                        }
+                    } else if (delta < 0) {
+                        accumulatedUp += Math.abs(delta);
+                        accumulatedDown = 0;
+                        if (!isMenuVisible && accumulatedUp >= CONFIG.showSensitivity) {
+                            setMenuVisibility(true);
+                            accumulatedUp = 0;
+                        }
+                    }
+                    lastScrollY = currentY;
                 }
-            }, { passive: true });
-        });
+
+                window.addEventListener('scroll', function() {
+                    if (!ticking) {
+                        ticking = true;
+                        window.requestAnimationFrame(onScrollUpdate);
+                    }
+                }, { passive: true });
+            });
+        })();
     }
     // ======================== [모듈 2: 툰코 끝] ===============================
 
 
 
     // =========================================================================
-    // 📦 [모듈 3] YouTube Background Play, Auto Max Quality & PiP v34.2
+    // 📦 [모듈 3] YouTube Background Play, Auto Max Quality & Smart PiP v35.0
     // - 작동 조건: youtube.com 접속 시
+    // - 개선 사항: PiP 버튼 반투명화 + 댓글 읽으러 아래로 스크롤 시 자동 숨김/표시
     // =========================================================================
     if (ENABLE_MODULES.youtube && currentHost.includes('youtube.com')) {
         (function() {
             const YT_CONFIG = {
                 autoMaxQuality: true,     // 최고 화질 자동 고정 켜기/끄기
-                targetRes: 'hd2160'       // 목표 최대 화질 ('hd2160'=4K, 'hd1440'=QHD, 'hd1080'=FHD)
+                targetRes: 'hd2160',      // 목표 최대 화질 ('hd2160'=4K, 'hd1440'=QHD, 'hd1080'=FHD)
+                pipIdleOpacity: '0.40'    // 평소 PiP 버튼 투명도 (0.1 ~ 1.0)
             };
 
             // [3-1] 백그라운드 재생 활성화 (document-start 시점에 즉시 상태 위장)
@@ -383,8 +417,44 @@
             }, true);
 
 
-            // [3-3] /watch 전용 PiP 플로팅 버튼 및 단축키 (document-idle 시점 실행)
+            // [3-3] /watch 전용 반투명 PiP 버튼 & 댓글 스크롤 시 자동 숨김 (document-idle)
             runAtDocumentIdle(function() {
+                const ytPipStyle = document.createElement('style');
+                ytPipStyle.textContent = `
+                    #force-pip-btn {
+                        position: fixed !important;
+                        bottom: 76px !important;
+                        right: 16px !important;
+                        z-index: 2147483647 !important;
+                        padding: 8px 13px !important;
+                        background: rgba(220, 38, 38, 0.85) !important;
+                        color: #fff !important;
+                        border: 1px solid rgba(255, 255, 255, 0.25) !important;
+                        border-radius: 8px !important;
+                        cursor: pointer !important;
+                        font-weight: 700 !important;
+                        font-size: 12.5px !important;
+                        backdrop-filter: blur(6px) !important;
+                        -webkit-backdrop-filter: blur(6px) !important;
+                        box-shadow: 0 3px 10px rgba(0,0,0,0.35) !important;
+                        opacity: ${YT_CONFIG.pipIdleOpacity} !important;
+                        transform: translateY(0) !important;
+                        transition: opacity 0.22s ease, transform 0.22s ease !important;
+                        user-select: none !important;
+                        -webkit-tap-highlight-color: transparent !important;
+                    }
+                    #force-pip-btn:hover,
+                    #force-pip-btn:active {
+                        opacity: 0.95 !important;
+                    }
+                    #force-pip-btn.yt-pip-scroll-hidden {
+                        opacity: 0 !important;
+                        transform: translateY(20px) !important;
+                        pointer-events: none !important;
+                    }
+                `;
+                (document.head || document.documentElement).appendChild(ytPipStyle);
+
                 let cachedVideo = null;
                 let lastVideoCheckTime = 0;
 
@@ -450,15 +520,6 @@
                         btn = document.createElement('button');
                         btn.id = 'force-pip-btn';
                         btn.innerText = 'PiP 모드';
-                        btn.style.cssText = `
-                            position: fixed !important; bottom: 80px !important; right: 20px !important;
-                            z-index: 2147483647 !important; padding: 12px 18px !important;
-                            background: rgba(220, 38, 38, 0.9) !important; color: white !important;
-                            border: 1px solid rgba(255, 255, 255, 0.3) !important; border-radius: 10px !important;
-                            cursor: pointer !important; font-weight: bold !important; font-size: 14px !important;
-                            backdrop-filter: blur(8px) !important; -webkit-backdrop-filter: blur(8px) !important;
-                            box-shadow: 0 4px 12px rgba(0,0,0,0.5) !important; display: block !important;
-                        `;
                         btn.onclick = (e) => {
                             e.preventDefault();
                             e.stopPropagation();
@@ -469,6 +530,35 @@
                         btn.style.setProperty('display', 'block', 'important');
                     }
                 };
+
+                // 댓글을 읽으려고 아래로 스크롤할 때 PiP 버튼 자동 숨김 / 위로 올리면 표시
+                let lastYtScrollY = window.pageYOffset || document.documentElement.scrollTop || 0;
+                let ytScrollTicking = false;
+
+                const onYtScroll = () => {
+                    ytScrollTicking = false;
+                    const btn = document.getElementById('force-pip-btn');
+                    if (!btn || !isWatchPage()) return;
+
+                    const currentY = window.pageYOffset || document.documentElement.scrollTop || 0;
+                    const delta = currentY - lastYtScrollY;
+
+                    if (currentY <= 80) {
+                        btn.classList.remove('yt-pip-scroll-hidden');
+                    } else if (delta > 12) {
+                        btn.classList.add('yt-pip-scroll-hidden');
+                    } else if (delta < -18) {
+                        btn.classList.remove('yt-pip-scroll-hidden');
+                    }
+                    lastYtScrollY = Math.max(0, currentY);
+                };
+
+                window.addEventListener('scroll', () => {
+                    if (!ytScrollTicking) {
+                        ytScrollTicking = true;
+                        window.requestAnimationFrame(onYtScroll);
+                    }
+                }, { passive: true });
 
                 const schedulePipUpdate = () => {
                     if (!pipCheckScheduled) {
@@ -502,12 +592,12 @@
 
 
     // =========================================================================
-    // 📦 [모듈 4] Dcinside Stealth, Short IP Tagger, Original Image & Mute Manager v5.1
+    // 📦 [모듈 4] Dcinside Stealth, IP/반고닉 Tagger, Original Image & Mute v5.3
     // - 작동 조건: dcinside.com 접속 시
-    // - v5.1 개선:
-    //   1) 짧은 IP 표기: [통피], [비공개], [개인], [VPN] + 모바일 작성자 칸 잘림(overflow) 해제
-    //   2) 마이너갤 말머리([?질문] 등)를 닉네임으로 오인식하던 버그 완벽 수정 (날짜 앞 칸 정확 타겟팅)
-    //   3) 하단 차단 관리 모달창에 '차단 키워드 직접 입력/추가/삭제' 기능 탑재
+    // - v5.3 개선:
+    //   1) 반고닉(깡계: 회색 아이콘) 감지 시 닉네임 옆에 [반고닉] 태그 별도 표시
+    //   2) 반고닉 차단 시 일반 고닉과 섞이지 않도록 전용 차단 목록(semiNicks)으로 분리 저장
+    //   3) 댓글에서 [차단] 버튼이 아이콘 앞에 끼어들던 순서 교정 (닉네임+아이콘+[반고닉]+[차단])
     // =========================================================================
     if (ENABLE_MODULES.dcinside && currentHost.includes('dcinside.com')) {
         (function() {
@@ -517,15 +607,16 @@
                 autoBackOnPostMute: false,// 글 본문 상단에서 작성자 [차단] 시 자동으로 뒤로 가기 여부
                 ips: [],                  // 코드 고정 차단 IP (예: ['58.120'])
                 keywords: [],             // 코드 고정 차단 키워드 (예: ['카지노', '도박'])
-                nicks: [],                // 코드 고정 차단 닉네임 (예: ['어그로닉'])
-                categories: []            // 카테고리 통째 차단 ('통피', '비공개', 'VPN', '개인')
+                semiNicks: [],            // 코드 고정 차단 반고닉/깡계 (예: ['ㅇㅇ'])
+                nicks: [],                // 코드 고정 차단 일반 고닉 (예: ['어그로닉'])
+                categories: []            // 카테고리 통째 차단 ('통피', '비공개', 'VPN', '개인', '반고닉')
             };
 
             const STORAGE_KEY = 'dc_custom_mute_v1';
 
-            // [하이브리드 저장소 엔진] localStorage + .dcinside.com 루트 쿠키 양방향 동기화 (ips, nicks, keywords 모두 포함)
             const normalizeData = (obj) => ({
                 ips: (obj && Array.isArray(obj.ips)) ? Array.from(new Set(obj.ips)) : [],
+                semiNicks: (obj && Array.isArray(obj.semiNicks)) ? Array.from(new Set(obj.semiNicks)) : [],
                 nicks: (obj && Array.isArray(obj.nicks)) ? Array.from(new Set(obj.nicks)) : [],
                 keywords: (obj && Array.isArray(obj.keywords)) ? Array.from(new Set(obj.keywords)) : [],
                 t: (obj && typeof obj.t === 'number') ? obj.t : 0
@@ -550,6 +641,7 @@
             const writeHybridStore = (data) => {
                 const payload = {
                     ips: Array.from(new Set(data.ips || [])),
+                    semiNicks: Array.from(new Set(data.semiNicks || [])),
                     nicks: Array.from(new Set(data.nicks || [])),
                     keywords: Array.from(new Set(data.keywords || [])),
                     t: Date.now()
@@ -588,7 +680,7 @@
                     writeHybridStore(ls);
                     return ls;
                 }
-                return { ips: [], nicks: [], keywords: [], t: 0 };
+                return { ips: [], semiNicks: [], nicks: [], keywords: [], t: 0 };
             };
 
             let dynamicMutes = loadSavedMutes();
@@ -608,7 +700,7 @@
                 dynamicMutes = writeHybridStore(dynamicMutes);
             };
 
-            // [4-1] 스텔스 & 애드블록 감지 무력화 (document-start 즉시 실행)
+            // [4-1] 스텔스 & 애드블록 감지 무력화
             const lock = (p, v) => {
                 try { Object.defineProperty(window, p, { value: v, writable: false, configurable: false }); } catch (e) {}
             };
@@ -639,35 +731,33 @@
                     width: 1px !important; height: 1px !important; overflow: hidden !important; 
                     opacity: 0 !important; pointer-events: none !important;
                 }
-                /* 모바일 글 목록에서 작성자 칸 가로 길이 제한 해제 (유동닉 차단 버튼 잘림 완벽 방지) */
                 ul.gall-detail-lst ul.ginfo > li {
                     max-width: none !important;
                     overflow: visible !important;
                 }
-                .dc-ip-tag-span {
-                    font-size: 11px;
-                    opacity: 0.85;
-                }
+                /* IP 태그, [반고닉] 태그, [차단] 버튼을 완전히 동일한 텍스트 스타일로 통일 */
+                .dc-ip-tag-span,
+                .dc-semi-tag-span,
                 .dc-one-touch-mute-btn {
-                    display: inline-block;
-                    margin-left: 3px;
-                    margin-right: 2px;
-                    padding: 0px 4px;
-                    font-size: 10.5px !important;
+                    display: inline !important;
+                    margin: 0 0 0 1px !important;
+                    padding: 0 !important;
+                    border: 0 !important;
+                    background: transparent !important;
+                    color: inherit !important;
+                    font-size: 11px !important;
                     font-weight: normal !important;
-                    line-height: 1.35 !important;
-                    color: #d9534f !important;
-                    border: 1px solid rgba(217, 83, 79, 0.45);
-                    border-radius: 3px;
-                    background: rgba(217, 83, 79, 0.08);
-                    cursor: pointer;
-                    vertical-align: baseline;
+                    line-height: inherit !important;
+                    opacity: 0.85 !important;
+                    vertical-align: baseline !important;
                     user-select: none;
                 }
+                .dc-one-touch-mute-btn {
+                    cursor: pointer;
+                }
                 .dc-one-touch-mute-btn.is-muted {
-                    color: #888 !important;
-                    border-color: #ccc !important;
-                    background: #eee !important;
+                    opacity: 0.5 !important;
+                    text-decoration: line-through;
                 }
                 #dc-mute-manage-bar {
                     text-align: center;
@@ -834,20 +924,64 @@
                 return originalFetch.apply(window, args);
             };
 
-            // [4-2] 짧은 IP 식별, 원본 이미지 로드, 정확한 작성자 타겟팅 원터치 차단 & 관리 모달
+            // [4-2] IP 대역 DB + 반고닉(깡계) 별도 식별/차단 + 원본 이미지 로드
             runAtDocumentEnd(() => {
                 laundryDC();
 
-                // 요청하신 짧은 표기 적용: [통피], [비공개], [VPN], [개인]
                 const ipCategories = [
-                    { label: "통피", ips: ["39.7", "39.119", "106.101", "106.102", "110.70", "114.200", "114.201", "117.111", "118.235", "125.188", "175.223", "175.252", "210.125", "211.36", "211.234", "211.246", "223.32", "223.33", "223.38", "223.39", "223.62"] },
-                    { label: "비공개", ips: ["104.28", "172.225", "172.226", "172.227", "8.20", "8.21", "8.22", "8.23", "162.158", "188.114", "104.16", "104.17", "162.159", "172.64", "172.65", "172.66", "172.67", "172.68", "172.69", "172.70", "172.71"] },
-                    { label: "VPN", ips: ["140.248", "185.123", "185.240", "185.244", "185.156", "185.212", "194.33", "194.226", "156.146", "212.102", "193.176", "89.39", "37.19", "37.120", "84.17", "103.153", "103.208", "149.28", "45.32", "207.246", "104.238", "139.180", "13.124", "13.125", "3.34", "3.35", "34.64", "35.216", "45.13", "45.14", "45.89", "192.145", "108.162", "141.101", "173.245", "198.41", "138.199", "146.70", "169.150", "217.138", "185.242", "149.34", "89.40", "152.233"] }
+                    {
+                        label: "통피",
+                        ips: new Set([
+                            "39.7", "39.118", "39.119", "61.43", "106.101", "106.102",
+                            "110.70", "114.200", "114.201", "115.161", "117.111", "118.235",
+                            "125.188", "175.223", "175.252", "210.125", "211.33", "211.36",
+                            "211.224", "211.234", "211.235", "211.246", "223.32", "223.33",
+                            "223.38", "223.39", "223.56", "223.57", "223.62"
+                        ])
+                    },
+                    {
+                        label: "비공개",
+                        ips: new Set([
+                            "8.20", "8.21", "8.22", "8.23", "8.25", "8.26", "8.28", "8.29",
+                            "104.16", "104.17", "104.18", "104.19", "104.20", "104.21", "104.22",
+                            "104.23", "104.24", "104.25", "104.26", "104.27", "104.28",
+                            "141.101", "162.158", "162.159", "172.64", "172.65", "172.66", "172.67",
+                            "172.68", "172.69", "172.70", "172.71", "172.224", "172.225", "172.226",
+                            "172.227", "188.114", "198.41"
+                        ])
+                    },
+                    {
+                        label: "VPN",
+                        ips: new Set([
+                            "3.34", "3.35", "3.36", "3.37", "3.38", "3.39", "3.112", "3.113", "3.114", "3.115",
+                            "13.112", "13.114", "13.115", "13.124", "13.125", "13.209", "15.164", "15.165",
+                            "18.176", "18.177", "18.178", "18.179", "18.180", "18.181", "18.182", "18.183",
+                            "20.196", "20.200", "20.214", "34.22", "34.47", "34.64", "34.84", "34.85", "34.146",
+                            "35.187", "35.194", "35.200", "35.216", "37.19", "37.120",
+                            "43.200", "43.201", "43.202", "43.203", "43.206", "43.207",
+                            "45.12", "45.13", "45.14", "45.32", "45.63", "45.76", "45.77", "45.83", "45.87",
+                            "45.89", "45.133", "45.134", "52.78", "52.79", "52.192", "52.193", "52.194",
+                            "54.64", "54.65", "54.95", "54.178", "54.180", "54.199", "54.248", "54.250",
+                            "64.176", "66.42", "77.111", "79.110", "84.17", "89.39", "89.40", "89.187",
+                            "91.90", "91.108", "91.132", "92.119", "95.179",
+                            "103.115", "103.125", "103.153", "103.208", "104.156", "104.207", "104.238",
+                            "107.191", "108.61", "108.160", "108.162", "129.154", "132.145",
+                            "138.2", "138.199", "139.84", "139.162", "139.180", "140.82", "140.238", "140.248",
+                            "141.164", "144.24", "144.202", "146.56", "146.70", "149.28", "149.34", "149.40",
+                            "149.88", "149.102", "149.154", "149.248", "150.230", "152.67", "152.70", "152.233",
+                            "154.47", "155.138", "156.146", "158.101", "158.247", "167.179", "168.138", "169.150",
+                            "172.104", "172.105", "172.233", "173.245", "178.249",
+                            "185.123", "185.156", "185.159", "185.212", "185.220", "185.240", "185.242", "185.244", "185.246",
+                            "192.145", "193.32", "193.122", "193.123", "193.148", "193.176",
+                            "194.33", "194.35", "194.110", "194.226", "195.181", "198.13",
+                            "202.182", "207.148", "207.246", "212.102", "216.128", "217.138"
+                        ])
+                    }
                 ];
 
                 const getIpLabel = (ip) => {
                     for (const category of ipCategories) {
-                        if (category.ips.includes(ip)) return category.label;
+                        if (category.ips.has(ip)) return category.label;
                     }
                     return "개인";
                 };
@@ -855,21 +989,36 @@
                 const getCleanText = (el) => {
                     if (!el) return '';
                     const clone = el.cloneNode(true);
-                    clone.querySelectorAll('.dc-ip-tag-span, .dc-one-touch-mute-btn, .sp-nick').forEach(n => n.remove());
+                    clone.querySelectorAll('.dc-ip-tag-span, .dc-semi-tag-span, .dc-one-touch-mute-btn, .sp-nick').forEach(n => n.remove());
                     return clone.textContent.trim();
                 };
 
-                // 모바일 글 목록(ul.ginfo)에서 말머리([?질문] 등)를 피해 실제 작성자 <li>만 정확히 찾는 함수
+                // 모바일/PC 요소에서 반고닉(깡계: 회색 아이콘) 여부 정확히 판별
+                const detectSemiFixedNick = (containerEl) => {
+                    if (!containerEl) return false;
+                    // 1. 모바일 웹: .sp-nick 이 존재하되, 고닉(.gonick)이나 매니저(.man, .subman)가 아닌 경우 = 반고닉(회색 네모)
+                    const spNick = containerEl.querySelector('.sp-nick');
+                    if (spNick) {
+                        return !spNick.classList.contains('gonick') &&
+                               !spNick.classList.contains('man') &&
+                               !spNick.classList.contains('subman');
+                    }
+                    // 2. PC 웹: .writer_nikcon img 의 src가 fix_nik.gif 가 아닌 nik.gif 인 경우 = 반고닉
+                    const pcIcon = containerEl.querySelector('.writer_nikcon img');
+                    if (pcIcon && pcIcon.src) {
+                        return pcIcon.src.includes('nik.gif') && !pcIcon.src.includes('fix_nik.gif');
+                    }
+                    return false;
+                };
+
                 const findMobileWriterLi = (ginfoUl) => {
                     if (!ginfoUl) return null;
                     const lis = Array.from(ginfoUl.children);
-                    // 1순위: 고닉/반고닉 아이콘(.sp-nick)이나 유동 IP 괄호가 들어있는 li
                     for (let i = 0; i < lis.length; i++) {
                         if (lis[i].querySelector('.sp-nick') || /\(\d{1,3}\.\d{1,3}\)/.test(lis[i].textContent)) {
                             return lis[i];
                         }
                     }
-                    // 2순위: 날짜/시간(03:28, 10.25, 24.10.25 등) 바로 앞 칸의 li가 무조건 작성자 칸
                     const dateIdx = lis.findIndex(li => /^(\d{2}:\d{2}|\d{2}\.\d{2}|\d{4}\.\d{2}\.\d{2})/.test(li.textContent.trim()));
                     if (dateIdx > 0) return lis[dateIdx - 1];
                     return lis[0] || null;
@@ -943,7 +1092,6 @@
                     runDcTasks();
                 };
 
-                // 차단 관리 모달창 (키워드 직접 입력 추가/삭제 + IP/닉네임 개별 해제 + 백업/복원)
                 let modalBackdrop = null;
                 function openMuteManagerModal() {
                     dynamicMutes = loadSavedMutes();
@@ -953,7 +1101,7 @@
                         modalBackdrop.innerHTML = `
                             <div id="dc-mute-modal" role="dialog" aria-label="차단 목록 관리">
                                 <div class="dc-mm-head">
-                                    <span>🚫 디시 차단 관리 (키워드 / IP / 닉네임)</span>
+                                    <span>🚫 디시 차단 관리 (키워드 / IP / 반고닉 / 고닉)</span>
                                     <button type="button" class="dc-mm-close" aria-label="닫기">✕</button>
                                 </div>
                                 <div class="dc-mm-body">
@@ -967,7 +1115,10 @@
                                     <div class="dc-mm-sec-title">차단된 유동 IP (✕ 터치 시 개별 해제)</div>
                                     <div id="dc-mm-ip-list" class="dc-mm-chips"></div>
 
-                                    <div class="dc-mm-sec-title">차단된 닉네임 (✕ 터치 시 개별 해제)</div>
+                                    <div class="dc-mm-sec-title">차단된 반고닉 / 깡계 (✕ 터치 시 개별 해제)</div>
+                                    <div id="dc-mm-semi-list" class="dc-mm-chips"></div>
+
+                                    <div class="dc-mm-sec-title">차단된 일반 고닉 (✕ 터치 시 개별 해제)</div>
                                     <div id="dc-mm-nick-list" class="dc-mm-chips"></div>
                                 </div>
                                 <div class="dc-mm-foot">
@@ -985,7 +1136,6 @@
                             }
                         });
 
-                        // 키워드 추가 핸들러
                         const kwInput = modalBackdrop.querySelector('#dc-mm-kw-input');
                         const handleAddKeywords = () => {
                             const raw = kwInput.value.trim();
@@ -1006,12 +1156,12 @@
                             }
                         });
 
-                        // [📋 백업 복사]
                         modalBackdrop.querySelector('#dc-mm-copy-btn').addEventListener('click', async () => {
                             dynamicMutes = loadSavedMutes();
                             const exportObj = {
                                 keywords: dynamicMutes.keywords,
                                 ips: dynamicMutes.ips,
+                                semiNicks: dynamicMutes.semiNicks,
                                 nicks: dynamicMutes.nicks
                             };
                             const exportStr = JSON.stringify(exportObj);
@@ -1023,9 +1173,8 @@
                             }
                         });
 
-                        // [📥 복원(붙여넣기)]
                         modalBackdrop.querySelector('#dc-mm-restore-btn').addEventListener('click', () => {
-                            const input = prompt('백업해 둔 JSON 텍스트를 붙여넣으세요:\n예: {"keywords":["도박"],"ips":["39.7"],"nicks":["어그로"]}');
+                            const input = prompt('백업해 둔 JSON 텍스트를 붙여넣으세요:\n예: {"keywords":["도박"],"ips":["39.7"],"semiNicks":["ㅇㅇ"],"nicks":["어그로"]}');
                             if (!input) return;
                             try {
                                 const parsed = JSON.parse(input.trim());
@@ -1035,6 +1184,9 @@
                                 }
                                 if (Array.isArray(parsed.ips)) {
                                     parsed.ips.forEach(ip => { if (!dynamicMutes.ips.includes(ip)) dynamicMutes.ips.push(String(ip).trim()); });
+                                }
+                                if (Array.isArray(parsed.semiNicks)) {
+                                    parsed.semiNicks.forEach(sn => { if (!dynamicMutes.semiNicks.includes(sn)) dynamicMutes.semiNicks.push(String(sn).trim()); });
                                 }
                                 if (Array.isArray(parsed.nicks)) {
                                     parsed.nicks.forEach(nk => { if (!dynamicMutes.nicks.includes(nk)) dynamicMutes.nicks.push(String(nk).trim()); });
@@ -1048,10 +1200,9 @@
                             }
                         });
 
-                        // [🗑️ 전체 초기화]
                         modalBackdrop.querySelector('#dc-mm-clear-btn').addEventListener('click', () => {
-                            if (confirm('저장된 모든 차단 목록(키워드·IP·닉네임)을 초기화하시겠습니까?')) {
-                                dynamicMutes = writeHybridStore({ ips: [], nicks: [], keywords: [] });
+                            if (confirm('저장된 모든 차단 목록(키워드·IP·반고닉·고닉)을 초기화하시겠습니까?')) {
+                                dynamicMutes = writeHybridStore({ ips: [], semiNicks: [], nicks: [], keywords: [] });
                                 renderModalLists();
                                 refreshAllMuteStates();
                             }
@@ -1067,9 +1218,11 @@
                     dynamicMutes = loadSavedMutes();
                     const kwBox = modalBackdrop.querySelector('#dc-mm-kw-list');
                     const ipBox = modalBackdrop.querySelector('#dc-mm-ip-list');
+                    const semiBox = modalBackdrop.querySelector('#dc-mm-semi-list');
                     const nickBox = modalBackdrop.querySelector('#dc-mm-nick-list');
                     kwBox.innerHTML = '';
                     ipBox.innerHTML = '';
+                    semiBox.innerHTML = '';
                     nickBox.innerHTML = '';
 
                     if (dynamicMutes.keywords.length === 0) {
@@ -1112,13 +1265,33 @@
                         });
                     }
 
+                    if (dynamicMutes.semiNicks.length === 0) {
+                        semiBox.innerHTML = '<span class="dc-mm-empty">차단된 반고닉(깡계)이 없습니다.</span>';
+                    } else {
+                        dynamicMutes.semiNicks.forEach(sn => {
+                            const chip = document.createElement('span');
+                            chip.className = 'dc-mm-chip';
+                            chip.textContent = `${sn}[반고닉]`;
+                            const delBtn = document.createElement('button');
+                            delBtn.type = 'button';
+                            delBtn.textContent = '✕';
+                            delBtn.onclick = () => {
+                                removeMuteItem('semiNicks', sn);
+                                renderModalLists();
+                                refreshAllMuteStates();
+                            };
+                            chip.appendChild(delBtn);
+                            semiBox.appendChild(chip);
+                        });
+                    }
+
                     if (dynamicMutes.nicks.length === 0) {
-                        nickBox.innerHTML = '<span class="dc-mm-empty">차단된 닉네임이 없습니다.</span>';
+                        nickBox.innerHTML = '<span class="dc-mm-empty">차단된 일반 고닉이 없습니다.</span>';
                     } else {
                         dynamicMutes.nicks.forEach(nk => {
                             const chip = document.createElement('span');
                             chip.className = 'dc-mm-chip';
-                            chip.textContent = nk;
+                            chip.textContent = `${nk}[고닉]`;
                             const delBtn = document.createElement('button');
                             delBtn.type = 'button';
                             delBtn.textContent = '✕';
@@ -1135,7 +1308,11 @@
 
                 function updateManageBar() {
                     dynamicMutes = loadSavedMutes();
-                    const totalCount = dynamicMutes.ips.length + dynamicMutes.nicks.length + dynamicMutes.keywords.length;
+                    const totalCount =
+                        dynamicMutes.ips.length +
+                        dynamicMutes.semiNicks.length +
+                        dynamicMutes.nicks.length +
+                        dynamicMutes.keywords.length;
                     let bar = document.getElementById('dc-mute-manage-bar');
                     if (!bar && document.body) {
                         bar = document.createElement('div');
@@ -1151,9 +1328,10 @@
                     }
                 }
 
-                // 게시글 본문 상단(작성자 이름/IP 옆) 원터치 차단 버튼 장착
+                // 게시글 본문 상단(작성자 이름/IP 옆) [반고닉] 태그 및 원터치 [차단] 장착
                 function processPostViewHeader() {
                     const allMutedIps = [...DC_MUTE_CONFIG.ips, ...dynamicMutes.ips];
+                    const allMutedSemiNicks = [...DC_MUTE_CONFIG.semiNicks, ...dynamicMutes.semiNicks];
                     const allMutedNicks = [...DC_MUTE_CONFIG.nicks, ...dynamicMutes.nicks];
 
                     const headerTargets = document.querySelectorAll('.gallview-tit-box ul.ginfo2 > li:first-child, .gallview_head .gall_writer');
@@ -1178,9 +1356,21 @@
 
                         if (!ip && !nick) return;
 
+                        const isSemi = !ip && detectSemiFixedNick(headerEl);
+                        const muteType = ip ? 'ips' : (isSemi ? 'semiNicks' : 'nicks');
+
+                        // 반고닉이면 [반고닉] 태그 부착
+                        if (isSemi && !headerEl.querySelector('.dc-semi-tag-span')) {
+                            const semiSpan = document.createElement('span');
+                            semiSpan.className = 'dc-semi-tag-span';
+                            semiSpan.innerText = '[반고닉]';
+                            headerEl.appendChild(semiSpan);
+                        }
+
                         const isAlreadyMuted =
                             (ip && allMutedIps.some(t => ip.startsWith(t))) ||
-                            (!ip && nick && allMutedNicks.includes(nick));
+                            (!ip && isSemi && allMutedSemiNicks.includes(nick)) ||
+                            (!ip && !isSemi && allMutedNicks.includes(nick));
 
                         let muteBtn = headerEl.querySelector('.dc-one-touch-mute-btn');
                         if (!muteBtn) {
@@ -1192,42 +1382,35 @@
 
                                 const currentlyMuted = muteBtn.classList.contains('is-muted');
                                 if (currentlyMuted) {
-                                    if (ip) removeMuteItem('ips', ip);
-                                    else if (nick) removeMuteItem('nicks', nick);
+                                    removeMuteItem(muteType, ip || nick);
                                     refreshAllMuteStates();
                                     return;
                                 }
 
-                                if (ip) {
-                                    if (!DC_MUTE_CONFIG.confirmBeforeMute || confirm(`본문 작성자 유동 IP [${ip}] 유저를 차단하시겠습니까?`)) {
-                                        addMuteItem('ips', ip);
-                                        runDcTasks();
-                                        if (DC_MUTE_CONFIG.autoBackOnPostMute) window.history.back();
-                                    }
-                                } else if (nick) {
-                                    if (!DC_MUTE_CONFIG.confirmBeforeMute || confirm(`본문 작성자 닉네임 [${nick}] 유저를 차단하시겠습니까?`)) {
-                                        addMuteItem('nicks', nick);
-                                        runDcTasks();
-                                        if (DC_MUTE_CONFIG.autoBackOnPostMute) window.history.back();
-                                    }
+                                const labelDesc = ip ? `유동 IP [${ip}]` : (isSemi ? `반고닉(깡계) [${nick}]` : `고닉 [${nick}]`);
+                                if (!DC_MUTE_CONFIG.confirmBeforeMute || confirm(`본문 작성자 ${labelDesc} 유저를 차단하시겠습니까?`)) {
+                                    addMuteItem(muteType, ip || nick);
+                                    runDcTasks();
+                                    if (DC_MUTE_CONFIG.autoBackOnPostMute) window.history.back();
                                 }
                             }, false);
                             headerEl.appendChild(muteBtn);
                         }
 
                         if (isAlreadyMuted) {
-                            muteBtn.textContent = '차단됨(해제)';
+                            muteBtn.textContent = '[차단됨]';
                             muteBtn.classList.add('is-muted');
                         } else {
-                            muteBtn.textContent = '차단';
+                            muteBtn.textContent = '[차단]';
                             muteBtn.classList.remove('is-muted');
                         }
                     });
                 }
 
-                // 게시글 목록 및 댓글에서 정확한 작성자 추출 + 원터치 [차단] 버튼 장착 + 뮤트 실행
+                // 게시글 목록 및 댓글에서 [반고닉] 별도 식별 + [차단] 장착 + 뮤트 실행
                 function processItemsAndMute() {
                     const allMutedIps = [...DC_MUTE_CONFIG.ips, ...dynamicMutes.ips];
+                    const allMutedSemiNicks = [...DC_MUTE_CONFIG.semiNicks, ...dynamicMutes.semiNicks];
                     const allMutedNicks = [...DC_MUTE_CONFIG.nicks, ...dynamicMutes.nicks];
                     const allMutedKeywords = [...DC_MUTE_CONFIG.keywords, ...dynamicMutes.keywords];
 
@@ -1242,56 +1425,81 @@
                             ipEl = mobileWriterLi;
                         }
 
-                        // 1. IP 추출
                         let ip = (writerEl && writerEl.getAttribute('data-ip')) || (ipEl && ipEl.dataset.rawIp) || '';
                         if (!ip && ipEl) {
                             const m = getCleanText(ipEl).match(/\(?(\d{1,3}\.\d{1,3})\)?/);
                             if (m) ip = m[1];
                         }
 
-                        // 2. 닉네임 추출 (마이너갤 말머리 완벽 제외, 실제 작성자 칸에서만 추출)
                         let nickTargetEl = item.querySelector('a.nick, .nick, .gall_writer') || mobileWriterLi;
                         let nick = (writerEl && writerEl.getAttribute('data-nick')) || '';
                         if (!nick && nickTargetEl) {
                             nick = getCleanText(nickTargetEl).replace(/\(\d{1,3}\.\d{1,3}\).*$/, '').trim();
                         }
 
-                        // 3. 원터치 [차단] 버튼 주입
-                        const btnAnchor = ipEl || nickTargetEl;
+                        // 반고닉(깡계) 여부 판별
+                        const isSemi = !ip && detectSemiFixedNick(writerEl || mobileWriterLi || item);
+                        const muteType = ip ? 'ips' : (isSemi ? 'semiNicks' : 'nicks');
+
+                        // 댓글창에서 a.nick 바로 뒤에 .sp-nick 아이콘이 형제로 있는 경우, 아이콘 뒤쪽에 태그가 붙도록 기준점 교정
+                        let btnAnchor = ipEl || nickTargetEl;
+                        if (btnAnchor && btnAnchor.tagName === 'A' && btnAnchor.classList.contains('nick')) {
+                            btnAnchor = btnAnchor.parentElement || btnAnchor;
+                        }
+
+                        // 반고닉이면 [반고닉] 태그 부착
+                        if (isSemi && btnAnchor && !item.querySelector('.dc-semi-tag-span')) {
+                            const semiSpan = document.createElement('span');
+                            semiSpan.className = 'dc-semi-tag-span';
+                            semiSpan.innerText = '[반고닉]';
+                            const spIcon = item.querySelector('.sp-nick');
+                            if (spIcon && spIcon.parentNode === btnAnchor) {
+                                spIcon.insertAdjacentElement('afterend', semiSpan);
+                            } else {
+                                btnAnchor.appendChild(semiSpan);
+                            }
+                        }
+
+                        // 원터치 [차단] 버튼 장착 (닉네임 + 아이콘 + [반고닉] 바로 다음 위치)
                         if (btnAnchor && !item.querySelector('.dc-one-touch-mute-btn') && (ip || nick)) {
                             const muteBtn = document.createElement('span');
                             muteBtn.className = 'dc-one-touch-mute-btn';
-                            muteBtn.textContent = '차단';
+                            muteBtn.textContent = '[차단]';
                             muteBtn.addEventListener('click', (e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
 
-                                if (ip) {
-                                    if (!DC_MUTE_CONFIG.confirmBeforeMute || confirm(`유동 IP [${ip}] 유저를 차단하시겠습니까?`)) {
-                                        addMuteItem('ips', ip);
-                                        runDcTasks();
-                                    }
-                                } else if (nick) {
-                                    if (!DC_MUTE_CONFIG.confirmBeforeMute || confirm(`닉네임 [${nick}] (고닉/반고닉) 유저를 차단하시겠습니까?`)) {
-                                        addMuteItem('nicks', nick);
-                                        runDcTasks();
-                                    }
+                                const labelDesc = ip ? `유동 IP [${ip}]` : (isSemi ? `반고닉(깡계) [${nick}]` : `고닉 [${nick}]`);
+                                if (!DC_MUTE_CONFIG.confirmBeforeMute || confirm(`${labelDesc} 유저를 차단하시겠습니까?`)) {
+                                    addMuteItem(muteType, ip || nick);
+                                    runDcTasks();
                                 }
                             }, false);
-                            btnAnchor.appendChild(muteBtn);
+
+                            const semiTag = item.querySelector('.dc-semi-tag-span');
+                            const spIcon = item.querySelector('.sp-nick');
+                            if (semiTag && semiTag.parentNode === btnAnchor) {
+                                semiTag.insertAdjacentElement('afterend', muteBtn);
+                            } else if (!ip && spIcon && spIcon.parentNode === btnAnchor) {
+                                spIcon.insertAdjacentElement('afterend', muteBtn);
+                            } else {
+                                btnAnchor.appendChild(muteBtn);
+                            }
                         }
 
-                        // 4. 본문/제목 텍스트 추출 (말머리는 빼고 순수 글 제목·댓글 내용만 추출)
                         const textEl = item.querySelector('.subjectin, .gall_tit, .txt, .usertxt');
                         const contentText = textEl ? textEl.textContent : '';
 
-                        // 5. 뮤트 조건 검사 (유동닉은 IP로만 판별, 고닉/반고닉은 닉네임으로 판별)
                         let shouldMute = false;
                         if (ip && allMutedIps.some(targetIp => ip.startsWith(targetIp))) {
                             shouldMute = true;
                         } else if (ip && DC_MUTE_CONFIG.categories.length > 0 && DC_MUTE_CONFIG.categories.includes(getIpLabel(ip))) {
                             shouldMute = true;
-                        } else if (!ip && nick && allMutedNicks.some(targetNick => nick === targetNick)) {
+                        } else if (isSemi && DC_MUTE_CONFIG.categories.includes('반고닉')) {
+                            shouldMute = true;
+                        } else if (!ip && isSemi && nick && allMutedSemiNicks.includes(nick)) {
+                            shouldMute = true;
+                        } else if (!ip && !isSemi && nick && allMutedNicks.includes(nick)) {
                             shouldMute = true;
                         } else if (contentText && allMutedKeywords.some(kw => contentText.includes(kw))) {
                             shouldMute = true;
