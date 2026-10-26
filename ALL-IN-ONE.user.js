@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         [통합] 내 전용 웹사이트 편의성 & 광고 차단팩
 // @namespace    http://tampermonkey.net/
-// @version      2.5
-// @description  1.나무위키 광고차단 | 2.툰코 스크롤메뉴·배너/팝업제거 | 3.유튜브 PiP(자동숨김)·백그라운드·최고화질 | 4.디시 스텔스·IP/반고닉식별·원본짤·차단관리 | 5.블로그·티스토리 복사해제
+// @version      2.6
+// @description  1.나무위키 광고차단 | 2.툰코 스크롤메뉴·배너제거 | 3.유튜브 PiP(자동숨김)·백그라운드·최고화질 | 4.디시 스텔스·IP/반고닉·갤로그ID 핀셋차단 | 5.블로그·티스토리 복사해제
 //
 // --- [1. 나무위키 주소 규칙] ---
 // @match        *://namu.wiki/*
@@ -38,7 +38,7 @@
         namuwiki:     true, // 모듈 1: 나무위키 파워링크(위장 목차) 제거
         toonkor:      true, // 모듈 2: 툰코 뷰어 스크롤 메뉴 + 도박 배너/팝업 제거
         youtube:      true, // 모듈 3: 유튜브 백그라운드 재생 + 최고화질 + 반투명/자동숨김 PiP 버튼
-        dcinside:     true, // 모듈 4: 디시 스텔스 + IP/반고닉 식별 + 원본 이미지 + 통합 차단 관리
+        dcinside:     true, // 모듈 4: 디시 스텔스 + IP/반고닉 식별 + 갤로그 ID 핀셋 차단 관리
         copyUnlocker: true  // 모듈 5: 네이버 블로그 & 티스토리 복사 방지 해제 (무소음)
     };
     // =========================================================================
@@ -175,14 +175,13 @@
     if (ENABLE_MODULES.toonkor && /toonkor/i.test(currentHost)) {
         (function() {
             const CONFIG = {
-                hideSensitivity: 20,      // 아래로 스크롤 시 메뉴 숨김 예민감도 (px)
-                showSensitivity: 40,      // 위로 스크롤 시 메뉴 표시 예민감도 (px)
-                topAlwaysShowOffset: 80,  // 최상단 항상 표시 영역 (px)
-                disableTouchToggle: false,// 기존 화면 터치 토글 비활성화 여부
-                blockBannersAndPopup: true// 상·하단 도박 배너 및 텔레그램 팝업 자동 제거
+                hideSensitivity: 20,       // 아래로 스크롤 시 메뉴 숨김 예민감도 (px)
+                showSensitivity: 40,       // 위로 스크롤 시 메뉴 표시 예민감도 (px)
+                topAlwaysShowOffset: 80,   // 최상단 항상 표시 영역 (px)
+                disableTouchToggle: false, // 기존 화면 터치 토글 비활성화 여부
+                blockBannersAndPopup: true // 상·하단 도박 배너 및 텔레그램 팝업 자동 제거
             };
 
-            // [2-1] 상·하단 도박 배너 및 텔레그램 안내 팝업 즉시 제거 (document-start)
             if (CONFIG.blockBannersAndPopup) {
                 const tkCleanStyle = document.createElement('style');
                 tkCleanStyle.textContent = `
@@ -210,7 +209,6 @@
                 (document.head || document.documentElement).appendChild(tkCleanStyle);
             }
 
-            // [2-2] 웹툰 뷰어 스크롤 메뉴 숨김/표시 (document-end)
             runAtDocumentEnd(function() {
                 const isViewerPage = document.getElementById('toon_img') || document.querySelector('.bottom-navbar');
                 if (!isViewerPage) return;
@@ -324,7 +322,6 @@
     // =========================================================================
     // 📦 [모듈 3] YouTube Background Play, Auto Max Quality & Smart PiP v35.0
     // - 작동 조건: youtube.com 접속 시
-    // - 개선 사항: PiP 버튼 반투명화 + 댓글 읽으러 아래로 스크롤 시 자동 숨김/표시
     // =========================================================================
     if (ENABLE_MODULES.youtube && currentHost.includes('youtube.com')) {
         (function() {
@@ -334,7 +331,7 @@
                 pipIdleOpacity: '0.40'    // 평소 PiP 버튼 투명도 (0.1 ~ 1.0)
             };
 
-            // [3-1] 백그라운드 재생 활성화 (document-start 시점에 즉시 상태 위장)
+            // [3-1] 백그라운드 재생 활성화
             try {
                 Object.defineProperties(document, {
                     'hidden': { get: () => false, configurable: true },
@@ -417,7 +414,7 @@
             }, true);
 
 
-            // [3-3] /watch 전용 반투명 PiP 버튼 & 댓글 스크롤 시 자동 숨김 (document-idle)
+            // [3-3] /watch 전용 반투명 PiP 버튼 & 댓글 스크롤 시 자동 숨김
             runAtDocumentIdle(function() {
                 const ytPipStyle = document.createElement('style');
                 ytPipStyle.textContent = `
@@ -531,7 +528,6 @@
                     }
                 };
 
-                // 댓글을 읽으려고 아래로 스크롤할 때 PiP 버튼 자동 숨김 / 위로 올리면 표시
                 let lastYtScrollY = window.pageYOffset || document.documentElement.scrollTop || 0;
                 let ytScrollTicking = false;
 
@@ -592,12 +588,11 @@
 
 
     // =========================================================================
-    // 📦 [모듈 4] Dcinside Stealth, IP/반고닉 Tagger, Original Image & Mute v5.3
+    // 📦 [모듈 4] Dcinside Stealth, IP/반고닉 식별 & 갤로그 고유 ID 핀셋 차단 v6.0
     // - 작동 조건: dcinside.com 접속 시
-    // - v5.3 개선:
-    //   1) 반고닉(깡계: 회색 아이콘) 감지 시 닉네임 옆에 [반고닉] 태그 별도 표시
-    //   2) 반고닉 차단 시 일반 고닉과 섞이지 않도록 전용 차단 목록(semiNicks)으로 분리 저장
-    //   3) 댓글에서 [차단] 버튼이 아이콘 앞에 끼어들던 순서 교정 (닉네임+아이콘+[반고닉]+[차단])
+    // - v6.0 핵심(방식 A):
+    //   1) 본문 상단·댓글·PC웹에서는 갤로그 고유 ID(uid)를 추출해 'ㅇㅇ' 반고닉이라도 그 사람 1명만 핀셋 차단
+    //   2) 모바일 글 목록에서는 'ㅇㅇ' 등 흔한 중복 반고닉이 닉네임으로 광역 오폭 차단되지 않도록 완벽 보호
     // =========================================================================
     if (ENABLE_MODULES.dcinside && currentHost.includes('dcinside.com')) {
         (function() {
@@ -606,21 +601,39 @@
                 confirmBeforeMute: true,  // [차단] 터치 시 확인 창 띄우기 (바로 차단하려면 false)
                 autoBackOnPostMute: false,// 글 본문 상단에서 작성자 [차단] 시 자동으로 뒤로 가기 여부
                 ips: [],                  // 코드 고정 차단 IP (예: ['58.120'])
+                uids: [],                 // 코드 고정 차단 갤로그 ID (예: ['abcd1234'])
+                nicks: [],                // 코드 고정 차단 고유 닉네임 (예: ['어그로고닉'])
                 keywords: [],             // 코드 고정 차단 키워드 (예: ['카지노', '도박'])
-                semiNicks: [],            // 코드 고정 차단 반고닉/깡계 (예: ['ㅇㅇ'])
-                nicks: [],                // 코드 고정 차단 일반 고닉 (예: ['어그로닉'])
                 categories: []            // 카테고리 통째 차단 ('통피', '비공개', 'VPN', '개인', '반고닉')
             };
 
+            // 모바일 글 목록에서 닉네임만으로 광역 차단하면 오폭이 발생하는 흔한 중복 반고닉 보호 목록
+            const COMMON_DUP_NICKS = new Set(['ㅇㅇ', 'ㅇ', 'ㄴㄴ', '익명', 'dd', 'oo', 'ㅇㅇ']);
+
             const STORAGE_KEY = 'dc_custom_mute_v1';
 
-            const normalizeData = (obj) => ({
-                ips: (obj && Array.isArray(obj.ips)) ? Array.from(new Set(obj.ips)) : [],
-                semiNicks: (obj && Array.isArray(obj.semiNicks)) ? Array.from(new Set(obj.semiNicks)) : [],
-                nicks: (obj && Array.isArray(obj.nicks)) ? Array.from(new Set(obj.nicks)) : [],
-                keywords: (obj && Array.isArray(obj.keywords)) ? Array.from(new Set(obj.keywords)) : [],
-                t: (obj && typeof obj.t === 'number') ? obj.t : 0
-            });
+            // uids 배열 항목 형식: "갤로그ID:표시닉네임" (예: "abc1234:ㅇㅇ") 또는 "갤로그ID"
+            const parseUidEntry = (entry) => {
+                const str = String(entry || '').trim();
+                const idx = str.indexOf(':');
+                if (idx > 0) {
+                    return { uid: str.slice(0, idx), nick: str.slice(idx + 1) };
+                }
+                return { uid: str, nick: '' };
+            };
+
+            const normalizeData = (obj) => {
+                const rawNicks = (obj && Array.isArray(obj.nicks)) ? obj.nicks : [];
+                // 기존에 실수로 들어간 'ㅇㅇ' 등 흔한 중복 닉네임은 광역 오폭 방지를 위해 자동 정화
+                const safeNicks = rawNicks.filter(n => n && !COMMON_DUP_NICKS.has(String(n).trim()));
+                return {
+                    ips: (obj && Array.isArray(obj.ips)) ? Array.from(new Set(obj.ips)) : [],
+                    uids: (obj && Array.isArray(obj.uids)) ? Array.from(new Set(obj.uids)) : [],
+                    nicks: Array.from(new Set(safeNicks)),
+                    keywords: (obj && Array.isArray(obj.keywords)) ? Array.from(new Set(obj.keywords)) : [],
+                    t: (obj && typeof obj.t === 'number') ? obj.t : 0
+                };
+            };
 
             const readLocalStore = () => {
                 try {
@@ -639,11 +652,12 @@
             };
 
             const writeHybridStore = (data) => {
+                const norm = normalizeData(data);
                 const payload = {
-                    ips: Array.from(new Set(data.ips || [])),
-                    semiNicks: Array.from(new Set(data.semiNicks || [])),
-                    nicks: Array.from(new Set(data.nicks || [])),
-                    keywords: Array.from(new Set(data.keywords || [])),
+                    ips: norm.ips,
+                    uids: norm.uids,
+                    nicks: norm.nicks,
+                    keywords: norm.keywords,
                     t: Date.now()
                 };
                 const jsonStr = JSON.stringify(payload);
@@ -680,7 +694,7 @@
                     writeHybridStore(ls);
                     return ls;
                 }
-                return { ips: [], semiNicks: [], nicks: [], keywords: [], t: 0 };
+                return { ips: [], uids: [], nicks: [], keywords: [], t: 0 };
             };
 
             let dynamicMutes = loadSavedMutes();
@@ -688,6 +702,15 @@
             const addMuteItem = (type, value) => {
                 if (!value) return;
                 dynamicMutes = loadSavedMutes();
+                if (type === 'uids') {
+                    const targetUid = parseUidEntry(value).uid;
+                    const exists = dynamicMutes.uids.some(e => parseUidEntry(e).uid === targetUid);
+                    if (!exists) {
+                        dynamicMutes.uids.push(value);
+                        dynamicMutes = writeHybridStore(dynamicMutes);
+                    }
+                    return;
+                }
                 if (!dynamicMutes[type].includes(value)) {
                     dynamicMutes[type].push(value);
                     dynamicMutes = writeHybridStore(dynamicMutes);
@@ -696,7 +719,12 @@
 
             const removeMuteItem = (type, value) => {
                 dynamicMutes = loadSavedMutes();
-                dynamicMutes[type] = dynamicMutes[type].filter(item => item !== value);
+                if (type === 'uids') {
+                    const targetUid = parseUidEntry(value).uid;
+                    dynamicMutes.uids = dynamicMutes.uids.filter(e => parseUidEntry(e).uid !== targetUid);
+                } else {
+                    dynamicMutes[type] = dynamicMutes[type].filter(item => item !== value);
+                }
                 dynamicMutes = writeHybridStore(dynamicMutes);
             };
 
@@ -735,7 +763,7 @@
                     max-width: none !important;
                     overflow: visible !important;
                 }
-                /* IP 태그, [반고닉] 태그, [차단] 버튼을 완전히 동일한 텍스트 스타일로 통일 */
+                /* IP 태그, [반고닉] 태그, [차단] 버튼을 모두 동일한 무채색 텍스트 스타일로 통일 */
                 .dc-ip-tag-span,
                 .dc-semi-tag-span,
                 .dc-one-touch-mute-btn {
@@ -924,7 +952,7 @@
                 return originalFetch.apply(window, args);
             };
 
-            // [4-2] IP 대역 DB + 반고닉(깡계) 별도 식별/차단 + 원본 이미지 로드
+            // [4-2] IP 대역 DB + 반고닉 식별 + 갤로그 고유 ID(uid) 핀셋 차단
             runAtDocumentEnd(() => {
                 laundryDC();
 
@@ -993,17 +1021,38 @@
                     return clone.textContent.trim();
                 };
 
-                // 모바일/PC 요소에서 반고닉(깡계: 회색 아이콘) 여부 정확히 판별
+                // [핵심] 본문 상단('갤로그 가기' 버튼), 댓글(갤로그 아이콘/링크), PC웹(data-uid)에서 진짜 고유 ID 추출
+                const extractGallogId = (scopeEl) => {
+                    if (!scopeEl) return '';
+                    if (scopeEl.getAttribute && scopeEl.getAttribute('data-uid')) {
+                        return scopeEl.getAttribute('data-uid').trim();
+                    }
+                    const uidNode = scopeEl.querySelector ? scopeEl.querySelector('[data-uid]') : null;
+                    if (uidNode && uidNode.getAttribute('data-uid')) {
+                        return uidNode.getAttribute('data-uid').trim();
+                    }
+                    // 모바일 본문 상단 '갤로그 가기' 또는 댓글 갤로그 링크 탐색
+                    const gallogLinks = scopeEl.querySelectorAll ? scopeEl.querySelectorAll('a[href*="/gallog/"], [onclick*="gallog"]') : [];
+                    for (let i = 0; i < gallogLinks.length; i++) {
+                        const href = gallogLinks[i].getAttribute('href') || '';
+                        const onclick = gallogLinks[i].getAttribute('onclick') || '';
+                        const mHref = href.match(/\/gallog\/([a-zA-Z0-9_.\-]+)/);
+                        if (mHref && mHref[1] && mHref[1] !== 'index.php') return mHref[1];
+                        const mClick = onclick.match(/gallog[^'"]*['"]([^'"]+)['"]/);
+                        if (mClick && mClick[1]) return mClick[1];
+                    }
+                    return '';
+                };
+
+                // 반고닉(깡계: 회색 아이콘) 판별
                 const detectSemiFixedNick = (containerEl) => {
                     if (!containerEl) return false;
-                    // 1. 모바일 웹: .sp-nick 이 존재하되, 고닉(.gonick)이나 매니저(.man, .subman)가 아닌 경우 = 반고닉(회색 네모)
                     const spNick = containerEl.querySelector('.sp-nick');
                     if (spNick) {
                         return !spNick.classList.contains('gonick') &&
                                !spNick.classList.contains('man') &&
                                !spNick.classList.contains('subman');
                     }
-                    // 2. PC 웹: .writer_nikcon img 의 src가 fix_nik.gif 가 아닌 nik.gif 인 경우 = 반고닉
                     const pcIcon = containerEl.querySelector('.writer_nikcon img');
                     if (pcIcon && pcIcon.src) {
                         return pcIcon.src.includes('nik.gif') && !pcIcon.src.includes('fix_nik.gif');
@@ -1101,7 +1150,7 @@
                         modalBackdrop.innerHTML = `
                             <div id="dc-mute-modal" role="dialog" aria-label="차단 목록 관리">
                                 <div class="dc-mm-head">
-                                    <span>🚫 디시 차단 관리 (키워드 / IP / 반고닉 / 고닉)</span>
+                                    <span>🚫 디시 차단 관리 (키워드 / IP / 갤로그ID / 닉네임)</span>
                                     <button type="button" class="dc-mm-close" aria-label="닫기">✕</button>
                                 </div>
                                 <div class="dc-mm-body">
@@ -1115,10 +1164,10 @@
                                     <div class="dc-mm-sec-title">차단된 유동 IP (✕ 터치 시 개별 해제)</div>
                                     <div id="dc-mm-ip-list" class="dc-mm-chips"></div>
 
-                                    <div class="dc-mm-sec-title">차단된 반고닉 / 깡계 (✕ 터치 시 개별 해제)</div>
-                                    <div id="dc-mm-semi-list" class="dc-mm-chips"></div>
+                                    <div class="dc-mm-sec-title">핀셋 차단된 갤로그 ID (반고닉·고닉 고유 ID)</div>
+                                    <div id="dc-mm-uid-list" class="dc-mm-chips"></div>
 
-                                    <div class="dc-mm-sec-title">차단된 일반 고닉 (✕ 터치 시 개별 해제)</div>
+                                    <div class="dc-mm-sec-title">차단된 고유 닉네임 (모바일 목록 차단)</div>
                                     <div id="dc-mm-nick-list" class="dc-mm-chips"></div>
                                 </div>
                                 <div class="dc-mm-foot">
@@ -1161,7 +1210,7 @@
                             const exportObj = {
                                 keywords: dynamicMutes.keywords,
                                 ips: dynamicMutes.ips,
-                                semiNicks: dynamicMutes.semiNicks,
+                                uids: dynamicMutes.uids,
                                 nicks: dynamicMutes.nicks
                             };
                             const exportStr = JSON.stringify(exportObj);
@@ -1174,7 +1223,7 @@
                         });
 
                         modalBackdrop.querySelector('#dc-mm-restore-btn').addEventListener('click', () => {
-                            const input = prompt('백업해 둔 JSON 텍스트를 붙여넣으세요:\n예: {"keywords":["도박"],"ips":["39.7"],"semiNicks":["ㅇㅇ"],"nicks":["어그로"]}');
+                            const input = prompt('백업해 둔 JSON 텍스트를 붙여넣으세요:\n예: {"keywords":["도박"],"ips":["39.7"],"uids":["abc1234:ㅇㅇ"],"nicks":["어그로"]}');
                             if (!input) return;
                             try {
                                 const parsed = JSON.parse(input.trim());
@@ -1185,11 +1234,21 @@
                                 if (Array.isArray(parsed.ips)) {
                                     parsed.ips.forEach(ip => { if (!dynamicMutes.ips.includes(ip)) dynamicMutes.ips.push(String(ip).trim()); });
                                 }
-                                if (Array.isArray(parsed.semiNicks)) {
-                                    parsed.semiNicks.forEach(sn => { if (!dynamicMutes.semiNicks.includes(sn)) dynamicMutes.semiNicks.push(String(sn).trim()); });
+                                if (Array.isArray(parsed.uids)) {
+                                    parsed.uids.forEach(u => {
+                                        const targetUid = parseUidEntry(u).uid;
+                                        if (targetUid && !dynamicMutes.uids.some(e => parseUidEntry(e).uid === targetUid)) {
+                                            dynamicMutes.uids.push(String(u).trim());
+                                        }
+                                    });
                                 }
                                 if (Array.isArray(parsed.nicks)) {
-                                    parsed.nicks.forEach(nk => { if (!dynamicMutes.nicks.includes(nk)) dynamicMutes.nicks.push(String(nk).trim()); });
+                                    parsed.nicks.forEach(nk => {
+                                        const cleanNk = String(nk).trim();
+                                        if (cleanNk && !COMMON_DUP_NICKS.has(cleanNk) && !dynamicMutes.nicks.includes(cleanNk)) {
+                                            dynamicMutes.nicks.push(cleanNk);
+                                        }
+                                    });
                                 }
                                 dynamicMutes = writeHybridStore(dynamicMutes);
                                 renderModalLists();
@@ -1201,8 +1260,8 @@
                         });
 
                         modalBackdrop.querySelector('#dc-mm-clear-btn').addEventListener('click', () => {
-                            if (confirm('저장된 모든 차단 목록(키워드·IP·반고닉·고닉)을 초기화하시겠습니까?')) {
-                                dynamicMutes = writeHybridStore({ ips: [], semiNicks: [], nicks: [], keywords: [] });
+                            if (confirm('저장된 모든 차단 목록(키워드·IP·갤로그ID·닉네임)을 초기화하시겠습니까?')) {
+                                dynamicMutes = writeHybridStore({ ips: [], uids: [], nicks: [], keywords: [] });
                                 renderModalLists();
                                 refreshAllMuteStates();
                             }
@@ -1218,11 +1277,11 @@
                     dynamicMutes = loadSavedMutes();
                     const kwBox = modalBackdrop.querySelector('#dc-mm-kw-list');
                     const ipBox = modalBackdrop.querySelector('#dc-mm-ip-list');
-                    const semiBox = modalBackdrop.querySelector('#dc-mm-semi-list');
+                    const uidBox = modalBackdrop.querySelector('#dc-mm-uid-list');
                     const nickBox = modalBackdrop.querySelector('#dc-mm-nick-list');
                     kwBox.innerHTML = '';
                     ipBox.innerHTML = '';
-                    semiBox.innerHTML = '';
+                    uidBox.innerHTML = '';
                     nickBox.innerHTML = '';
 
                     if (dynamicMutes.keywords.length === 0) {
@@ -1265,33 +1324,34 @@
                         });
                     }
 
-                    if (dynamicMutes.semiNicks.length === 0) {
-                        semiBox.innerHTML = '<span class="dc-mm-empty">차단된 반고닉(깡계)이 없습니다.</span>';
+                    if (dynamicMutes.uids.length === 0) {
+                        uidBox.innerHTML = '<span class="dc-mm-empty">핀셋 차단된 갤로그 ID가 없습니다.</span>';
                     } else {
-                        dynamicMutes.semiNicks.forEach(sn => {
+                        dynamicMutes.uids.forEach(entry => {
+                            const { uid, nick } = parseUidEntry(entry);
                             const chip = document.createElement('span');
                             chip.className = 'dc-mm-chip';
-                            chip.textContent = `${sn}[반고닉]`;
+                            chip.textContent = nick ? `${nick}(#${uid})` : `#${uid}`;
                             const delBtn = document.createElement('button');
                             delBtn.type = 'button';
                             delBtn.textContent = '✕';
                             delBtn.onclick = () => {
-                                removeMuteItem('semiNicks', sn);
+                                removeMuteItem('uids', uid);
                                 renderModalLists();
                                 refreshAllMuteStates();
                             };
                             chip.appendChild(delBtn);
-                            semiBox.appendChild(chip);
+                            uidBox.appendChild(chip);
                         });
                     }
 
                     if (dynamicMutes.nicks.length === 0) {
-                        nickBox.innerHTML = '<span class="dc-mm-empty">차단된 일반 고닉이 없습니다.</span>';
+                        nickBox.innerHTML = '<span class="dc-mm-empty">차단된 고유 닉네임이 없습니다.</span>';
                     } else {
                         dynamicMutes.nicks.forEach(nk => {
                             const chip = document.createElement('span');
                             chip.className = 'dc-mm-chip';
-                            chip.textContent = `${nk}[고닉]`;
+                            chip.textContent = nk;
                             const delBtn = document.createElement('button');
                             delBtn.type = 'button';
                             delBtn.textContent = '✕';
@@ -1310,7 +1370,7 @@
                     dynamicMutes = loadSavedMutes();
                     const totalCount =
                         dynamicMutes.ips.length +
-                        dynamicMutes.semiNicks.length +
+                        dynamicMutes.uids.length +
                         dynamicMutes.nicks.length +
                         dynamicMutes.keywords.length;
                     let bar = document.getElementById('dc-mute-manage-bar');
@@ -1328,10 +1388,13 @@
                     }
                 }
 
-                // 게시글 본문 상단(작성자 이름/IP 옆) [반고닉] 태그 및 원터치 [차단] 장착
+                // [본문 상단] '갤로그 가기' 버튼에서 고유 ID(uid)를 추출해 'ㅇㅇ' 반고닉이라도 100% 핀셋 차단
                 function processPostViewHeader() {
                     const allMutedIps = [...DC_MUTE_CONFIG.ips, ...dynamicMutes.ips];
-                    const allMutedSemiNicks = [...DC_MUTE_CONFIG.semiNicks, ...dynamicMutes.semiNicks];
+                    const allMutedUidSet = new Set([
+                        ...DC_MUTE_CONFIG.uids,
+                        ...dynamicMutes.uids.map(e => parseUidEntry(e).uid)
+                    ]);
                     const allMutedNicks = [...DC_MUTE_CONFIG.nicks, ...dynamicMutes.nicks];
 
                     const headerTargets = document.querySelectorAll('.gallview-tit-box ul.ginfo2 > li:first-child, .gallview_head .gall_writer');
@@ -1354,12 +1417,15 @@
                             }
                         }
 
-                        if (!ip && !nick) return;
+                        // 본문 상단 전체 박스(.gallview-tit-box 또는 .gallview_head)에서 갤로그 고유 ID 추출
+                        const headerBox = headerEl.closest('.gallview-tit-box, .gallview_head') || headerEl;
+                        const uid = !ip ? extractGallogId(headerBox) : '';
+
+                        if (!ip && !nick && !uid) return;
 
                         const isSemi = !ip && detectSemiFixedNick(headerEl);
-                        const muteType = ip ? 'ips' : (isSemi ? 'semiNicks' : 'nicks');
 
-                        // 반고닉이면 [반고닉] 태그 부착
+                        // 반고닉이면 [반고닉] 태그 부착 (중복 방지)
                         if (isSemi && !headerEl.querySelector('.dc-semi-tag-span')) {
                             const semiSpan = document.createElement('span');
                             semiSpan.className = 'dc-semi-tag-span';
@@ -1369,8 +1435,8 @@
 
                         const isAlreadyMuted =
                             (ip && allMutedIps.some(t => ip.startsWith(t))) ||
-                            (!ip && isSemi && allMutedSemiNicks.includes(nick)) ||
-                            (!ip && !isSemi && allMutedNicks.includes(nick));
+                            (uid && allMutedUidSet.has(uid)) ||
+                            (!ip && !uid && nick && allMutedNicks.includes(nick));
 
                         let muteBtn = headerEl.querySelector('.dc-one-touch-mute-btn');
                         if (!muteBtn) {
@@ -1382,16 +1448,36 @@
 
                                 const currentlyMuted = muteBtn.classList.contains('is-muted');
                                 if (currentlyMuted) {
-                                    removeMuteItem(muteType, ip || nick);
+                                    if (ip) removeMuteItem('ips', ip);
+                                    else if (uid) removeMuteItem('uids', uid);
+                                    else if (nick) removeMuteItem('nicks', nick);
                                     refreshAllMuteStates();
                                     return;
                                 }
 
-                                const labelDesc = ip ? `유동 IP [${ip}]` : (isSemi ? `반고닉(깡계) [${nick}]` : `고닉 [${nick}]`);
-                                if (!DC_MUTE_CONFIG.confirmBeforeMute || confirm(`본문 작성자 ${labelDesc} 유저를 차단하시겠습니까?`)) {
-                                    addMuteItem(muteType, ip || nick);
-                                    runDcTasks();
-                                    if (DC_MUTE_CONFIG.autoBackOnPostMute) window.history.back();
+                                if (ip) {
+                                    if (!DC_MUTE_CONFIG.confirmBeforeMute || confirm(`본문 유동 IP [${ip}] 유저를 차단하시겠습니까?`)) {
+                                        addMuteItem('ips', ip);
+                                        runDcTasks();
+                                        if (DC_MUTE_CONFIG.autoBackOnPostMute) window.history.back();
+                                    }
+                                } else if (uid) {
+                                    const typeLabel = isSemi ? '반고닉' : '고닉';
+                                    if (!DC_MUTE_CONFIG.confirmBeforeMute || confirm(`본문 ${typeLabel} [${nick}(#${uid})] 유저를 갤로그 ID로 핀셋 차단하시겠습니까?`)) {
+                                        addMuteItem('uids', `${uid}:${nick}`);
+                                        // 특이한 고유 닉네임('ㅇㅇ' 아님)이면 모바일 글 목록에서도 가려지도록 nicks에도 함께 등록
+                                        if (nick && !COMMON_DUP_NICKS.has(nick)) {
+                                            addMuteItem('nicks', nick);
+                                        }
+                                        runDcTasks();
+                                        if (DC_MUTE_CONFIG.autoBackOnPostMute) window.history.back();
+                                    }
+                                } else if (nick && !COMMON_DUP_NICKS.has(nick)) {
+                                    if (!DC_MUTE_CONFIG.confirmBeforeMute || confirm(`본문 닉네임 [${nick}] 유저를 차단하시겠습니까?`)) {
+                                        addMuteItem('nicks', nick);
+                                        runDcTasks();
+                                        if (DC_MUTE_CONFIG.autoBackOnPostMute) window.history.back();
+                                    }
                                 }
                             }, false);
                             headerEl.appendChild(muteBtn);
@@ -1407,11 +1493,23 @@
                     });
                 }
 
-                // 게시글 목록 및 댓글에서 [반고닉] 별도 식별 + [차단] 장착 + 뮤트 실행
+                // [글 목록 & 댓글] 댓글은 갤로그 ID(uid)로 핀셋 차단, 모바일 목록은 'ㅇㅇ' 광역 오폭 차단 방지
                 function processItemsAndMute() {
                     const allMutedIps = [...DC_MUTE_CONFIG.ips, ...dynamicMutes.ips];
-                    const allMutedSemiNicks = [...DC_MUTE_CONFIG.semiNicks, ...dynamicMutes.semiNicks];
-                    const allMutedNicks = [...DC_MUTE_CONFIG.nicks, ...dynamicMutes.nicks];
+                    const allMutedUidSet = new Set([
+                        ...DC_MUTE_CONFIG.uids,
+                        ...dynamicMutes.uids.map(e => parseUidEntry(e).uid)
+                    ]);
+                    // uids에 저장된 유저 중 'ㅇㅇ'이 아닌 고유 닉네임은 모바일 목록에서도 매칭
+                    const distinctNicksFromUids = dynamicMutes.uids
+                        .map(e => parseUidEntry(e).nick)
+                        .filter(nk => nk && !COMMON_DUP_NICKS.has(nk));
+                    const allMutedNicks = Array.from(new Set([
+                        ...DC_MUTE_CONFIG.nicks,
+                        ...dynamicMutes.nicks,
+                        ...distinctNicksFromUids
+                    ])).filter(nk => !COMMON_DUP_NICKS.has(nk));
+
                     const allMutedKeywords = [...DC_MUTE_CONFIG.keywords, ...dynamicMutes.keywords];
 
                     const itemSelectors = 'ul.gall-detail-lst > li, tr.ub-content, ul.all-comment-lst > li, .cmt_list > li.ub-content, .reply_list > li.ub-content';
@@ -1425,43 +1523,52 @@
                             ipEl = mobileWriterLi;
                         }
 
+                        // 1. IP 추출
                         let ip = (writerEl && writerEl.getAttribute('data-ip')) || (ipEl && ipEl.dataset.rawIp) || '';
                         if (!ip && ipEl) {
                             const m = getCleanText(ipEl).match(/\(?(\d{1,3}\.\d{1,3})\)?/);
                             if (m) ip = m[1];
                         }
 
+                        // 2. 닉네임 추출
                         let nickTargetEl = item.querySelector('a.nick, .nick, .gall_writer') || mobileWriterLi;
                         let nick = (writerEl && writerEl.getAttribute('data-nick')) || '';
                         if (!nick && nickTargetEl) {
                             nick = getCleanText(nickTargetEl).replace(/\(\d{1,3}\.\d{1,3}\).*$/, '').trim();
                         }
 
-                        // 반고닉(깡계) 여부 판별
+                        // 3. 갤로그 고유 ID(uid) 추출 (댓글 및 PC 목록에서는 100% 추출됨)
+                        const uid = !ip ? extractGallogId(writerEl || item) : '';
                         const isSemi = !ip && detectSemiFixedNick(writerEl || mobileWriterLi || item);
-                        const muteType = ip ? 'ips' : (isSemi ? 'semiNicks' : 'nicks');
 
-                        // 댓글창에서 a.nick 바로 뒤에 .sp-nick 아이콘이 형제로 있는 경우, 아이콘 뒤쪽에 태그가 붙도록 기준점 교정
                         let btnAnchor = ipEl || nickTargetEl;
                         if (btnAnchor && btnAnchor.tagName === 'A' && btnAnchor.classList.contains('nick')) {
                             btnAnchor = btnAnchor.parentElement || btnAnchor;
                         }
+
+                        // 아이콘(.sp-nick)이 <a> 태그로 감싸져 있는 경우(모바일 댓글 등) 그 바깥을 기준점으로 설정
+                        const rawSpIcon = item.querySelector('.sp-nick');
+                        const iconOuter = (rawSpIcon && rawSpIcon.parentElement && rawSpIcon.parentElement.tagName === 'A' && !rawSpIcon.parentElement.classList.contains('nick'))
+                            ? rawSpIcon.parentElement
+                            : rawSpIcon;
 
                         // 반고닉이면 [반고닉] 태그 부착
                         if (isSemi && btnAnchor && !item.querySelector('.dc-semi-tag-span')) {
                             const semiSpan = document.createElement('span');
                             semiSpan.className = 'dc-semi-tag-span';
                             semiSpan.innerText = '[반고닉]';
-                            const spIcon = item.querySelector('.sp-nick');
-                            if (spIcon && spIcon.parentNode === btnAnchor) {
-                                spIcon.insertAdjacentElement('afterend', semiSpan);
+                            if (iconOuter && iconOuter.parentNode === btnAnchor) {
+                                iconOuter.insertAdjacentElement('afterend', semiSpan);
                             } else {
                                 btnAnchor.appendChild(semiSpan);
                             }
                         }
 
-                        // 원터치 [차단] 버튼 장착 (닉네임 + 아이콘 + [반고닉] 바로 다음 위치)
-                        if (btnAnchor && !item.querySelector('.dc-one-touch-mute-btn') && (ip || nick)) {
+                        // 4. 원터치 [차단] 버튼 장착
+                        // (단, 모바일 글 목록처럼 uid가 없는데 닉네임이 'ㅇㅇ'인 반고닉은 오폭 방지를 위해 목록에서 차단 버튼을 숨기거나 안내)
+                        const isUnidentifiableCommonNick = !ip && !uid && COMMON_DUP_NICKS.has(nick);
+
+                        if (btnAnchor && !item.querySelector('.dc-one-touch-mute-btn') && (ip || uid || (!isUnidentifiableCommonNick && nick))) {
                             const muteBtn = document.createElement('span');
                             muteBtn.className = 'dc-one-touch-mute-btn';
                             muteBtn.textContent = '[차단]';
@@ -1469,27 +1576,44 @@
                                 e.preventDefault();
                                 e.stopPropagation();
 
-                                const labelDesc = ip ? `유동 IP [${ip}]` : (isSemi ? `반고닉(깡계) [${nick}]` : `고닉 [${nick}]`);
-                                if (!DC_MUTE_CONFIG.confirmBeforeMute || confirm(`${labelDesc} 유저를 차단하시겠습니까?`)) {
-                                    addMuteItem(muteType, ip || nick);
-                                    runDcTasks();
+                                if (ip) {
+                                    if (!DC_MUTE_CONFIG.confirmBeforeMute || confirm(`유동 IP [${ip}] 유저를 차단하시겠습니까?`)) {
+                                        addMuteItem('ips', ip);
+                                        runDcTasks();
+                                    }
+                                } else if (uid) {
+                                    const typeLabel = isSemi ? '반고닉' : '고닉';
+                                    if (!DC_MUTE_CONFIG.confirmBeforeMute || confirm(`${typeLabel} [${nick}(#${uid})] 유저를 갤로그 ID로 핀셋 차단하시겠습니까?`)) {
+                                        addMuteItem('uids', `${uid}:${nick}`);
+                                        if (nick && !COMMON_DUP_NICKS.has(nick)) {
+                                            addMuteItem('nicks', nick);
+                                        }
+                                        runDcTasks();
+                                    }
+                                } else if (nick && !COMMON_DUP_NICKS.has(nick)) {
+                                    const typeLabel = isSemi ? '반고닉' : '고닉';
+                                    if (!DC_MUTE_CONFIG.confirmBeforeMute || confirm(`${typeLabel} [${nick}] 유저를 닉네임으로 차단하시겠습니까?`)) {
+                                        addMuteItem('nicks', nick);
+                                        runDcTasks();
+                                    }
                                 }
                             }, false);
 
                             const semiTag = item.querySelector('.dc-semi-tag-span');
-                            const spIcon = item.querySelector('.sp-nick');
                             if (semiTag && semiTag.parentNode === btnAnchor) {
                                 semiTag.insertAdjacentElement('afterend', muteBtn);
-                            } else if (!ip && spIcon && spIcon.parentNode === btnAnchor) {
-                                spIcon.insertAdjacentElement('afterend', muteBtn);
+                            } else if (!ip && iconOuter && iconOuter.parentNode === btnAnchor) {
+                                iconOuter.insertAdjacentElement('afterend', muteBtn);
                             } else {
                                 btnAnchor.appendChild(muteBtn);
                             }
                         }
 
+                        // 5. 본문/제목 텍스트 추출
                         const textEl = item.querySelector('.subjectin, .gall_tit, .txt, .usertxt');
                         const contentText = textEl ? textEl.textContent : '';
 
+                        // 6. 뮤트 조건 검사 (1순위: IP / 2순위: 갤로그 고유 ID / 3순위: 비중복 고유 닉네임 / 4순위: 키워드)
                         let shouldMute = false;
                         if (ip && allMutedIps.some(targetIp => ip.startsWith(targetIp))) {
                             shouldMute = true;
@@ -1497,9 +1621,9 @@
                             shouldMute = true;
                         } else if (isSemi && DC_MUTE_CONFIG.categories.includes('반고닉')) {
                             shouldMute = true;
-                        } else if (!ip && isSemi && nick && allMutedSemiNicks.includes(nick)) {
+                        } else if (uid && allMutedUidSet.has(uid)) {
                             shouldMute = true;
-                        } else if (!ip && !isSemi && nick && allMutedNicks.includes(nick)) {
+                        } else if (!ip && !uid && nick && !COMMON_DUP_NICKS.has(nick) && allMutedNicks.includes(nick)) {
                             shouldMute = true;
                         } else if (contentText && allMutedKeywords.some(kw => contentText.includes(kw))) {
                             shouldMute = true;
