@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         [통합] 내 전용 웹사이트 편의성 & 광고 차단팩
 // @namespace    http://tampermonkey.net/
-// @version      2.6
-// @description  1.나무위키 광고차단 | 2.툰코 스크롤메뉴·배너제거 | 3.유튜브 PiP(자동숨김)·백그라운드·최고화질 | 4.디시 스텔스·IP/반고닉·갤로그ID 핀셋차단 | 5.블로그·티스토리 복사해제
+// @version      2.7
+// @description  1.나무위키 광고차단 | 2.툰코 스크롤메뉴·배너제거 | 3.유튜브 PiP·백그라운드 연속재생·최고화질 | 4.디시 스텔스·IP/반고닉·갤로그ID 핀셋차단 | 5.블로그·티스토리 복사해제
 //
 // --- [1. 나무위키 주소 규칙] ---
 // @match        *://namu.wiki/*
@@ -37,7 +37,7 @@
     const ENABLE_MODULES = {
         namuwiki:     true, // 모듈 1: 나무위키 파워링크(위장 목차) 제거
         toonkor:      true, // 모듈 2: 툰코 뷰어 스크롤 메뉴 + 도박 배너/팝업 제거
-        youtube:      true, // 모듈 3: 유튜브 백그라운드 재생 + 최고화질 + 반투명/자동숨김 PiP 버튼
+        youtube:      true, // 모듈 3: 유튜브 백그라운드 연속재생 + 최고화질 + 반투명 PiP 버튼
         dcinside:     true, // 모듈 4: 디시 스텔스 + IP/반고닉 식별 + 갤로그 ID 핀셋 차단 관리
         copyUnlocker: true  // 모듈 5: 네이버 블로그 & 티스토리 복사 방지 해제 (무소음)
     };
@@ -320,8 +320,12 @@
 
 
     // =========================================================================
-    // 📦 [모듈 3] YouTube Background Play, Auto Max Quality & Smart PiP v35.0
+    // 📦 [모듈 3] YouTube Background Play, Track Keep-Alive, Max Quality & Smart PiP v36.0
     // - 작동 조건: youtube.com 접속 시
+    // - v36.0 업그레이드:
+    //   1) Web Audio API 초미세 무음 세션 유지로 곡 넘어갈 때(1초 공백) iOS 오디오 권한 회수 완벽 방어
+    //   2) 화면 잠금 중 트랙 전환(ended -> loadeddata/canplay) 시 자동 재생 강제 트리거
+    //   3) 장시간 연속 재생 시 "계속 시청하시겠습니까?" 팝업 자동 수락 및 활동 시간(_lact) 갱신
     // =========================================================================
     if (ENABLE_MODULES.youtube && currentHost.includes('youtube.com')) {
         (function() {
@@ -331,7 +335,7 @@
                 pipIdleOpacity: '0.40'    // 평소 PiP 버튼 투명도 (0.1 ~ 1.0)
             };
 
-            // [3-1] 백그라운드 재생 활성화
+            // [3-1] 백그라운드 재생 활성화 (document-start 시점에 즉시 상태 위장)
             try {
                 Object.defineProperties(document, {
                     'hidden': { get: () => false, configurable: true },
@@ -341,24 +345,137 @@
                 });
             } catch (e) {}
 
+            let lastBgTransitionTime = 0;
             const blockBgEvents = (e) => {
+                lastBgTransitionTime = Date.now();
                 e.stopImmediatePropagation();
             };
             ['visibilitychange', 'webkitvisibilitychange', 'mozvisibilitychange', 'pagehide'].forEach(evt => {
                 window.addEventListener(evt, blockBgEvents, true);
                 document.addEventListener(evt, blockBgEvents, true);
             });
+            window.addEventListener('blur', () => { lastBgTransitionTime = Date.now(); }, { passive: true });
 
-            const keepAliveLact = () => {
-                if (typeof window._lact !== 'undefined') {
-                    window._lact = Date.now();
-                }
+            // 유튜브 내부 비활성 타이머(_lact) 갱신 함수
+            const refreshLact = () => {
+                try { window._lact = Date.now(); } catch (e) {}
             };
             ['touchstart', 'click', 'scroll', 'keydown'].forEach(evt => {
-                window.addEventListener(evt, keepAliveLact, { passive: true });
+                window.addEventListener(evt, refreshLact, { passive: true });
             });
 
-            // [3-2] 최고 화질(1080p 이상) 자동 고정 로직
+            // [3-2] iOS 사파리 곡 전환 끊김 방지용 Web Audio API 무음 세션 유지기 (Keep-Alive)
+            // (<audio> 태그와 달리 잠금화면 Now Playing 곡 제목/컨트롤러를 뺏지 않고 오디오 세션만 유지함)
+            let audioCtx = null;
+            let keepAliveStarted = false;
+            let isTrackTransitioning = false;
+
+            const ensureSilentAudioKeepAlive = () => {
+                try {
+                    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                    if (!AudioContextClass) return;
+                    if (!audioCtx) {
+                        audioCtx = new AudioContextClass();
+                    }
+                    if (audioCtx.state === 'suspended') {
+                        audioCtx.resume().catch(() => {});
+                    }
+                    if (!keepAliveStarted && audioCtx.state === 'running') {
+                        const osc = audioCtx.createOscillator();
+                        const gain = audioCtx.createGain();
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(1, audioCtx.currentTime); // 1Hz 비가청 주파수
+                        gain.gain.setValueAtTime(0.00001, audioCtx.currentTime); // 사실상 완전 무음
+                        osc.connect(gain);
+                        gain.connect(audioCtx.destination);
+                        osc.start();
+                        keepAliveStarted = true;
+                    }
+                } catch (e) {}
+            };
+
+            const resumePlayerForce = (videoEl) => {
+                refreshLact();
+                ensureSilentAudioKeepAlive();
+                try {
+                    if (videoEl && videoEl.paused) {
+                        videoEl.play().catch(() => {});
+                    }
+                    const player = document.getElementById('movie_player') || document.querySelector('.html5-video-player');
+                    if (player && typeof player.playVideo === 'function') {
+                        player.playVideo();
+                    }
+                } catch (e) {}
+            };
+
+            // 비디오 이벤트 후킹: 재생 시작 시 무음 세션 가동 & 곡이 끝날 때 다음 곡 자동 연결 보장
+            document.addEventListener('play', (e) => {
+                if (e.target && e.target.tagName === 'VIDEO') {
+                    refreshLact();
+                    ensureSilentAudioKeepAlive();
+                }
+            }, true);
+
+            document.addEventListener('ended', (e) => {
+                if (e.target && e.target.tagName === 'VIDEO') {
+                    isTrackTransitioning = true;
+                    refreshLact();
+                    ensureSilentAudioKeepAlive();
+                    // 다음 트랙으로 넘어가는 동안 플레이어가 멈추지 않도록 강제 넛지(Nudge)
+                    setTimeout(() => {
+                        const v = document.querySelector('video');
+                        if (v && isTrackTransitioning) resumePlayerForce(v);
+                    }, 900);
+                    setTimeout(() => {
+                        const v = document.querySelector('video');
+                        if (v && isTrackTransitioning) resumePlayerForce(v);
+                        isTrackTransitioning = false;
+                    }, 2200);
+                }
+            }, true);
+
+            // 다음 곡 스트림이 로드되는 순간(loadeddata / canplay) 즉시 재생 및 활동 시간 갱신
+            ['loadedmetadata', 'loadeddata', 'canplay'].forEach(evt => {
+                document.addEventListener(evt, (e) => {
+                    if (e.target && e.target.tagName === 'VIDEO') {
+                        refreshLact();
+                        if (isTrackTransitioning) {
+                            isTrackTransitioning = false;
+                            resumePlayerForce(e.target);
+                        }
+                    }
+                }, true);
+            });
+
+            // 화면을 끄거나 탭을 전환한 직후(1초 이내) 사파리가 강제로 건 일시정지 즉시 풀기
+            document.addEventListener('pause', (e) => {
+                if (e.target && e.target.tagName === 'VIDEO') {
+                    if (e.target.ended) {
+                        isTrackTransitioning = true;
+                        refreshLact();
+                        return;
+                    }
+                    if (Date.now() - lastBgTransitionTime < 1200) {
+                        setTimeout(() => resumePlayerForce(e.target), 80);
+                    }
+                }
+            }, true);
+
+            // 재생 중 주기적으로 _lact(사용자 활동 시간)를 갱신하여 3분 뒤 다음 곡 넘어갈 때 멈춤 방지 (이벤트 기반)
+            let lastTimeUpdateLact = 0;
+            document.addEventListener('timeupdate', (e) => {
+                const now = Date.now();
+                if (now - lastTimeUpdateLact > 15000) { // 15초에 1회만 가볍게 타임스탬프 갱신
+                    lastTimeUpdateLact = now;
+                    refreshLact();
+                    if (audioCtx && audioCtx.state === 'suspended') {
+                        audioCtx.resume().catch(() => {});
+                    }
+                }
+            }, true);
+
+
+            // [3-3] 최고 화질(1080p 이상) 자동 고정 로직
             const setYtLocalStorageQuality = () => {
                 if (!YT_CONFIG.autoMaxQuality) return;
                 try {
@@ -405,6 +522,9 @@
             let lastQualityVideoSrc = '';
             document.addEventListener('playing', (e) => {
                 if (e.target && e.target.tagName === 'VIDEO') {
+                    isTrackTransitioning = false;
+                    refreshLact();
+                    ensureSilentAudioKeepAlive();
                     if (e.target.currentSrc !== lastQualityVideoSrc) {
                         lastQualityVideoSrc = e.target.currentSrc;
                         applyMaxQualityToPlayer();
@@ -414,7 +534,7 @@
             }, true);
 
 
-            // [3-3] /watch 전용 반투명 PiP 버튼 & 댓글 스크롤 시 자동 숨김
+            // [3-4] /watch 전용 반투명 PiP 버튼, 댓글 스크롤 시 자동 숨김 & "계속 시청" 팝업 자동 닫기
             runAtDocumentIdle(function() {
                 const ytPipStyle = document.createElement('style');
                 ytPipStyle.textContent = `
@@ -499,10 +619,24 @@
                     }
                 });
 
+                // "동영상이 일시중지되었습니다. 계속 시청하시겠습니까?" 팝업 감지 시 자동 클릭
+                const dismissYouTherePopup = () => {
+                    const dialogBtn = document.querySelector(
+                        'ytm-you-there-renderer button, yt-confirm-dialog-renderer #confirm-button button, yt-confirm-dialog-renderer #confirm-button'
+                    );
+                    if (dialogBtn && dialogBtn.offsetParent !== null) {
+                        dialogBtn.click();
+                        const v = getActiveVideo();
+                        if (v) resumePlayerForce(v);
+                    }
+                };
+
                 let pipCheckScheduled = false;
                 const updatePipButton = () => {
                     pipCheckScheduled = false;
                     if (!document.body) return;
+
+                    dismissYouTherePopup();
 
                     let btn = document.getElementById('force-pip-btn');
 
@@ -565,8 +699,13 @@
 
                 ['yt-navigate-finish', 'yt-page-data-updated', 'state-navigateend', 'popstate'].forEach(evt => {
                     window.addEventListener(evt, () => {
+                        refreshLact();
                         schedulePipUpdate();
                         applyMaxQualityToPlayer();
+                        if (isTrackTransitioning) {
+                            const v = getActiveVideo();
+                            if (v) resumePlayerForce(v);
+                        }
                     });
                 });
 
@@ -590,13 +729,9 @@
     // =========================================================================
     // 📦 [모듈 4] Dcinside Stealth, IP/반고닉 식별 & 갤로그 고유 ID 핀셋 차단 v6.0
     // - 작동 조건: dcinside.com 접속 시
-    // - v6.0 핵심(방식 A):
-    //   1) 본문 상단·댓글·PC웹에서는 갤로그 고유 ID(uid)를 추출해 'ㅇㅇ' 반고닉이라도 그 사람 1명만 핀셋 차단
-    //   2) 모바일 글 목록에서는 'ㅇㅇ' 등 흔한 중복 반고닉이 닉네임으로 광역 오폭 차단되지 않도록 완벽 보호
     // =========================================================================
     if (ENABLE_MODULES.dcinside && currentHost.includes('dcinside.com')) {
         (function() {
-            // ⚙️ [디시인사이드 뮤트(차단) 기본 설정 구역]
             const DC_MUTE_CONFIG = {
                 confirmBeforeMute: true,  // [차단] 터치 시 확인 창 띄우기 (바로 차단하려면 false)
                 autoBackOnPostMute: false,// 글 본문 상단에서 작성자 [차단] 시 자동으로 뒤로 가기 여부
@@ -607,12 +742,9 @@
                 categories: []            // 카테고리 통째 차단 ('통피', '비공개', 'VPN', '개인', '반고닉')
             };
 
-            // 모바일 글 목록에서 닉네임만으로 광역 차단하면 오폭이 발생하는 흔한 중복 반고닉 보호 목록
-            const COMMON_DUP_NICKS = new Set(['ㅇㅇ', 'ㅇ', 'ㄴㄴ', '익명', 'dd', 'oo', 'ㅇㅇ']);
-
+            const COMMON_DUP_NICKS = new Set(['ㅇㅇ', 'ㅇ', 'ㄴㄴ', '익명', 'dd', 'oo']);
             const STORAGE_KEY = 'dc_custom_mute_v1';
 
-            // uids 배열 항목 형식: "갤로그ID:표시닉네임" (예: "abc1234:ㅇㅇ") 또는 "갤로그ID"
             const parseUidEntry = (entry) => {
                 const str = String(entry || '').trim();
                 const idx = str.indexOf(':');
@@ -624,7 +756,6 @@
 
             const normalizeData = (obj) => {
                 const rawNicks = (obj && Array.isArray(obj.nicks)) ? obj.nicks : [];
-                // 기존에 실수로 들어간 'ㅇㅇ' 등 흔한 중복 닉네임은 광역 오폭 방지를 위해 자동 정화
                 const safeNicks = rawNicks.filter(n => n && !COMMON_DUP_NICKS.has(String(n).trim()));
                 return {
                     ips: (obj && Array.isArray(obj.ips)) ? Array.from(new Set(obj.ips)) : [],
@@ -763,7 +894,6 @@
                     max-width: none !important;
                     overflow: visible !important;
                 }
-                /* IP 태그, [반고닉] 태그, [차단] 버튼을 모두 동일한 무채색 텍스트 스타일로 통일 */
                 .dc-ip-tag-span,
                 .dc-semi-tag-span,
                 .dc-one-touch-mute-btn {
@@ -803,7 +933,6 @@
                     cursor: pointer;
                     box-shadow: 0 1px 3px rgba(0,0,0,0.08);
                 }
-                /* 차단 관리 모달 스타일 */
                 #dc-mute-modal-backdrop {
                     position: fixed;
                     inset: 0;
@@ -952,7 +1081,6 @@
                 return originalFetch.apply(window, args);
             };
 
-            // [4-2] IP 대역 DB + 반고닉 식별 + 갤로그 고유 ID(uid) 핀셋 차단
             runAtDocumentEnd(() => {
                 laundryDC();
 
@@ -1021,7 +1149,6 @@
                     return clone.textContent.trim();
                 };
 
-                // [핵심] 본문 상단('갤로그 가기' 버튼), 댓글(갤로그 아이콘/링크), PC웹(data-uid)에서 진짜 고유 ID 추출
                 const extractGallogId = (scopeEl) => {
                     if (!scopeEl) return '';
                     if (scopeEl.getAttribute && scopeEl.getAttribute('data-uid')) {
@@ -1031,7 +1158,6 @@
                     if (uidNode && uidNode.getAttribute('data-uid')) {
                         return uidNode.getAttribute('data-uid').trim();
                     }
-                    // 모바일 본문 상단 '갤로그 가기' 또는 댓글 갤로그 링크 탐색
                     const gallogLinks = scopeEl.querySelectorAll ? scopeEl.querySelectorAll('a[href*="/gallog/"], [onclick*="gallog"]') : [];
                     for (let i = 0; i < gallogLinks.length; i++) {
                         const href = gallogLinks[i].getAttribute('href') || '';
@@ -1044,7 +1170,6 @@
                     return '';
                 };
 
-                // 반고닉(깡계: 회색 아이콘) 판별
                 const detectSemiFixedNick = (containerEl) => {
                     if (!containerEl) return false;
                     const spNick = containerEl.querySelector('.sp-nick');
@@ -1388,7 +1513,6 @@
                     }
                 }
 
-                // [본문 상단] '갤로그 가기' 버튼에서 고유 ID(uid)를 추출해 'ㅇㅇ' 반고닉이라도 100% 핀셋 차단
                 function processPostViewHeader() {
                     const allMutedIps = [...DC_MUTE_CONFIG.ips, ...dynamicMutes.ips];
                     const allMutedUidSet = new Set([
@@ -1417,7 +1541,6 @@
                             }
                         }
 
-                        // 본문 상단 전체 박스(.gallview-tit-box 또는 .gallview_head)에서 갤로그 고유 ID 추출
                         const headerBox = headerEl.closest('.gallview-tit-box, .gallview_head') || headerEl;
                         const uid = !ip ? extractGallogId(headerBox) : '';
 
@@ -1425,7 +1548,6 @@
 
                         const isSemi = !ip && detectSemiFixedNick(headerEl);
 
-                        // 반고닉이면 [반고닉] 태그 부착 (중복 방지)
                         if (isSemi && !headerEl.querySelector('.dc-semi-tag-span')) {
                             const semiSpan = document.createElement('span');
                             semiSpan.className = 'dc-semi-tag-span';
@@ -1465,7 +1587,6 @@
                                     const typeLabel = isSemi ? '반고닉' : '고닉';
                                     if (!DC_MUTE_CONFIG.confirmBeforeMute || confirm(`본문 ${typeLabel} [${nick}(#${uid})] 유저를 갤로그 ID로 핀셋 차단하시겠습니까?`)) {
                                         addMuteItem('uids', `${uid}:${nick}`);
-                                        // 특이한 고유 닉네임('ㅇㅇ' 아님)이면 모바일 글 목록에서도 가려지도록 nicks에도 함께 등록
                                         if (nick && !COMMON_DUP_NICKS.has(nick)) {
                                             addMuteItem('nicks', nick);
                                         }
@@ -1493,14 +1614,12 @@
                     });
                 }
 
-                // [글 목록 & 댓글] 댓글은 갤로그 ID(uid)로 핀셋 차단, 모바일 목록은 'ㅇㅇ' 광역 오폭 차단 방지
                 function processItemsAndMute() {
                     const allMutedIps = [...DC_MUTE_CONFIG.ips, ...dynamicMutes.ips];
                     const allMutedUidSet = new Set([
                         ...DC_MUTE_CONFIG.uids,
                         ...dynamicMutes.uids.map(e => parseUidEntry(e).uid)
                     ]);
-                    // uids에 저장된 유저 중 'ㅇㅇ'이 아닌 고유 닉네임은 모바일 목록에서도 매칭
                     const distinctNicksFromUids = dynamicMutes.uids
                         .map(e => parseUidEntry(e).nick)
                         .filter(nk => nk && !COMMON_DUP_NICKS.has(nk));
@@ -1523,21 +1642,18 @@
                             ipEl = mobileWriterLi;
                         }
 
-                        // 1. IP 추출
                         let ip = (writerEl && writerEl.getAttribute('data-ip')) || (ipEl && ipEl.dataset.rawIp) || '';
                         if (!ip && ipEl) {
                             const m = getCleanText(ipEl).match(/\(?(\d{1,3}\.\d{1,3})\)?/);
                             if (m) ip = m[1];
                         }
 
-                        // 2. 닉네임 추출
                         let nickTargetEl = item.querySelector('a.nick, .nick, .gall_writer') || mobileWriterLi;
                         let nick = (writerEl && writerEl.getAttribute('data-nick')) || '';
                         if (!nick && nickTargetEl) {
                             nick = getCleanText(nickTargetEl).replace(/\(\d{1,3}\.\d{1,3}\).*$/, '').trim();
                         }
 
-                        // 3. 갤로그 고유 ID(uid) 추출 (댓글 및 PC 목록에서는 100% 추출됨)
                         const uid = !ip ? extractGallogId(writerEl || item) : '';
                         const isSemi = !ip && detectSemiFixedNick(writerEl || mobileWriterLi || item);
 
@@ -1546,13 +1662,11 @@
                             btnAnchor = btnAnchor.parentElement || btnAnchor;
                         }
 
-                        // 아이콘(.sp-nick)이 <a> 태그로 감싸져 있는 경우(모바일 댓글 등) 그 바깥을 기준점으로 설정
                         const rawSpIcon = item.querySelector('.sp-nick');
                         const iconOuter = (rawSpIcon && rawSpIcon.parentElement && rawSpIcon.parentElement.tagName === 'A' && !rawSpIcon.parentElement.classList.contains('nick'))
                             ? rawSpIcon.parentElement
                             : rawSpIcon;
 
-                        // 반고닉이면 [반고닉] 태그 부착
                         if (isSemi && btnAnchor && !item.querySelector('.dc-semi-tag-span')) {
                             const semiSpan = document.createElement('span');
                             semiSpan.className = 'dc-semi-tag-span';
@@ -1564,8 +1678,6 @@
                             }
                         }
 
-                        // 4. 원터치 [차단] 버튼 장착
-                        // (단, 모바일 글 목록처럼 uid가 없는데 닉네임이 'ㅇㅇ'인 반고닉은 오폭 방지를 위해 목록에서 차단 버튼을 숨기거나 안내)
                         const isUnidentifiableCommonNick = !ip && !uid && COMMON_DUP_NICKS.has(nick);
 
                         if (btnAnchor && !item.querySelector('.dc-one-touch-mute-btn') && (ip || uid || (!isUnidentifiableCommonNick && nick))) {
@@ -1609,11 +1721,9 @@
                             }
                         }
 
-                        // 5. 본문/제목 텍스트 추출
                         const textEl = item.querySelector('.subjectin, .gall_tit, .txt, .usertxt');
                         const contentText = textEl ? textEl.textContent : '';
 
-                        // 6. 뮤트 조건 검사 (1순위: IP / 2순위: 갤로그 고유 ID / 3순위: 비중복 고유 닉네임 / 4순위: 키워드)
                         let shouldMute = false;
                         if (ip && allMutedIps.some(targetIp => ip.startsWith(targetIp))) {
                             shouldMute = true;
