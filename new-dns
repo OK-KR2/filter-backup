@@ -1,6 +1,6 @@
 ! Title: OK-KR2
-! Version: 26.10.2702
-! Description: Control D 보완용 웹 전용 필터 (최신 추적 방어 및 제안 ①~④ 통합 적용)
+! Version: 26.10.3001
+! Description: Control D 보완용 웹 전용 필터 (최신 추적 방어 및 제안 ①~⑤ 통합 적용)
 
 ! ============================================================================
 ! ## [01] URL 추적 파라미터 자동 제거 ($removeparam 통합)
@@ -131,6 +131,14 @@ etoland.co.kr#%#//scriptlet('trusted-click-element', '[data-cookie-key]', '', '3
 #%#//scriptlet('abort-on-property-read', 'ExoLoader')
 #%#//scriptlet('prevent-window-open', '/(chaturbate|stripchat|bngpt|trafficjunky)/i')
 
+! [4-3] 애드실드(Ad-Shield) 복구 스크립트 및 외부 쿠팡 파트너스 위젯 범용 차단 (제안 ⑤ 반영)
+||ads-partners.coupang.com/widgets.html^$third-party
+||ads-partners.coupang.com/g.js^$third-party
+||css-load.com/script/$third-party
+||*.css-load.com/media/$third-party
+||get.optad360.io^$third-party
+dogdrip.net#%#//scriptlet('set-local-storage-item', 'www.dogdrip.net_fa_Y2FjaGVfaXNfYmxvY2tpbmdfYWRz', 'false')
+
 
 ! ============================================================================
 ! ## [05] 사이트별 맞춤 광고/요소 숨김 (포털·유튜브·커뮤니티)
@@ -156,6 +164,11 @@ fmkorea.com#?#.bd_mobile:matches-css(margin: /3px 0px/):remove()
 quasarzone.com##.best-official-news, .new-official-news, .new-partner-saleinfo-container, .recommend-deal-wrap
 web.joongna.com##.pb-12, div:has([alt='ad']):not(:has(h2))
 
+! [5-5] 애드실드 무작위 복구 프레임 숨김 (제안 ⑤ 반영)
+dogdrip.net,namu.wiki##span:has(iframe[status="success"])
+dogdrip.net,namu.wiki##iframe[enjgioijew]
+dogdrip.net,namu.wiki##.ddnad, #npl-list, #npl-list-bottom, #oa-col_stk, .clayerbox-left-ad, .clayerbox-right-ad
+
 
 ! ============================================================================
 ! ## [06] 범용 배너/광고 및 도메인 유동 사이트 타겟 숨김 (Cosmetic)
@@ -174,7 +187,7 @@ web.joongna.com##.pb-12, div:has([alt='ad']):not(:has(h2))
 ##.top-ad-padding, #site-banner-4, .section.mobile-banner.top_hr .col-md-12.mobile-banner
 ##div[style="padding:3px;"]:has(a[target="_blank"] > img)
 #?#.alert-danger:has(a:has-text([AD]))
-###nad, #bo_list > div.clearfix:nth-child(2), nav.navbar.navbar-default.navbar-static-top:nth-child(2) > div.container:first-child > div.navbar-header.pull-left:first-child, #thema_wrapper > div.wrapper.boxed > div > div.at-content > div.bottom-navbar:nth-child(6), #thema_wrapper > div.wrapper.boxed > div > div.at-content > div.view-wrap:nth-child(4) > div.contents.panel.panel-default.view-head.no-attach.content-zoom:last-child > :is(a:nth-child(3), a:nth-child(4), div.bn.bnt:nth-child(10), div.bn.bnt:nth-child(11))
+###nad, #bo_list > div.clearfix:nth-child(2), nav.navbar.navbar-default.navbar-static-top:nth-child(2) > div.container:first-child > div.navbar-header.pull-left:first-child, #thema_wrapper > div.wrapper.boxed > div > div.at-content > div.bottom-navbar:nth-child(6), #thema_wrapper > div.wrapper.boxed > div > div.at-child > div.at-content > div.view-wrap:nth-child(4) > div.contents.panel.panel-default.view-head.no-attach.content-zoom:last-child > :is(a:nth-child(3), a:nth-child(4), div.bn.bnt:nth-child(10), div.bn.bnt:nth-child(11))
 
 
 ! ============================================================================
@@ -197,3 +210,4 @@ web.joongna.com##.pb-12, div:has([alt='ad']):not(:has(h2))
 ! 1. 소셜 로그인(카카오/구글로 시작하기)이나 공유 버튼이 안 보이는가? -> [6-1] 소셜 공유 버튼 숨김 규칙 확인
 ! 2. 제안 ②에 의해 허용 도메인의 링크 이동은 정상 작동하되 백그라운드 추적 비콘만 차단됨
 ! 3. 제안 ③·④에 의해 최신 웹 GPU/센서 추적 및 스트리밍 사이트 팝업 로더가 원천 차단됨
+! 4. 제안 ⑤에 의해 애드실드 복구 스크립트·쿠팡 파트너스 위젯 차단 및 개드립 프리패스 스토리지 위장이 적용됨
