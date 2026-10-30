@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         [통합] 내 전용 웹사이트 편의성 & 광고 차단팩
 // @namespace    http://tampermonkey.net/
-// @version      2.8
-// @description  1.나무위키 광고차단 | 2.툰코(001.toonkor.net 대응) 스크롤메뉴·배너제거 | 3.유튜브 PiP·백그라운드(v2.6 안정화)·최고화질 | 4.디시 스텔스·IP/반고닉·핀셋차단 | 5.블로그·티스토리 복사해제
+// @version      2.9
+// @description  1.나무위키 광고차단 | 2.툰코(서브도메인 대응) 스크롤메뉴·배너제거 | 3.유튜브 PiP·백그라운드 연속재생(rAF우회/0:00돌파)·최고화질 | 4.디시 스텔스·IP/반고닉·핀셋차단 | 5.블로그·티스토리 복사해제
 //
 // --- [1. 나무위키 주소 규칙] ---
 // @match        *://namu.wiki/*
@@ -41,7 +41,7 @@
     const ENABLE_MODULES = {
         namuwiki:     true, // 모듈 1: 나무위키 파워링크(위장 목차) 제거
         toonkor:      true, // 모듈 2: 툰코 뷰어 스크롤 메뉴 + 도박 배너/팝업 제거
-        youtube:      true, // 모듈 3: 유튜브 백그라운드 재생(v2.6 안정화) + 최고화질 + 반투명 PiP
+        youtube:      true, // 모듈 3: 유튜브 백그라운드 연속재생(3곡 멈춤 해결) + 최고화질 + 반투명 PiP
         dcinside:     true, // 모듈 4: 디시 스텔스 + IP/반고닉 식별 + 갤로그 ID 핀셋 차단 관리
         copyUnlocker: true  // 모듈 5: 네이버 블로그 & 티스토리 복사 방지 해제 (무소음)
     };
@@ -324,19 +324,62 @@
 
 
     // =========================================================================
-    // 📦 [모듈 3] YouTube Background Play (v2.6 순정 복원), Max Quality & Smart PiP v35.1
+    // 📦 [모듈 3] YouTube Background Playlist Unlocker, Max Quality & Smart PiP v37.0
     // - 작동 조건: youtube.com 접속 시
-    // - v35.1 복원: iOS 오디오 충돌을 일으키던 AudioContext 제거 -> v2.6 순정 방식 복원 + _lact 시간만 갱신
+    // - v37.0 핵심 패치 (3곡째 0:00 무한 로딩 멈춤 현상 해결):
+    //   1) 백그라운드 시 멈추는 requestAnimationFrame을 setTimeout으로 자동 우회
+    //   2) 실제 화면이 꺼진 상태에서는 최고 화질(1080p) 강제 변경을 보류하여 비디오 디코더 먹통 방지
+    //   3) 곡 전환 시 0:00에서 멈춰 있으면 0.05초 탐색 및 강제 출발(Kickstart) 실행
     // =========================================================================
     if (ENABLE_MODULES.youtube && currentHost.includes('youtube.com')) {
         (function() {
             const YT_CONFIG = {
-                autoMaxQuality: true,     // 최고 화질 자동 고정 켜기/끄기
+                autoMaxQuality: true,     // 최고 화질 자동 고정 켜기/끄기 (화면 켜져 있을 때만 작동)
                 targetRes: 'hd2160',      // 목표 최대 화질 ('hd2160'=4K, 'hd1440'=QHD, 'hd1080'=FHD)
                 pipIdleOpacity: '0.40'    // 평소 PiP 버튼 투명도 (0.1 ~ 1.0)
             };
 
-            // [3-1] 백그라운드 재생 활성화 (v2.6 순정 방식 그대로 유지)
+            // [3-0] 위장 전 브라우저의 '진짜 백그라운드(화면 잠금) 상태' 판별기 확보
+            const nativeHiddenDesc = Object.getOwnPropertyDescriptor(Document.prototype, 'hidden') ||
+                                     Object.getOwnPropertyDescriptor(document, 'hidden');
+            const nativeVisDesc = Object.getOwnPropertyDescriptor(Document.prototype, 'visibilityState') ||
+                                  Object.getOwnPropertyDescriptor(document, 'visibilityState');
+
+            let fallbackBgFlag = false;
+            const checkRealBackground = () => {
+                try {
+                    if (nativeHiddenDesc && typeof nativeHiddenDesc.get === 'function') {
+                        return !!nativeHiddenDesc.get.call(document);
+                    }
+                    if (nativeVisDesc && typeof nativeVisDesc.get === 'function') {
+                        return nativeVisDesc.get.call(document) !== 'visible';
+                    }
+                } catch (e) {}
+                return fallbackBgFlag;
+            };
+
+            // [3-1] 해결책 ①: 화면 잠금 시 동결되는 requestAnimationFrame을 타이머로 자동 우회
+            const nativeRAF = window.requestAnimationFrame ? window.requestAnimationFrame.bind(window) : null;
+            const nativeCAF = window.cancelAnimationFrame ? window.cancelAnimationFrame.bind(window) : null;
+
+            if (nativeRAF) {
+                window.requestAnimationFrame = function(callback) {
+                    // 화면이 실제로 켜져 있을 때는 순정 rAF 그대로 작동 (성능 저하 0%)
+                    if (!checkRealBackground()) {
+                        return nativeRAF(callback);
+                    }
+                    // 화면이 잠긴 백그라운드 상태에서는 iOS가 rAF를 멈추므로 setTimeout으로 다음 곡 세팅 유지
+                    return window.setTimeout(() => {
+                        try { callback(performance.now()); } catch (e) {}
+                    }, 30);
+                };
+                window.cancelAnimationFrame = function(id) {
+                    try { if (nativeCAF) nativeCAF(id); } catch (e) {}
+                    window.clearTimeout(id);
+                };
+            }
+
+            // [3-2] 백그라운드 재생 활성화 (document-start 시점에 즉시 상태 위장)
             try {
                 Object.defineProperties(document, {
                     'hidden': { get: () => false, configurable: true },
@@ -346,34 +389,52 @@
                 });
             } catch (e) {}
 
+            let lastLockTransitionTime = 0;
             const blockBgEvents = (e) => {
+                if (e.type === 'pagehide' || checkRealBackground()) {
+                    fallbackBgFlag = true;
+                    lastLockTransitionTime = Date.now();
+                } else {
+                    fallbackBgFlag = false;
+                }
                 e.stopImmediatePropagation();
             };
+
             ['visibilitychange', 'webkitvisibilitychange', 'mozvisibilitychange', 'pagehide'].forEach(evt => {
                 window.addEventListener(evt, blockBgEvents, true);
                 document.addEventListener(evt, blockBgEvents, true);
             });
 
-            // 3곡 뒤 비활성 멈춤 방지를 위해 오디오 건드림 없이 순수 시간 변수(_lact)만 갱신
-            const keepAliveLact = () => {
-                if (typeof window._lact !== 'undefined') {
-                    window._lact = Date.now();
+            window.addEventListener('blur', () => {
+                if (checkRealBackground()) {
+                    fallbackBgFlag = true;
+                    lastLockTransitionTime = Date.now();
                 }
+            }, { passive: true });
+
+            // 사용자 활동 시간(_lact) 갱신 (3곡 뒤 비활성 멈춤 방지)
+            const keepAliveLact = () => {
+                try { window._lact = Date.now(); } catch (e) {}
             };
-            ['touchstart', 'click', 'scroll', 'keydown'].forEach(evt => {
-                window.addEventListener(evt, keepAliveLact, { passive: true });
+
+            ['touchstart', 'click', 'scroll', 'keydown', 'pageshow', 'focus'].forEach(evt => {
+                window.addEventListener(evt, () => {
+                    fallbackBgFlag = false;
+                    keepAliveLact();
+                }, { passive: true });
             });
 
             let lastTimeUpdateLact = 0;
             document.addEventListener('timeupdate', () => {
                 const now = Date.now();
-                if (now - lastTimeUpdateLact > 20000) {
+                if (now - lastTimeUpdateLact > 15000) {
                     lastTimeUpdateLact = now;
                     keepAliveLact();
                 }
             }, true);
 
-            // [3-2] 최고 화질(1080p 이상) 자동 고정 로직
+
+            // [3-3] 해결책 ②: 최고 화질 자동 고정 (실제 화면이 켜져 있을 때만 작동, 백그라운드 곡 전환 시 보류)
             const setYtLocalStorageQuality = () => {
                 if (!YT_CONFIG.autoMaxQuality) return;
                 try {
@@ -389,7 +450,8 @@
             setYtLocalStorageQuality();
 
             const applyMaxQualityToPlayer = () => {
-                if (!YT_CONFIG.autoMaxQuality) return;
+                // 화면이 꺼진 상태에서는 고화질 비디오 버퍼 재요청으로 인한 0:00 멈춤을 막기 위해 화질 변경 보류
+                if (!YT_CONFIG.autoMaxQuality || checkRealBackground()) return;
                 try {
                     const player = document.getElementById('movie_player') || document.querySelector('.html5-video-player');
                     if (!player || typeof player.getAvailableQualityLevels !== 'function') return;
@@ -417,11 +479,97 @@
                 } catch (e) {}
             };
 
+
+            // [3-4] 해결책 ③: 트랙 전환 시 0:00 무한 로딩 강제 출발(Kickstart) & 잠금 직후 멈춤 방어
+            let isTrackTransitioning = false;
+            let kickstartTimers = [];
+
+            const clearKickstartTimers = () => {
+                kickstartTimers.forEach(t => clearTimeout(t));
+                kickstartTimers = [];
+            };
+
+            const wakeUpStalledPlayer = () => {
+                if (!window.location.pathname.startsWith('/watch')) return;
+                const v = document.querySelector('video');
+                const player = document.getElementById('movie_player') || document.querySelector('.html5-video-player');
+                if (!v) return;
+
+                // 백그라운드 상태이거나 곡 전환 직후에 0:00 부근(0.5초 미만)에서 멈춰있는 경우 강제 출발
+                if ((checkRealBackground() || isTrackTransitioning) && v.currentTime < 0.5 && (v.paused || v.readyState < 3)) {
+                    keepAliveLact();
+                    try {
+                        if (v.currentTime === 0) {
+                            v.currentTime = 0.05;
+                        }
+                        if (player && typeof player.playVideo === 'function') {
+                            player.playVideo();
+                        }
+                        const playPromise = v.play();
+                        if (playPromise && typeof playPromise.catch === 'function') {
+                            playPromise.catch(() => {});
+                        }
+                    } catch (e) {}
+                }
+            };
+
+            const scheduleZeroStallKickstart = () => {
+                clearKickstartTimers();
+                [600, 1500, 3000].forEach(delay => {
+                    kickstartTimers.push(setTimeout(wakeUpStalledPlayer, delay));
+                });
+            };
+
+            // 한 곡이 끝나는 순간 다음 곡 전환 플래그 활성화 및 강제 출발 예약
+            document.addEventListener('ended', (e) => {
+                if (e.target && e.target.tagName === 'VIDEO') {
+                    isTrackTransitioning = true;
+                    keepAliveLact();
+                    scheduleZeroStallKickstart();
+                }
+            }, true);
+
+            // 새 곡 메타데이터/스트림 로드 시점이 백그라운드이거나 곡 전환 중이면 즉시 출발 체크
+            ['loadedmetadata', 'loadeddata', 'canplay'].forEach(evt => {
+                document.addEventListener(evt, (e) => {
+                    if (e.target && e.target.tagName === 'VIDEO') {
+                        keepAliveLact();
+                        if (checkRealBackground() || isTrackTransitioning) {
+                            scheduleZeroStallKickstart();
+                        }
+                    }
+                }, true);
+            });
+
+            // 전원 버튼을 눌러 화면을 잠그는 순간(1.2초 이내) 사파리가 거는 일시정지 자동 해제
+            document.addEventListener('pause', (e) => {
+                if (e.target && e.target.tagName === 'VIDEO') {
+                    if (e.target.ended) {
+                        isTrackTransitioning = true;
+                        keepAliveLact();
+                        scheduleZeroStallKickstart();
+                        return;
+                    }
+                    if (Date.now() - lastLockTransitionTime < 1200) {
+                        const v = e.target;
+                        setTimeout(() => {
+                            try {
+                                const player = document.getElementById('movie_player') || document.querySelector('.html5-video-player');
+                                if (player && typeof player.playVideo === 'function') player.playVideo();
+                                v.play().catch(() => {});
+                            } catch (err) {}
+                        }, 100);
+                    }
+                }
+            }, true);
+
             let lastQualityVideoSrc = '';
             document.addEventListener('playing', (e) => {
                 if (e.target && e.target.tagName === 'VIDEO') {
+                    isTrackTransitioning = false;
+                    clearKickstartTimers();
                     keepAliveLact();
-                    if (e.target.currentSrc !== lastQualityVideoSrc) {
+                    if (!checkRealBackground() && e.target.currentSrc !== lastQualityVideoSrc) {
                         lastQualityVideoSrc = e.target.currentSrc;
                         applyMaxQualityToPlayer();
                         setTimeout(applyMaxQualityToPlayer, 400);
@@ -430,7 +578,7 @@
             }, true);
 
 
-            // [3-3] /watch 전용 반투명 PiP 버튼 & 댓글 스크롤 시 자동 숨김
+            // [3-5] /watch 전용 반투명 PiP 버튼 & 댓글 스크롤 시 자동 숨김
             runAtDocumentIdle(function() {
                 const ytPipStyle = document.createElement('style');
                 ytPipStyle.textContent = `
@@ -583,7 +731,11 @@
                     window.addEventListener(evt, () => {
                         keepAliveLact();
                         schedulePipUpdate();
-                        applyMaxQualityToPlayer();
+                        if (checkRealBackground() || isTrackTransitioning) {
+                            scheduleZeroStallKickstart();
+                        } else {
+                            applyMaxQualityToPlayer();
+                        }
                     });
                 });
 
