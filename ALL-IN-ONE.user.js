@@ -1,16 +1,20 @@
 // ==UserScript==
 // @name         [통합] 내 전용 웹사이트 편의성 & 광고 차단팩
 // @namespace    http://tampermonkey.net/
-// @version      2.7
-// @description  1.나무위키 광고차단 | 2.툰코 스크롤메뉴·배너제거 | 3.유튜브 PiP·백그라운드 연속재생·최고화질 | 4.디시 스텔스·IP/반고닉·갤로그ID 핀셋차단 | 5.블로그·티스토리 복사해제
+// @version      2.8
+// @description  1.나무위키 광고차단 | 2.툰코(001.toonkor.net 대응) 스크롤메뉴·배너제거 | 3.유튜브 PiP·백그라운드(v2.6 안정화)·최고화질 | 4.디시 스텔스·IP/반고닉·핀셋차단 | 5.블로그·티스토리 복사해제
 //
 // --- [1. 나무위키 주소 규칙] ---
 // @match        *://namu.wiki/*
 //
-// --- [2. 툰코 주소 규칙] ---
-// @match        *://*.toonkor*/*
-// @match        *://toonkor*/*
-// @include      /^https?:\/\/(www\.)?toonkor[0-9]*\.[a-z]+\/.*$/
+// --- [2. 툰코 주소 규칙 (001.toonkor.net 등 모든 서브도메인·국가도메인 대응)] ---
+// @match        *://*.toonkor.net/*
+// @match        *://toonkor.net/*
+// @match        *://*.toonkor.org/*
+// @match        *://toonkor.org/*
+// @match        *://*.toonkor.com/*
+// @match        *://toonkor.com/*
+// @include      /^https?:\/\/([a-z0-9-]+\.)*toonkor[0-9a-z-]*\.[a-z.]+\/.*$/i
 //
 // --- [3. 유튜브 주소 규칙] ---
 // @match        *://*.youtube.com/*
@@ -37,7 +41,7 @@
     const ENABLE_MODULES = {
         namuwiki:     true, // 모듈 1: 나무위키 파워링크(위장 목차) 제거
         toonkor:      true, // 모듈 2: 툰코 뷰어 스크롤 메뉴 + 도박 배너/팝업 제거
-        youtube:      true, // 모듈 3: 유튜브 백그라운드 연속재생 + 최고화질 + 반투명 PiP 버튼
+        youtube:      true, // 모듈 3: 유튜브 백그라운드 재생(v2.6 안정화) + 최고화질 + 반투명 PiP
         dcinside:     true, // 모듈 4: 디시 스텔스 + IP/반고닉 식별 + 갤로그 ID 핀셋 차단 관리
         copyUnlocker: true  // 모듈 5: 네이버 블로그 & 티스토리 복사 방지 해제 (무소음)
     };
@@ -169,8 +173,8 @@
 
 
     // =========================================================================
-    // 📦 [모듈 2] 툰코(Toonkor) 배너/팝업 차단 & 뷰어 스크롤 메뉴 숨김/표시 v1.2
-    // - 작동 조건: toonkor 도메인 접속 시
+    // 📦 [모듈 2] 툰코(Toonkor) 배너/팝업 차단 & 뷰어 스크롤 메뉴 숨김/표시 v1.3
+    // - 작동 조건: 모든 toonkor 도메인 (001.toonkor.net 등 포함)
     // =========================================================================
     if (ENABLE_MODULES.toonkor && /toonkor/i.test(currentHost)) {
         (function() {
@@ -320,12 +324,9 @@
 
 
     // =========================================================================
-    // 📦 [모듈 3] YouTube Background Play, Track Keep-Alive, Max Quality & Smart PiP v36.0
+    // 📦 [모듈 3] YouTube Background Play (v2.6 순정 복원), Max Quality & Smart PiP v35.1
     // - 작동 조건: youtube.com 접속 시
-    // - v36.0 업그레이드:
-    //   1) Web Audio API 초미세 무음 세션 유지로 곡 넘어갈 때(1초 공백) iOS 오디오 권한 회수 완벽 방어
-    //   2) 화면 잠금 중 트랙 전환(ended -> loadeddata/canplay) 시 자동 재생 강제 트리거
-    //   3) 장시간 연속 재생 시 "계속 시청하시겠습니까?" 팝업 자동 수락 및 활동 시간(_lact) 갱신
+    // - v35.1 복원: iOS 오디오 충돌을 일으키던 AudioContext 제거 -> v2.6 순정 방식 복원 + _lact 시간만 갱신
     // =========================================================================
     if (ENABLE_MODULES.youtube && currentHost.includes('youtube.com')) {
         (function() {
@@ -335,7 +336,7 @@
                 pipIdleOpacity: '0.40'    // 평소 PiP 버튼 투명도 (0.1 ~ 1.0)
             };
 
-            // [3-1] 백그라운드 재생 활성화 (document-start 시점에 즉시 상태 위장)
+            // [3-1] 백그라운드 재생 활성화 (v2.6 순정 방식 그대로 유지)
             try {
                 Object.defineProperties(document, {
                     'hidden': { get: () => false, configurable: true },
@@ -345,137 +346,34 @@
                 });
             } catch (e) {}
 
-            let lastBgTransitionTime = 0;
             const blockBgEvents = (e) => {
-                lastBgTransitionTime = Date.now();
                 e.stopImmediatePropagation();
             };
             ['visibilitychange', 'webkitvisibilitychange', 'mozvisibilitychange', 'pagehide'].forEach(evt => {
                 window.addEventListener(evt, blockBgEvents, true);
                 document.addEventListener(evt, blockBgEvents, true);
             });
-            window.addEventListener('blur', () => { lastBgTransitionTime = Date.now(); }, { passive: true });
 
-            // 유튜브 내부 비활성 타이머(_lact) 갱신 함수
-            const refreshLact = () => {
-                try { window._lact = Date.now(); } catch (e) {}
+            // 3곡 뒤 비활성 멈춤 방지를 위해 오디오 건드림 없이 순수 시간 변수(_lact)만 갱신
+            const keepAliveLact = () => {
+                if (typeof window._lact !== 'undefined') {
+                    window._lact = Date.now();
+                }
             };
             ['touchstart', 'click', 'scroll', 'keydown'].forEach(evt => {
-                window.addEventListener(evt, refreshLact, { passive: true });
+                window.addEventListener(evt, keepAliveLact, { passive: true });
             });
 
-            // [3-2] iOS 사파리 곡 전환 끊김 방지용 Web Audio API 무음 세션 유지기 (Keep-Alive)
-            // (<audio> 태그와 달리 잠금화면 Now Playing 곡 제목/컨트롤러를 뺏지 않고 오디오 세션만 유지함)
-            let audioCtx = null;
-            let keepAliveStarted = false;
-            let isTrackTransitioning = false;
-
-            const ensureSilentAudioKeepAlive = () => {
-                try {
-                    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-                    if (!AudioContextClass) return;
-                    if (!audioCtx) {
-                        audioCtx = new AudioContextClass();
-                    }
-                    if (audioCtx.state === 'suspended') {
-                        audioCtx.resume().catch(() => {});
-                    }
-                    if (!keepAliveStarted && audioCtx.state === 'running') {
-                        const osc = audioCtx.createOscillator();
-                        const gain = audioCtx.createGain();
-                        osc.type = 'sine';
-                        osc.frequency.setValueAtTime(1, audioCtx.currentTime); // 1Hz 비가청 주파수
-                        gain.gain.setValueAtTime(0.00001, audioCtx.currentTime); // 사실상 완전 무음
-                        osc.connect(gain);
-                        gain.connect(audioCtx.destination);
-                        osc.start();
-                        keepAliveStarted = true;
-                    }
-                } catch (e) {}
-            };
-
-            const resumePlayerForce = (videoEl) => {
-                refreshLact();
-                ensureSilentAudioKeepAlive();
-                try {
-                    if (videoEl && videoEl.paused) {
-                        videoEl.play().catch(() => {});
-                    }
-                    const player = document.getElementById('movie_player') || document.querySelector('.html5-video-player');
-                    if (player && typeof player.playVideo === 'function') {
-                        player.playVideo();
-                    }
-                } catch (e) {}
-            };
-
-            // 비디오 이벤트 후킹: 재생 시작 시 무음 세션 가동 & 곡이 끝날 때 다음 곡 자동 연결 보장
-            document.addEventListener('play', (e) => {
-                if (e.target && e.target.tagName === 'VIDEO') {
-                    refreshLact();
-                    ensureSilentAudioKeepAlive();
-                }
-            }, true);
-
-            document.addEventListener('ended', (e) => {
-                if (e.target && e.target.tagName === 'VIDEO') {
-                    isTrackTransitioning = true;
-                    refreshLact();
-                    ensureSilentAudioKeepAlive();
-                    // 다음 트랙으로 넘어가는 동안 플레이어가 멈추지 않도록 강제 넛지(Nudge)
-                    setTimeout(() => {
-                        const v = document.querySelector('video');
-                        if (v && isTrackTransitioning) resumePlayerForce(v);
-                    }, 900);
-                    setTimeout(() => {
-                        const v = document.querySelector('video');
-                        if (v && isTrackTransitioning) resumePlayerForce(v);
-                        isTrackTransitioning = false;
-                    }, 2200);
-                }
-            }, true);
-
-            // 다음 곡 스트림이 로드되는 순간(loadeddata / canplay) 즉시 재생 및 활동 시간 갱신
-            ['loadedmetadata', 'loadeddata', 'canplay'].forEach(evt => {
-                document.addEventListener(evt, (e) => {
-                    if (e.target && e.target.tagName === 'VIDEO') {
-                        refreshLact();
-                        if (isTrackTransitioning) {
-                            isTrackTransitioning = false;
-                            resumePlayerForce(e.target);
-                        }
-                    }
-                }, true);
-            });
-
-            // 화면을 끄거나 탭을 전환한 직후(1초 이내) 사파리가 강제로 건 일시정지 즉시 풀기
-            document.addEventListener('pause', (e) => {
-                if (e.target && e.target.tagName === 'VIDEO') {
-                    if (e.target.ended) {
-                        isTrackTransitioning = true;
-                        refreshLact();
-                        return;
-                    }
-                    if (Date.now() - lastBgTransitionTime < 1200) {
-                        setTimeout(() => resumePlayerForce(e.target), 80);
-                    }
-                }
-            }, true);
-
-            // 재생 중 주기적으로 _lact(사용자 활동 시간)를 갱신하여 3분 뒤 다음 곡 넘어갈 때 멈춤 방지 (이벤트 기반)
             let lastTimeUpdateLact = 0;
-            document.addEventListener('timeupdate', (e) => {
+            document.addEventListener('timeupdate', () => {
                 const now = Date.now();
-                if (now - lastTimeUpdateLact > 15000) { // 15초에 1회만 가볍게 타임스탬프 갱신
+                if (now - lastTimeUpdateLact > 20000) {
                     lastTimeUpdateLact = now;
-                    refreshLact();
-                    if (audioCtx && audioCtx.state === 'suspended') {
-                        audioCtx.resume().catch(() => {});
-                    }
+                    keepAliveLact();
                 }
             }, true);
 
-
-            // [3-3] 최고 화질(1080p 이상) 자동 고정 로직
+            // [3-2] 최고 화질(1080p 이상) 자동 고정 로직
             const setYtLocalStorageQuality = () => {
                 if (!YT_CONFIG.autoMaxQuality) return;
                 try {
@@ -522,9 +420,7 @@
             let lastQualityVideoSrc = '';
             document.addEventListener('playing', (e) => {
                 if (e.target && e.target.tagName === 'VIDEO') {
-                    isTrackTransitioning = false;
-                    refreshLact();
-                    ensureSilentAudioKeepAlive();
+                    keepAliveLact();
                     if (e.target.currentSrc !== lastQualityVideoSrc) {
                         lastQualityVideoSrc = e.target.currentSrc;
                         applyMaxQualityToPlayer();
@@ -534,7 +430,7 @@
             }, true);
 
 
-            // [3-4] /watch 전용 반투명 PiP 버튼, 댓글 스크롤 시 자동 숨김 & "계속 시청" 팝업 자동 닫기
+            // [3-3] /watch 전용 반투명 PiP 버튼 & 댓글 스크롤 시 자동 숨김
             runAtDocumentIdle(function() {
                 const ytPipStyle = document.createElement('style');
                 ytPipStyle.textContent = `
@@ -619,24 +515,10 @@
                     }
                 });
 
-                // "동영상이 일시중지되었습니다. 계속 시청하시겠습니까?" 팝업 감지 시 자동 클릭
-                const dismissYouTherePopup = () => {
-                    const dialogBtn = document.querySelector(
-                        'ytm-you-there-renderer button, yt-confirm-dialog-renderer #confirm-button button, yt-confirm-dialog-renderer #confirm-button'
-                    );
-                    if (dialogBtn && dialogBtn.offsetParent !== null) {
-                        dialogBtn.click();
-                        const v = getActiveVideo();
-                        if (v) resumePlayerForce(v);
-                    }
-                };
-
                 let pipCheckScheduled = false;
                 const updatePipButton = () => {
                     pipCheckScheduled = false;
                     if (!document.body) return;
-
-                    dismissYouTherePopup();
 
                     let btn = document.getElementById('force-pip-btn');
 
@@ -699,13 +581,9 @@
 
                 ['yt-navigate-finish', 'yt-page-data-updated', 'state-navigateend', 'popstate'].forEach(evt => {
                     window.addEventListener(evt, () => {
-                        refreshLact();
+                        keepAliveLact();
                         schedulePipUpdate();
                         applyMaxQualityToPlayer();
-                        if (isTrackTransitioning) {
-                            const v = getActiveVideo();
-                            if (v) resumePlayerForce(v);
-                        }
                     });
                 });
 
