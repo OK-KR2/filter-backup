@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         [통합] 내 전용 웹사이트 편의성 & 광고 차단팩
 // @namespace    http://tampermonkey.net/
-// @version      2.9
+// @version      3.1
 // @description  1.나무위키 광고차단 | 2.툰코(서브도메인 대응) 스크롤메뉴·배너제거 | 3.유튜브 PiP·백그라운드 연속재생(rAF우회/0:00돌파)·최고화질 | 4.디시 스텔스·IP/반고닉·핀셋차단 | 5.블로그·티스토리 복사해제
 //
 // --- [1. 나무위키 주소 규칙] ---
@@ -756,11 +756,11 @@
 
 
 
+// =========================================================================
+    // 📦 [모듈 4] Dcinside Stealth, IP/반고닉 식별 & 갤로그 고유 ID 핀셋 차단 v6.1
+    // - 작동 조건: dcinside.com 접속 시 (이미지 전용 서버 및 단독 이미지 열람 제외)
     // =========================================================================
-    // 📦 [모듈 4] Dcinside Stealth, IP/반고닉 식별 & 갤로그 고유 ID 핀셋 차단 v6.0
-    // - 작동 조건: dcinside.com 접속 시
-    // =========================================================================
-    if (ENABLE_MODULES.dcinside && currentHost.includes('dcinside.com')) {
+    if (ENABLE_MODULES.dcinside && currentHost.includes('dcinside.com') && !/^(nstatic|dcimg\d*)\./i.test(currentHost) && !/^image\//i.test(document.contentType || '')) {
         (function() {
             const DC_MUTE_CONFIG = {
                 confirmBeforeMute: true,  // [차단] 터치 시 확인 창 띄우기 (바로 차단하려면 false)
@@ -889,11 +889,23 @@
                 dynamicMutes = writeHybridStore(dynamicMutes);
             };
 
-            // [4-1] 스텔스 & 애드블록 감지 무력화
+            // [4-1] 스텔스 & 애드블록 감지 무력화 (디시 본문 스크립트 충돌 방지 패치)
             const lock = (p, v) => {
-                try { Object.defineProperty(window, p, { value: v, writable: false, configurable: false }); } catch (e) {}
+                try {
+                    Object.defineProperty(window, p, {
+                        get: () => v,
+                        set: () => {},
+                        configurable: true
+                    });
+                } catch (e) {}
             };
-            if (typeof window.getCookie === 'undefined') window.getCookie = () => '';
+            if (typeof window.getCookie === 'undefined') {
+                window.getCookie = (name) => {
+                    if (name && /find_ab|adblock/i.test(name)) return '';
+                    const m = document.cookie.match(new RegExp('(?:^|;\\s*)' + name + '=([^;]*)'));
+                    return m ? decodeURIComponent(m[1]) : '';
+                };
+            }
             if (typeof window.setCookie_hk_hour === 'undefined') window.setCookie_hk_hour = () => {};
 
             const laundryDC = () => {
@@ -908,7 +920,7 @@
             };
             laundryDC();
             lock('is_adblock', false);
-            lock('adblock_chk', false);
+            lock('adblock_chk', () => false);
             lock('canRunAds', true);
             lock('is_ad_block', 'N');
 
@@ -1249,20 +1261,64 @@
                 }
 
                 function loadOriginalImages() {
-                    const targetSelectors = '.thum-txtin img, .write_div img, .gallview_contents img';
-                    document.querySelectorAll(targetSelectors).forEach(img => {
-                        if (img.dataset.origLoaded === "true") return;
-                        if (img.classList.contains('written_dccon') || (img.src && img.src.includes('dcinside_icon'))) return;
-
-                        const realSrc = img.getAttribute('data-original') || img.getAttribute('data-src');
-                        if (realSrc) {
+                    // 1. 일반 짤 + 본문/댓글 이미지 디시콘 즉시 로딩
+                    const imgSelectors = '.thum-txtin img, .write_div img, .gallview_contents img, ul.all-comment-lst img, .cmt_list img, .reply_list img, img.written_dccon';
+                    document.querySelectorAll(imgSelectors).forEach(img => {
+                        const realSrc = img.getAttribute('data-original') || img.getAttribute('data-src') || img.getAttribute('data-lazy') || img.getAttribute('data-gif');
+                        if (realSrc && img.getAttribute('src') !== realSrc) {
                             img.src = realSrc;
                             img.removeAttribute('data-original');
                             img.removeAttribute('data-src');
+                            img.removeAttribute('data-lazy');
+                            img.removeAttribute('data-gif');
                             img.classList.remove('lazy');
                         }
                         img.loading = 'eager';
-                        img.dataset.origLoaded = "true";
+                    });
+
+                    // 2. 본문/댓글 움짤(GIF->MP4) 및 움직이는 비디오 디시콘 즉시 로딩 & 투명 포스터 제거
+                    const videoSelectors = '.thum-txtin video, .write_div video, .gallview_contents video, ul.all-comment-lst video, .cmt_list video, .reply_list video, video.written_dccon, video.dc_mv';
+                    document.querySelectorAll(videoSelectors).forEach(video => {
+                        let srcChanged = false;
+                        const realVidSrc = video.getAttribute('data-src') || video.getAttribute('data-original') || video.getAttribute('data-mp4');
+                        if (realVidSrc && video.getAttribute('src') !== realVidSrc) {
+                            video.src = realVidSrc;
+                            video.removeAttribute('data-src');
+                            video.removeAttribute('data-original');
+                            video.removeAttribute('data-mp4');
+                            srcChanged = true;
+                        }
+                        video.querySelectorAll('source').forEach(srcEl => {
+                            const sUrl = srcEl.getAttribute('data-src') || srcEl.getAttribute('data-original');
+                            if (sUrl && srcEl.getAttribute('src') !== sUrl) {
+                                srcEl.src = sUrl;
+                                srcEl.removeAttribute('data-src');
+                                srcEl.removeAttribute('data-original');
+                                srcChanged = true;
+                            }
+                        });
+
+                        // 투명 로딩 이미지(dccon_loading_nobg200.png 등)가 비디오 화면을 가리지 않도록 제거
+                        const poster = video.getAttribute('poster') || '';
+                        if (poster.includes('loading')) {
+                            video.removeAttribute('poster');
+                        }
+
+                        video.classList.remove('lazy');
+                        video.muted = true;
+                        video.playsInline = true;
+                        video.setAttribute('muted', '');
+                        video.setAttribute('playsinline', '');
+                        video.setAttribute('webkit-playsinline', '');
+
+                        if (srcChanged || video.dataset.dcVidInit !== 'true') {
+                            video.dataset.dcVidInit = 'true';
+                            try {
+                                if (srcChanged) video.load();
+                                const p = video.play();
+                                if (p && typeof p.catch === 'function') p.catch(() => {});
+                            } catch (e) {}
+                        }
                     });
                 }
 
@@ -1804,7 +1860,6 @@
         })();
     }
     // ====================== [모듈 4: 디시인사이드 끝] ==========================
-
 
 
     // =========================================================================
