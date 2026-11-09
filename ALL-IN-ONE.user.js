@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         [통합] 내 전용 웹사이트 편의성 & 광고 차단팩
 // @namespace    http://tampermonkey.net/
-// @version      3.2
+// @version      3.3
 // @description  1.나무위키 광고차단 | 2.툰코(서브도메인 대응) 스크롤메뉴·배너제거 | 3.유튜브 PiP·백그라운드 연속재생(rAF우회/0:00돌파)·최고화질 | 4.디시 스텔스·IP/반고닉·핀셋차단 | 5.블로그·티스토리 복사해제
 //
 // --- [1. 나무위키 주소 규칙] ---
@@ -923,7 +923,14 @@
             lock('adblock_chk', () => false);
             lock('canRunAds', true);
             lock('is_ad_block', 'N');
-
+            
+            // [4-1] 내부 lock('is_ad_block', 'N'); 바로 아래에 추가
+            lock('go_statistics', (type, url) => {
+            if (url && typeof url === 'string') {
+            window.location.href = url;
+            }
+            });
+            
             const dcStyle = document.createElement('style');
             dcStyle.textContent = `
                 #moveOverlay, #moveimg, .adv-group, .adv-groupin, .adv-grouptop, .pwlink,
@@ -1239,18 +1246,30 @@
                     if (dateIdx > 0) return lis[dateIdx - 1];
                     return lis[0] || null;
                 };
-
-// [추가 패치] 디시 메인/목록의 javascript:go_statistics() 지연 함수를 직통 URL로 즉시 변환 (무반응 & 다운로드 버그 원천 차단)
+                
                 function bypassDcStatisticsLinks() {
-                    document.querySelectorAll('a[href^="javascript:go_statistics"]').forEach(a => {
-                        const rawHref = a.getAttribute('href') || '';
-                        const match = rawHref.match(/go_statistics\(\s*['"][^'"]*['"]\s*,\s*['"]([^'"]+)['"]/);
-                        if (match && match[1]) {
-                            a.setAttribute('href', match[1]);
-                        }
-                    });
+                document.querySelectorAll('a[href^="javascript:go_statistics"]').forEach(a => {
+                const rawHref = a.getAttribute('href') || '';
+                const match = rawHref.match(/go_statistics\(\s*['"][^'"]*['"]\s*,\s*['"]([^'"]+)['"]/);
+                if (match && match[1]) {
+                a.setAttribute('href', match[1]);
+                }
+                });
                 }
 
+                ['touchstart', 'click'].forEach(evtType => {
+                document.addEventListener(evtType, (e) => {
+                const a = e.target && e.target.closest ? e.target.closest('a[href^="javascript:go_statistics"]') : null;
+                if (a) {
+                const rawHref = a.getAttribute('href') || '';
+                const match = rawHref.match(/go_statistics\(\s*['"][^'"]*['"]\s*,\s*['"]([^'"]+)['"]/);
+                if (match && match[1]) {
+                a.setAttribute('href', match[1]);
+                }
+                }
+                }, { capture: true, passive: true });
+                });
+                
                 function tagIPs() {
                     const selectors = '.ip, .block-ip, ul.ginfo > li, .gallview-tit-box ul.ginfo2 > li:first-child';
                     document.querySelectorAll(selectors).forEach(el => {
