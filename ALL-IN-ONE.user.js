@@ -1240,6 +1240,17 @@
                     return lis[0] || null;
                 };
 
+// [추가 패치] 디시 메인/목록의 javascript:go_statistics() 지연 함수를 직통 URL로 즉시 변환 (무반응 & 다운로드 버그 원천 차단)
+                function bypassDcStatisticsLinks() {
+                    document.querySelectorAll('a[href^="javascript:go_statistics"]').forEach(a => {
+                        const rawHref = a.getAttribute('href') || '';
+                        const match = rawHref.match(/go_statistics\(\s*['"][^'"]*['"]\s*,\s*['"]([^'"]+)['"]/);
+                        if (match && match[1]) {
+                            a.setAttribute('href', match[1]);
+                        }
+                    });
+                }
+
                 function tagIPs() {
                     const selectors = '.ip, .block-ip, ul.ginfo > li, .gallview-tit-box ul.ginfo2 > li:first-child';
                     document.querySelectorAll(selectors).forEach(el => {
@@ -1834,6 +1845,7 @@
 
                 function runDcTasks() {
                     dynamicMutes = loadSavedMutes();
+                    bypassDcStatisticsLinks();
                     tagIPs();
                     loadOriginalImages();
                     processPostViewHeader();
