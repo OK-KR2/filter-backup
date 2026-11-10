@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         [통합] 내 전용 웹사이트 편의성 & 광고 차단팩
 // @namespace    http://tampermonkey.net/
-// @version      3.5
+// @version      3.6
 // @description  1.나무위키 광고차단 | 2.툰코(서브도메인 대응) 스크롤메뉴·배너제거 | 3.유튜브 PiP·백그라운드 연속재생(rAF우회/0:00돌파)·최고화질 | 4.디시 스텔스·IP/반고닉·핀셋차단 | 5.블로그·티스토리 복사해제
 //
 // --- [1. 나무위키 주소 규칙] ---
@@ -736,10 +736,10 @@
 
 
     // =========================================================================
-    // 📦 [모듈 4] Dcinside Stealth, IP/반고닉 식별 & 갤로그 고유 ID 핀셋 차단 v6.6
+    // 📦 [모듈 4] Dcinside Stealth, IP/반고닉 식별 & 갤로그 고유 ID 핀셋 차단 v6.7
     // - 작동 조건: dcinside.com 접속 시 (이미지 전용 서버 및 단독 이미지 열람 제외)
     // =========================================================================
-    if (ENABLE_MODULES.dcinside && currentHost.includes('dcinside.com') && !/^(nstatic|dcimg\d*)\./i.test(currentHost) && !/^image\//i.test(document.contentType || '')) {
+    if (ENABLE_MODULES.dcinside && currentHost.includes('dcinside.com') && !/^(nstatic|dcimg\d*|dccdn\d*|dcm\d*)\./i.test(currentHost) && !/^image\//i.test(document.contentType || '')) {
         (function() {
             const DC_MUTE_CONFIG = {
                 confirmBeforeMute: true,  // [차단] 터치 시 확인 창 띄우기 (바로 차단하려면 false)
@@ -775,8 +775,6 @@
                 };
             };
 
-            // ★ [핵심 수정 1] 대용량 차단 쿠키(dc_custom_mute_v1)가 매 HTTP 요청 헤더에 실려 프록시 스트림을 깨뜨리는 현상 해결
-            // 기존 쿠키 데이터를 localStorage로 1회 안전 이관한 뒤, 쿠키는 모든 경로/도메인에서 즉시 영구 파기하고 메모리 캐시만 사용
             let cachedMutes = null;
 
             const purgeLegacyMuteCookie = () => {
@@ -885,8 +883,6 @@
                 dynamicMutes = saveMutesToStore(dynamicMutes);
             };
 
-            // ★ [핵심 수정 2] 디시 common.js가 전역 함수를 configurable:false 데이터 속성으로 선언하더라도
-            // TypeError 없이 덮어쓰고 잠그는 안전한 프로퍼티 락(lock) 구현
             const lock = (p, v) => {
                 try {
                     const desc = Object.getOwnPropertyDescriptor(window, p);
@@ -938,7 +934,6 @@
                 } catch (e) {}
             };
 
-            // ★ [핵심 수정 3] go_statistics 호출 문자열에서 http/https/프로토콜 상대경로/내부경로를 모두 정확히 추출
             const normalizeDcUrl = (rawUrl) => {
                 if (!rawUrl || typeof rawUrl !== 'string') return '';
                 const trimmed = rawUrl.trim();
@@ -960,17 +955,6 @@
                 return normalizeDcUrl(lastMatch);
             };
 
-            let lastNavTime = 0;
-            const safeNavigate = (url) => {
-                const cleanUrl = normalizeDcUrl(url);
-                if (!cleanUrl) return;
-                const now = Date.now();
-                if (now - lastNavTime > 450) {
-                    lastNavTime = now;
-                    window.location.assign(cleanUrl);
-                }
-            };
-
             const enforceStealthLocks = () => {
                 lock('is_adblock', false);
                 lock('adblock_chk', () => false);
@@ -980,12 +964,7 @@
                     for (let i = args.length - 1; i >= 0; i--) {
                         const candidate = normalizeDcUrl(args[i]);
                         if (candidate) {
-                            try {
-                                if (window.event && typeof window.event.preventDefault === 'function') {
-                                    window.event.preventDefault();
-                                }
-                            } catch (e) {}
-                            safeNavigate(candidate);
+                            window.location.href = candidate;
                             break;
                         }
                     }
@@ -996,8 +975,6 @@
             laundryDC();
             enforceStealthLocks();
 
-            // ★ [핵심 수정 4] touchstart/pointerdown 도중 href를 변조하던 로직을 전면 제거 (WebKit 다운로드 오작동의 주원인)
-            // DOM 렌더링 시점에 미리 순수 URL로 정화하고, 미처 정화되지 않은 링크는 click 시점에 단일 네비게이션으로 처리
             const cleanSingleLink = (a) => {
                 if (!a || a.nodeType !== 1) return;
                 if (a.hasAttribute('download')) {
@@ -1023,64 +1000,12 @@
                 document.querySelectorAll('a[href*="go_statistics"], a[onclick*="go_statistics"], a[download]').forEach(cleanSingleLink);
             }
 
-            document.addEventListener('click', (e) => {
-                const a = e.target && e.target.closest ? e.target.closest('a') : null;
-                if (!a) return;
-
-                if (a.hasAttribute('download')) {
-                    a.removeAttribute('download');
-                }
-
-                const rawHref = a.getAttribute('href') || '';
-                const rawOnclick = a.getAttribute('onclick') || '';
-
-                if (rawHref.includes('go_statistics') || rawOnclick.includes('go_statistics')) {
-                    const realUrl = extractUrlFromStatCall(rawHref) || extractUrlFromStatCall(rawOnclick);
-                    cleanSingleLink(a);
-                    if (realUrl && !e.defaultPrevented && e.button === 0 && !e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey) {
-                        e.preventDefault();
-                        e.stopImmediatePropagation();
-                        safeNavigate(realUrl);
-                    }
-                }
-            }, true);
-
-            // ★ [핵심 수정 5] 게시글 클릭 순간 동시에 발사되어 프록시 HTTP 스트림을 깨뜨리는 통계/광고 XHR(XMLHttpRequest) 및 Fetch 차단
-            const isBlockedDcRequest = (url) => {
-                if (!url || typeof url !== 'string') return false;
-                return /ajax\/naverad|naverad|netinsight\.co\.kr|ad\.about\.co\.kr/i.test(url);
-            };
-
-            const originalFetch = window.fetch;
-            if (typeof originalFetch === 'function') {
-                window.fetch = async (...args) => {
-                    const url = typeof args[0] === 'string' ? args[0] : args[0]?.url;
-                    if (isBlockedDcRequest(url)) {
-                        return new Response(JSON.stringify({ ads: [] }), {
-                            status: 200,
-                            headers: { 'Content-Type': 'application/json' }
-                        });
-                    }
-                    return originalFetch.apply(window, args);
-                };
-            }
-
-            const origXhrOpen = XMLHttpRequest.prototype.open;
-            const origXhrSend = XMLHttpRequest.prototype.send;
-            XMLHttpRequest.prototype.open = function(method, url, ...rest) {
-                this._dcBlocked = isBlockedDcRequest(typeof url === 'string' ? url : String(url || ''));
-                return origXhrOpen.call(this, method, url, ...rest);
-            };
-            XMLHttpRequest.prototype.send = function(...args) {
-                if (this._dcBlocked) return;
-                return origXhrSend.apply(this, args);
-            };
-
+            // ★ [패치 1] .penalty-box를 CSS로 숨겨 하얀 백지 화면(ㅎㅎ.txt)이 되던 문제 해결
             const dcStyle = document.createElement('style');
             dcStyle.id = 'dc-custom-stealth-style';
             dcStyle.textContent = `
                 #moveOverlay, #moveimg, .adv-group, .adv-groupin, .adv-grouptop, .pwlink,
-                .penalty-box, .pp-box:has(.penalty-box), div[id*="ad_middle"], iframe[src*="netinsight"] {
+                div[id*="ad_middle"], iframe[src*="netinsight"] {
                     position: absolute !important; left: -9999px !important; top: -9999px !important;
                     width: 1px !important; height: 1px !important; overflow: hidden !important;
                     opacity: 0 !important; pointer-events: none !important;
@@ -1275,10 +1200,37 @@
             };
             ensureDcStyle();
 
+            const originalFetch = window.fetch;
+            if (typeof originalFetch === 'function') {
+                window.fetch = async (...args) => {
+                    const url = typeof args[0] === 'string' ? args[0] : args[0]?.url;
+                    if (url && (url.includes('ajax/naverad') || url.includes('naverad'))) {
+                        return new Response(JSON.stringify({ ads: [] }), {
+                            status: 200,
+                            headers: { 'Content-Type': 'application/json' }
+                        });
+                    }
+                    return originalFetch.apply(window, args);
+                };
+            }
+
             runAtDocumentEnd(() => {
                 ensureDcStyle();
                 laundryDC();
                 enforceStealthLocks();
+
+                // ★ [패치 2] 게시글 진입 시 일시적 DB 지연으로 .penalty-box(ㅎㅎ.txt)가 뜬 경우 1회 자동 새로고침하여 정상 본문 로드
+                const penaltyBox = document.querySelector('.penalty-box');
+                if (penaltyBox && /^\/(board|mini|mgallery|person)\/[^/]+\/\d+/.test(window.location.pathname)) {
+                    const retryKey = 'dc_penalty_retry_' + window.location.pathname;
+                    try {
+                        if (!sessionStorage.getItem(retryKey)) {
+                            sessionStorage.setItem(retryKey, '1');
+                            window.location.replace(window.location.href);
+                            return;
+                        }
+                    } catch (e) {}
+                }
 
                 const ipCategories = [
                     {
@@ -1345,7 +1297,6 @@
                     return clone.textContent.trim();
                 };
 
-                // ★ [핵심 수정 6] 모바일/PC 갤로그 링크(location.href='.../gallog/ID' 및 open_gallog('ID')) 모두 100% 추출
                 const extractGallogId = (scopeEl) => {
                     if (!scopeEl) return '';
                     if (scopeEl.getAttribute && scopeEl.getAttribute('data-uid')) {
@@ -1384,7 +1335,6 @@
                     return false;
                 };
 
-                // ★ [핵심 수정 7] 메인 실베 위젯(갤러리명 | 시간 2칸 구조)에서 갤러리명을 작성자로 오인하지 않도록 방어
                 const findMobileWriterLi = (ginfoUl) => {
                     if (!ginfoUl) return null;
                     const lis = Array.from(ginfoUl.children);
@@ -1419,35 +1369,33 @@
                     });
                 }
 
-                function loadOriginalImages() {
-                    const imgSelectors = '.thum-txtin img, .write_div img, .gallview_contents img, ul.all-comment-lst img, .cmt_list img, .reply_list img, img.written_dccon';
-                    document.querySelectorAll(imgSelectors).forEach(img => {
-                        if (img.dataset.dcImgInit === 'true') return;
-                        const realSrc = img.getAttribute('data-original') || img.getAttribute('data-src') || img.getAttribute('data-lazy') || img.getAttribute('data-gif');
-                        if (realSrc && img.getAttribute('src') !== realSrc) {
-                            img.src = realSrc;
-                            img.removeAttribute('data-original');
-                            img.removeAttribute('data-src');
-                            img.removeAttribute('data-lazy');
-                            img.removeAttribute('data-gif');
-                            img.classList.remove('lazy');
-                        }
-                        img.loading = 'eager';
-                        img.dataset.dcImgInit = 'true';
-                    });
+                // ★ [패치 3] 페이지 내 수십 개 이미지를 한꺼번에 eager로 당겨 프록시를 마비시키고 계단식 지연을 유발하던 로직을
+                // 화면 근처(IntersectionObserver 500px)에 도달할 때만 순차 로드하도록 변경 (목록 썸네일은 디시 순정 lazyload 유지)
+                const activateMediaElement = (el) => {
+                    if (!el || el.dataset.dcMediaLoaded === 'true') return;
+                    el.dataset.dcMediaLoaded = 'true';
 
-                    const videoSelectors = '.thum-txtin video, .write_div video, .gallview_contents video, ul.all-comment-lst video, .cmt_list video, .reply_list video, video.written_dccon, video.dc_mv';
-                    document.querySelectorAll(videoSelectors).forEach(video => {
+                    if (el.tagName === 'IMG') {
+                        const realSrc = el.getAttribute('data-original') || el.getAttribute('data-src') || el.getAttribute('data-lazy') || el.getAttribute('data-gif');
+                        if (realSrc && el.getAttribute('src') !== realSrc) {
+                            el.src = realSrc;
+                            el.removeAttribute('data-original');
+                            el.removeAttribute('data-src');
+                            el.removeAttribute('data-lazy');
+                            el.removeAttribute('data-gif');
+                            el.classList.remove('lazy');
+                        }
+                    } else if (el.tagName === 'VIDEO') {
                         let srcChanged = false;
-                        const realVidSrc = video.getAttribute('data-src') || video.getAttribute('data-original') || video.getAttribute('data-mp4');
-                        if (realVidSrc && video.getAttribute('src') !== realVidSrc) {
-                            video.src = realVidSrc;
-                            video.removeAttribute('data-src');
-                            video.removeAttribute('data-original');
-                            video.removeAttribute('data-mp4');
+                        const realVidSrc = el.getAttribute('data-src') || el.getAttribute('data-original') || el.getAttribute('data-mp4');
+                        if (realVidSrc && el.getAttribute('src') !== realVidSrc) {
+                            el.src = realVidSrc;
+                            el.removeAttribute('data-src');
+                            el.removeAttribute('data-original');
+                            el.removeAttribute('data-mp4');
                             srcChanged = true;
                         }
-                        video.querySelectorAll('source').forEach(srcEl => {
+                        el.querySelectorAll('source').forEach(srcEl => {
                             const sUrl = srcEl.getAttribute('data-src') || srcEl.getAttribute('data-original');
                             if (sUrl && srcEl.getAttribute('src') !== sUrl) {
                                 srcEl.src = sUrl;
@@ -1456,28 +1404,60 @@
                                 srcChanged = true;
                             }
                         });
-
-                        const poster = video.getAttribute('poster') || '';
+                        const poster = el.getAttribute('poster') || '';
                         if (poster.includes('loading')) {
-                            video.removeAttribute('poster');
+                            el.removeAttribute('poster');
                         }
+                        el.classList.remove('lazy');
+                        el.muted = true;
+                        el.playsInline = true;
+                        el.setAttribute('muted', '');
+                        el.setAttribute('playsinline', '');
+                        el.setAttribute('webkit-playsinline', '');
+                        try {
+                            if (srcChanged) el.load();
+                            const p = el.play();
+                            if (p && typeof p.catch === 'function') p.catch(() => {});
+                        } catch (e) {}
+                    }
+                };
 
-                        if (srcChanged || video.dataset.dcVidInit !== 'true') {
-                            video.dataset.dcVidInit = 'true';
-                            video.classList.remove('lazy');
-                            video.muted = true;
-                            video.playsInline = true;
-                            video.setAttribute('muted', '');
-                            video.setAttribute('playsinline', '');
-                            video.setAttribute('webkit-playsinline', '');
-                            try {
-                                if (srcChanged) video.load();
-                                const p = video.play();
-                                if (p && typeof p.catch === 'function') p.catch(() => {});
-                            } catch (e) {}
+                const mediaObserver = ('IntersectionObserver' in window)
+                    ? new IntersectionObserver((entries, obs) => {
+                        entries.forEach(entry => {
+                            if (entry.isIntersecting) {
+                                activateMediaElement(entry.target);
+                                obs.unobserve(entry.target);
+                            }
+                        });
+                    }, { rootMargin: '500px 0px' })
+                    : null;
+
+                function loadOriginalImages() {
+                    const mediaSelectors = '.write_div img, .gallview_contents img, ul.all-comment-lst img, .cmt_list img, .reply_list img, img.written_dccon, .thum-txtin video, .write_div video, .gallview_contents video, ul.all-comment-lst video, .cmt_list video, .reply_list video, video.written_dccon, video.dc_mv';
+                    document.querySelectorAll(mediaSelectors).forEach(el => {
+                        if (el.dataset.dcMediaObs === 'true') return;
+                        el.dataset.dcMediaObs = 'true';
+                        if (mediaObserver) {
+                            mediaObserver.observe(el);
+                        } else {
+                            activateMediaElement(el);
                         }
                     });
                 }
+
+                // ★ [패치 4] 사파리 뒤로가기 제스처 시 이전 페이지의 비디오 스트림이 프록시 연결을 계속 점유하지 않도록 정리 및 BFCache 복원 대응
+                window.addEventListener('pagehide', () => {
+                    document.querySelectorAll('video').forEach(v => {
+                        try { v.pause(); } catch (e) {}
+                    });
+                }, { passive: true });
+
+                window.addEventListener('pageshow', (e) => {
+                    if (e.persisted) {
+                        runDcTasks();
+                    }
+                }, { passive: true });
 
                 const copyTextToClipboard = async (text) => {
                     try {
@@ -1766,7 +1746,6 @@
                     }
                 }
 
-                // ★ [핵심 수정 8] 고닉/반고닉(uid) 차단 시 nicks 중복 저장으로 인해 해제가 안 되던 버그 해결 및 모바일·PC 연동 일원화
                 function processPostViewHeader() {
                     const allMutedIps = [...DC_MUTE_CONFIG.ips, ...dynamicMutes.ips];
                     const allMutedUidSet = new Set([
@@ -2021,7 +2000,6 @@
 
                 runDcTasks();
 
-                // ★ [핵심 수정 9] 스크립트가 직접 추가한 배지/버튼 노드는 MutationObserver 감지에서 제외하여 무한 재귀 루프 차단
                 const isOwnInjectedNode = (node) => {
                     if (!node || node.nodeType !== 1) return false;
                     if (node.id === 'dc-mute-manage-bar' || node.id === 'dc-mute-modal-backdrop' || node.id === 'dc-custom-stealth-style') return true;
