@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         [통합] 내 전용 웹사이트 편의성 & 광고 차단팩
 // @namespace    http://tampermonkey.net/
-// @version      3.4
+// @version      3.5
 // @description  1.나무위키 광고차단 | 2.툰코(서브도메인 대응) 스크롤메뉴·배너제거 | 3.유튜브 PiP·백그라운드 연속재생(rAF우회/0:00돌파)·최고화질 | 4.디시 스텔스·IP/반고닉·핀셋차단 | 5.블로그·티스토리 복사해제
 //
 // --- [1. 나무위키 주소 규칙] ---
@@ -326,10 +326,6 @@
     // =========================================================================
     // 📦 [모듈 3] YouTube Background Playlist Unlocker, Max Quality & Smart PiP v37.0
     // - 작동 조건: youtube.com 접속 시
-    // - v37.0 핵심 패치 (3곡째 0:00 무한 로딩 멈춤 현상 해결):
-    //   1) 백그라운드 시 멈추는 requestAnimationFrame을 setTimeout으로 자동 우회
-    //   2) 실제 화면이 꺼진 상태에서는 최고 화질(1080p) 강제 변경을 보류하여 비디오 디코더 먹통 방지
-    //   3) 곡 전환 시 0:00에서 멈춰 있으면 0.05초 탐색 및 강제 출발(Kickstart) 실행
     // =========================================================================
     if (ENABLE_MODULES.youtube && currentHost.includes('youtube.com')) {
         (function() {
@@ -339,7 +335,6 @@
                 pipIdleOpacity: '0.40'    // 평소 PiP 버튼 투명도 (0.1 ~ 1.0)
             };
 
-            // [3-0] 위장 전 브라우저의 '진짜 백그라운드(화면 잠금) 상태' 판별기 확보
             const nativeHiddenDesc = Object.getOwnPropertyDescriptor(Document.prototype, 'hidden') ||
                                      Object.getOwnPropertyDescriptor(document, 'hidden');
             const nativeVisDesc = Object.getOwnPropertyDescriptor(Document.prototype, 'visibilityState') ||
@@ -358,17 +353,14 @@
                 return fallbackBgFlag;
             };
 
-            // [3-1] 해결책 ①: 화면 잠금 시 동결되는 requestAnimationFrame을 타이머로 자동 우회
             const nativeRAF = window.requestAnimationFrame ? window.requestAnimationFrame.bind(window) : null;
             const nativeCAF = window.cancelAnimationFrame ? window.cancelAnimationFrame.bind(window) : null;
 
             if (nativeRAF) {
                 window.requestAnimationFrame = function(callback) {
-                    // 화면이 실제로 켜져 있을 때는 순정 rAF 그대로 작동 (성능 저하 0%)
                     if (!checkRealBackground()) {
                         return nativeRAF(callback);
                     }
-                    // 화면이 잠긴 백그라운드 상태에서는 iOS가 rAF를 멈추므로 setTimeout으로 다음 곡 세팅 유지
                     return window.setTimeout(() => {
                         try { callback(performance.now()); } catch (e) {}
                     }, 30);
@@ -379,7 +371,6 @@
                 };
             }
 
-            // [3-2] 백그라운드 재생 활성화 (document-start 시점에 즉시 상태 위장)
             try {
                 Object.defineProperties(document, {
                     'hidden': { get: () => false, configurable: true },
@@ -412,7 +403,6 @@
                 }
             }, { passive: true });
 
-            // 사용자 활동 시간(_lact) 갱신 (3곡 뒤 비활성 멈춤 방지)
             const keepAliveLact = () => {
                 try { window._lact = Date.now(); } catch (e) {}
             };
@@ -433,8 +423,6 @@
                 }
             }, true);
 
-
-            // [3-3] 해결책 ②: 최고 화질 자동 고정 (실제 화면이 켜져 있을 때만 작동, 백그라운드 곡 전환 시 보류)
             const setYtLocalStorageQuality = () => {
                 if (!YT_CONFIG.autoMaxQuality) return;
                 try {
@@ -450,7 +438,6 @@
             setYtLocalStorageQuality();
 
             const applyMaxQualityToPlayer = () => {
-                // 화면이 꺼진 상태에서는 고화질 비디오 버퍼 재요청으로 인한 0:00 멈춤을 막기 위해 화질 변경 보류
                 if (!YT_CONFIG.autoMaxQuality || checkRealBackground()) return;
                 try {
                     const player = document.getElementById('movie_player') || document.querySelector('.html5-video-player');
@@ -479,8 +466,6 @@
                 } catch (e) {}
             };
 
-
-            // [3-4] 해결책 ③: 트랙 전환 시 0:00 무한 로딩 강제 출발(Kickstart) & 잠금 직후 멈춤 방어
             let isTrackTransitioning = false;
             let kickstartTimers = [];
 
@@ -495,7 +480,6 @@
                 const player = document.getElementById('movie_player') || document.querySelector('.html5-video-player');
                 if (!v) return;
 
-                // 백그라운드 상태이거나 곡 전환 직후에 0:00 부근(0.5초 미만)에서 멈춰있는 경우 강제 출발
                 if ((checkRealBackground() || isTrackTransitioning) && v.currentTime < 0.5 && (v.paused || v.readyState < 3)) {
                     keepAliveLact();
                     try {
@@ -520,7 +504,6 @@
                 });
             };
 
-            // 한 곡이 끝나는 순간 다음 곡 전환 플래그 활성화 및 강제 출발 예약
             document.addEventListener('ended', (e) => {
                 if (e.target && e.target.tagName === 'VIDEO') {
                     isTrackTransitioning = true;
@@ -529,7 +512,6 @@
                 }
             }, true);
 
-            // 새 곡 메타데이터/스트림 로드 시점이 백그라운드이거나 곡 전환 중이면 즉시 출발 체크
             ['loadedmetadata', 'loadeddata', 'canplay'].forEach(evt => {
                 document.addEventListener(evt, (e) => {
                     if (e.target && e.target.tagName === 'VIDEO') {
@@ -541,7 +523,6 @@
                 }, true);
             });
 
-            // 전원 버튼을 눌러 화면을 잠그는 순간(1.2초 이내) 사파리가 거는 일시정지 자동 해제
             document.addEventListener('pause', (e) => {
                 if (e.target && e.target.tagName === 'VIDEO') {
                     if (e.target.ended) {
@@ -577,8 +558,6 @@
                 }
             }, true);
 
-
-            // [3-5] /watch 전용 반투명 PiP 버튼 & 댓글 스크롤 시 자동 숨김
             runAtDocumentIdle(function() {
                 const ytPipStyle = document.createElement('style');
                 ytPipStyle.textContent = `
@@ -756,8 +735,8 @@
 
 
 
-// =========================================================================
-    // 📦 [모듈 4] Dcinside Stealth, IP/반고닉 식별 & 갤로그 고유 ID 핀셋 차단 v6.1
+    // =========================================================================
+    // 📦 [모듈 4] Dcinside Stealth, IP/반고닉 식별 & 갤로그 고유 ID 핀셋 차단 v6.6
     // - 작동 조건: dcinside.com 접속 시 (이미지 전용 서버 및 단독 이미지 열람 제외)
     // =========================================================================
     if (ENABLE_MODULES.dcinside && currentHost.includes('dcinside.com') && !/^(nstatic|dcimg\d*)\./i.test(currentHost) && !/^image\//i.test(document.contentType || '')) {
@@ -779,40 +758,72 @@
                 const str = String(entry || '').trim();
                 const idx = str.indexOf(':');
                 if (idx > 0) {
-                    return { uid: str.slice(0, idx), nick: str.slice(idx + 1) };
+                    return { uid: str.slice(0, idx).trim(), nick: str.slice(idx + 1).trim() };
                 }
                 return { uid: str, nick: '' };
             };
 
             const normalizeData = (obj) => {
                 const rawNicks = (obj && Array.isArray(obj.nicks)) ? obj.nicks : [];
-                const safeNicks = rawNicks.filter(n => n && !COMMON_DUP_NICKS.has(String(n).trim()));
+                const safeNicks = rawNicks.map(n => String(n || '').trim()).filter(n => n && !COMMON_DUP_NICKS.has(n));
                 return {
-                    ips: (obj && Array.isArray(obj.ips)) ? Array.from(new Set(obj.ips)) : [],
-                    uids: (obj && Array.isArray(obj.uids)) ? Array.from(new Set(obj.uids)) : [],
+                    ips: (obj && Array.isArray(obj.ips)) ? Array.from(new Set(obj.ips.map(v => String(v || '').trim()).filter(Boolean))) : [],
+                    uids: (obj && Array.isArray(obj.uids)) ? Array.from(new Set(obj.uids.map(v => String(v || '').trim()).filter(Boolean))) : [],
                     nicks: Array.from(new Set(safeNicks)),
-                    keywords: (obj && Array.isArray(obj.keywords)) ? Array.from(new Set(obj.keywords)) : [],
+                    keywords: (obj && Array.isArray(obj.keywords)) ? Array.from(new Set(obj.keywords.map(v => String(v || '').trim()).filter(Boolean))) : [],
                     t: (obj && typeof obj.t === 'number') ? obj.t : 0
                 };
             };
 
-            const readLocalStore = () => {
+            // ★ [핵심 수정 1] 대용량 차단 쿠키(dc_custom_mute_v1)가 매 HTTP 요청 헤더에 실려 프록시 스트림을 깨뜨리는 현상 해결
+            // 기존 쿠키 데이터를 localStorage로 1회 안전 이관한 뒤, 쿠키는 모든 경로/도메인에서 즉시 영구 파기하고 메모리 캐시만 사용
+            let cachedMutes = null;
+
+            const purgeLegacyMuteCookie = () => {
+                try {
+                    if (document.cookie.includes(STORAGE_KEY)) {
+                        document.cookie = `${STORAGE_KEY}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.dcinside.com; SameSite=Lax`;
+                        document.cookie = `${STORAGE_KEY}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.dcinside.com`;
+                        document.cookie = `${STORAGE_KEY}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/`;
+                    }
+                } catch (e) {}
+            };
+
+            const loadSavedMutes = (forceReload = false) => {
+                if (cachedMutes && !forceReload) return cachedMutes;
+                let lsData = null;
+                let ckData = null;
+
                 try {
                     const raw = localStorage.getItem(STORAGE_KEY);
-                    if (raw) return normalizeData(JSON.parse(raw));
+                    if (raw) lsData = normalizeData(JSON.parse(raw));
                 } catch (e) {}
-                return null;
-            };
 
-            const readRootCookie = () => {
                 try {
                     const m = document.cookie.match(new RegExp('(?:^|;\\s*)' + STORAGE_KEY + '=([^;]*)'));
-                    if (m && m[1]) return normalizeData(JSON.parse(decodeURIComponent(m[1])));
+                    if (m && m[1]) ckData = normalizeData(JSON.parse(decodeURIComponent(m[1])));
                 } catch (e) {}
-                return null;
+
+                if (ckData) {
+                    const merged = normalizeData({
+                        ips: [...(lsData ? lsData.ips : []), ...ckData.ips],
+                        uids: [...(lsData ? lsData.uids : []), ...ckData.uids],
+                        nicks: [...(lsData ? lsData.nicks : []), ...ckData.nicks],
+                        keywords: [...(lsData ? lsData.keywords : []), ...ckData.keywords],
+                        t: Date.now()
+                    });
+                    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(merged)); } catch (e) {}
+                    purgeLegacyMuteCookie();
+                    cachedMutes = merged;
+                    return cachedMutes;
+                }
+
+                purgeLegacyMuteCookie();
+                cachedMutes = lsData || { ips: [], uids: [], nicks: [], keywords: [], t: 0 };
+                return cachedMutes;
             };
 
-            const writeHybridStore = (data) => {
+            const saveMutesToStore = (data) => {
                 const norm = normalizeData(data);
                 const payload = {
                     ips: norm.ips,
@@ -821,60 +832,38 @@
                     keywords: norm.keywords,
                     t: Date.now()
                 };
-                const jsonStr = JSON.stringify(payload);
-
-                try { localStorage.setItem(STORAGE_KEY, jsonStr); } catch (e) {}
-
+                cachedMutes = payload;
                 try {
-                    const encoded = encodeURIComponent(jsonStr);
-                    if (encoded.length < 3800) {
-                        document.cookie = `${STORAGE_KEY}=${encoded}; expires=Thu, 01 Jan 2035 00:00:00 UTC; path=/; domain=.dcinside.com; SameSite=Lax`;
-                    }
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
                 } catch (e) {}
-
+                purgeLegacyMuteCookie();
                 return payload;
             };
 
-            const loadSavedMutes = () => {
-                const ls = readLocalStore();
-                const ck = readRootCookie();
+            let dynamicMutes = loadSavedMutes(true);
 
-                if (ls && ck) {
-                    if (ck.t > ls.t) {
-                        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(ck)); } catch (e) {}
-                        return ck;
-                    } else if (ls.t > ck.t) {
-                        writeHybridStore(ls);
-                        return ls;
-                    }
-                    return ls;
-                } else if (ck && !ls) {
-                    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(ck)); } catch (e) {}
-                    return ck;
-                } else if (ls && !ck) {
-                    writeHybridStore(ls);
-                    return ls;
+            window.addEventListener('storage', (e) => {
+                if (e.key === STORAGE_KEY) {
+                    dynamicMutes = loadSavedMutes(true);
                 }
-                return { ips: [], uids: [], nicks: [], keywords: [], t: 0 };
-            };
-
-            let dynamicMutes = loadSavedMutes();
+            });
 
             const addMuteItem = (type, value) => {
                 if (!value) return;
                 dynamicMutes = loadSavedMutes();
                 if (type === 'uids') {
                     const targetUid = parseUidEntry(value).uid;
+                    if (!targetUid) return;
                     const exists = dynamicMutes.uids.some(e => parseUidEntry(e).uid === targetUid);
                     if (!exists) {
                         dynamicMutes.uids.push(value);
-                        dynamicMutes = writeHybridStore(dynamicMutes);
+                        dynamicMutes = saveMutesToStore(dynamicMutes);
                     }
                     return;
                 }
                 if (!dynamicMutes[type].includes(value)) {
                     dynamicMutes[type].push(value);
-                    dynamicMutes = writeHybridStore(dynamicMutes);
+                    dynamicMutes = saveMutesToStore(dynamicMutes);
                 }
             };
 
@@ -882,28 +871,57 @@
                 dynamicMutes = loadSavedMutes();
                 if (type === 'uids') {
                     const targetUid = parseUidEntry(value).uid;
+                    const removedEntries = dynamicMutes.uids.filter(e => parseUidEntry(e).uid === targetUid);
                     dynamicMutes.uids = dynamicMutes.uids.filter(e => parseUidEntry(e).uid !== targetUid);
+                    removedEntries.forEach(e => {
+                        const nk = parseUidEntry(e).nick;
+                        if (nk) {
+                            dynamicMutes.nicks = dynamicMutes.nicks.filter(item => item !== nk);
+                        }
+                    });
                 } else {
                     dynamicMutes[type] = dynamicMutes[type].filter(item => item !== value);
                 }
-                dynamicMutes = writeHybridStore(dynamicMutes);
+                dynamicMutes = saveMutesToStore(dynamicMutes);
             };
 
-            // [4-1] 스텔스 & 애드블록 감지 무력화 (디시 본문 스크립트 충돌 방지 패치)
+            // ★ [핵심 수정 2] 디시 common.js가 전역 함수를 configurable:false 데이터 속성으로 선언하더라도
+            // TypeError 없이 덮어쓰고 잠그는 안전한 프로퍼티 락(lock) 구현
             const lock = (p, v) => {
                 try {
-                    Object.defineProperty(window, p, {
-                        get: () => v,
-                        set: () => {},
-                        configurable: true
-                    });
-                } catch (e) {}
+                    const desc = Object.getOwnPropertyDescriptor(window, p);
+                    if (!desc || desc.configurable) {
+                        Object.defineProperty(window, p, {
+                            get: () => v,
+                            set: () => {},
+                            configurable: true
+                        });
+                    } else if (desc.writable) {
+                        Object.defineProperty(window, p, {
+                            value: v,
+                            writable: false
+                        });
+                    }
+                } catch (e) {
+                    try { window[p] = v; } catch (err) {}
+                }
             };
+
             if (typeof window.getCookie === 'undefined') {
                 window.getCookie = (name) => {
-                    if (name && /find_ab|adblock/i.test(name)) return '';
-                    const m = document.cookie.match(new RegExp('(?:^|;\\s*)' + name + '=([^;]*)'));
-                    return m ? decodeURIComponent(m[1]) : '';
+                    if (!name || /find_ab|adblock/i.test(name)) return '';
+                    try {
+                        const escapedName = String(name).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                        const m = document.cookie.match(new RegExp('(?:^|;\\s*)' + escapedName + '=([^;]*)'));
+                        if (!m) return '';
+                        try {
+                            return decodeURIComponent(m[1]);
+                        } catch (err) {
+                            return unescape(m[1]);
+                        }
+                    } catch (e) {
+                        return '';
+                    }
                 };
             }
             if (typeof window.setCookie_hk_hour === 'undefined') window.setCookie_hk_hour = () => {};
@@ -916,30 +934,159 @@
                     if (document.cookie.includes('find_ab=ok')) {
                         document.cookie = "find_ab=no; expires=Thu, 01 Jan 2030 00:00:00 UTC; path=/; domain=.dcinside.com";
                     }
+                    purgeLegacyMuteCookie();
                 } catch (e) {}
             };
+
+            // ★ [핵심 수정 3] go_statistics 호출 문자열에서 http/https/프로토콜 상대경로/내부경로를 모두 정확히 추출
+            const normalizeDcUrl = (rawUrl) => {
+                if (!rawUrl || typeof rawUrl !== 'string') return '';
+                const trimmed = rawUrl.trim();
+                if (/^\/\/[^/]/.test(trimmed)) return 'https:' + trimmed;
+                if (/^http:\/\/([^/]*dcinside\.com)/i.test(trimmed)) {
+                    return trimmed.replace(/^http:\/\//i, 'https://');
+                }
+                if (/^https?:\/\//i.test(trimmed) || trimmed.startsWith('/')) {
+                    return trimmed;
+                }
+                return '';
+            };
+
+            const extractUrlFromStatCall = (str) => {
+                if (!str || typeof str !== 'string') return '';
+                const matches = str.match(/['"]((?:https?:)?\/\/[^'"]+|\/(?:board|mini|mgallery|person|gallog)\/[^'"]+)['"]/gi);
+                if (!matches || matches.length === 0) return '';
+                const lastMatch = matches[matches.length - 1].slice(1, -1);
+                return normalizeDcUrl(lastMatch);
+            };
+
+            let lastNavTime = 0;
+            const safeNavigate = (url) => {
+                const cleanUrl = normalizeDcUrl(url);
+                if (!cleanUrl) return;
+                const now = Date.now();
+                if (now - lastNavTime > 450) {
+                    lastNavTime = now;
+                    window.location.assign(cleanUrl);
+                }
+            };
+
+            const enforceStealthLocks = () => {
+                lock('is_adblock', false);
+                lock('adblock_chk', () => false);
+                lock('canRunAds', true);
+                lock('is_ad_block', 'N');
+                lock('go_statistics', (...args) => {
+                    for (let i = args.length - 1; i >= 0; i--) {
+                        const candidate = normalizeDcUrl(args[i]);
+                        if (candidate) {
+                            try {
+                                if (window.event && typeof window.event.preventDefault === 'function') {
+                                    window.event.preventDefault();
+                                }
+                            } catch (e) {}
+                            safeNavigate(candidate);
+                            break;
+                        }
+                    }
+                    return false;
+                });
+            };
+
             laundryDC();
-            lock('is_adblock', false);
-            lock('adblock_chk', () => false);
-            lock('canRunAds', true);
-            lock('is_ad_block', 'N');
-            
-            // [4-1] 내부 lock('is_ad_block', 'N'); 바로 아래에 추가
-            lock('go_statistics', (type, url) => {
-            if (url && typeof url === 'string') {
-            window.location.href = url;
+            enforceStealthLocks();
+
+            // ★ [핵심 수정 4] touchstart/pointerdown 도중 href를 변조하던 로직을 전면 제거 (WebKit 다운로드 오작동의 주원인)
+            // DOM 렌더링 시점에 미리 순수 URL로 정화하고, 미처 정화되지 않은 링크는 click 시점에 단일 네비게이션으로 처리
+            const cleanSingleLink = (a) => {
+                if (!a || a.nodeType !== 1) return;
+                if (a.hasAttribute('download')) {
+                    a.removeAttribute('download');
+                }
+                const rawHref = a.getAttribute('href') || '';
+                const rawOnclick = a.getAttribute('onclick') || '';
+
+                if (rawHref.includes('go_statistics')) {
+                    const realUrl = extractUrlFromStatCall(rawHref);
+                    if (realUrl) a.setAttribute('href', realUrl);
+                }
+                if (rawOnclick.includes('go_statistics')) {
+                    const realUrl = extractUrlFromStatCall(rawOnclick);
+                    if (realUrl && (!rawHref || rawHref.startsWith('javascript:') || rawHref === '#')) {
+                        a.setAttribute('href', realUrl);
+                    }
+                    a.removeAttribute('onclick');
+                }
+            };
+
+            function sanitizeDcLinks() {
+                document.querySelectorAll('a[href*="go_statistics"], a[onclick*="go_statistics"], a[download]').forEach(cleanSingleLink);
             }
-            });
-            
+
+            document.addEventListener('click', (e) => {
+                const a = e.target && e.target.closest ? e.target.closest('a') : null;
+                if (!a) return;
+
+                if (a.hasAttribute('download')) {
+                    a.removeAttribute('download');
+                }
+
+                const rawHref = a.getAttribute('href') || '';
+                const rawOnclick = a.getAttribute('onclick') || '';
+
+                if (rawHref.includes('go_statistics') || rawOnclick.includes('go_statistics')) {
+                    const realUrl = extractUrlFromStatCall(rawHref) || extractUrlFromStatCall(rawOnclick);
+                    cleanSingleLink(a);
+                    if (realUrl && !e.defaultPrevented && e.button === 0 && !e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey) {
+                        e.preventDefault();
+                        e.stopImmediatePropagation();
+                        safeNavigate(realUrl);
+                    }
+                }
+            }, true);
+
+            // ★ [핵심 수정 5] 게시글 클릭 순간 동시에 발사되어 프록시 HTTP 스트림을 깨뜨리는 통계/광고 XHR(XMLHttpRequest) 및 Fetch 차단
+            const isBlockedDcRequest = (url) => {
+                if (!url || typeof url !== 'string') return false;
+                return /ajax\/naverad|naverad|netinsight\.co\.kr|ad\.about\.co\.kr/i.test(url);
+            };
+
+            const originalFetch = window.fetch;
+            if (typeof originalFetch === 'function') {
+                window.fetch = async (...args) => {
+                    const url = typeof args[0] === 'string' ? args[0] : args[0]?.url;
+                    if (isBlockedDcRequest(url)) {
+                        return new Response(JSON.stringify({ ads: [] }), {
+                            status: 200,
+                            headers: { 'Content-Type': 'application/json' }
+                        });
+                    }
+                    return originalFetch.apply(window, args);
+                };
+            }
+
+            const origXhrOpen = XMLHttpRequest.prototype.open;
+            const origXhrSend = XMLHttpRequest.prototype.send;
+            XMLHttpRequest.prototype.open = function(method, url, ...rest) {
+                this._dcBlocked = isBlockedDcRequest(typeof url === 'string' ? url : String(url || ''));
+                return origXhrOpen.call(this, method, url, ...rest);
+            };
+            XMLHttpRequest.prototype.send = function(...args) {
+                if (this._dcBlocked) return;
+                return origXhrSend.apply(this, args);
+            };
+
             const dcStyle = document.createElement('style');
+            dcStyle.id = 'dc-custom-stealth-style';
             dcStyle.textContent = `
                 #moveOverlay, #moveimg, .adv-group, .adv-groupin, .adv-grouptop, .pwlink,
                 .penalty-box, .pp-box:has(.penalty-box), div[id*="ad_middle"], iframe[src*="netinsight"] {
                     position: absolute !important; left: -9999px !important; top: -9999px !important;
-                    width: 1px !important; height: 1px !important; overflow: hidden !important; 
+                    width: 1px !important; height: 1px !important; overflow: hidden !important;
                     opacity: 0 !important; pointer-events: none !important;
                 }
-                ul.gall-detail-lst ul.ginfo > li {
+                ul.gall-detail-lst ul.ginfo > li,
+                .gallview-tit-box ul.ginfo2 > li {
                     max-width: none !important;
                     overflow: visible !important;
                 }
@@ -1119,19 +1266,19 @@
                     border-color: #f5c6cb;
                 }
             `;
-            (document.head || document.documentElement).appendChild(dcStyle);
 
-            const originalFetch = window.fetch;
-            window.fetch = async (...args) => {
-                const url = typeof args[0] === 'string' ? args[0] : args[0]?.url;
-                if (url && (url.includes('ajax/naverad') || url.includes('naverad'))) {
-                    return new Response(JSON.stringify({ ads: [] }), { status: 200 });
+            const ensureDcStyle = () => {
+                const root = document.head || document.documentElement;
+                if (root && !document.getElementById('dc-custom-stealth-style')) {
+                    root.appendChild(dcStyle);
                 }
-                return originalFetch.apply(window, args);
             };
+            ensureDcStyle();
 
             runAtDocumentEnd(() => {
+                ensureDcStyle();
                 laundryDC();
+                enforceStealthLocks();
 
                 const ipCategories = [
                     {
@@ -1194,10 +1341,11 @@
                 const getCleanText = (el) => {
                     if (!el) return '';
                     const clone = el.cloneNode(true);
-                    clone.querySelectorAll('.dc-ip-tag-span, .dc-semi-tag-span, .dc-one-touch-mute-btn, .sp-nick').forEach(n => n.remove());
+                    clone.querySelectorAll('.dc-ip-tag-span, .dc-semi-tag-span, .dc-one-touch-mute-btn, .sp-nick, .writer_nikcon').forEach(n => n.remove());
                     return clone.textContent.trim();
                 };
 
+                // ★ [핵심 수정 6] 모바일/PC 갤로그 링크(location.href='.../gallog/ID' 및 open_gallog('ID')) 모두 100% 추출
                 const extractGallogId = (scopeEl) => {
                     if (!scopeEl) return '';
                     if (scopeEl.getAttribute && scopeEl.getAttribute('data-uid')) {
@@ -1213,8 +1361,10 @@
                         const onclick = gallogLinks[i].getAttribute('onclick') || '';
                         const mHref = href.match(/\/gallog\/([a-zA-Z0-9_.\-]+)/);
                         if (mHref && mHref[1] && mHref[1] !== 'index.php') return mHref[1];
-                        const mClick = onclick.match(/gallog[^'"]*['"]([^'"]+)['"]/);
-                        if (mClick && mClick[1]) return mClick[1];
+                        const mClickPath = onclick.match(/\/gallog\/([a-zA-Z0-9_.\-]+)/);
+                        if (mClickPath && mClickPath[1] && mClickPath[1] !== 'index.php') return mClickPath[1];
+                        const mClickArg = onclick.match(/gallog[^'"]*['"]([a-zA-Z0-9_.\-]+)['"]/);
+                        if (mClickArg && mClickArg[1] && mClickArg[1] !== 'index.php') return mClickArg[1];
                     }
                     return '';
                 };
@@ -1234,48 +1384,27 @@
                     return false;
                 };
 
+                // ★ [핵심 수정 7] 메인 실베 위젯(갤러리명 | 시간 2칸 구조)에서 갤러리명을 작성자로 오인하지 않도록 방어
                 const findMobileWriterLi = (ginfoUl) => {
                     if (!ginfoUl) return null;
                     const lis = Array.from(ginfoUl.children);
                     for (let i = 0; i < lis.length; i++) {
-                        if (lis[i].querySelector('.sp-nick') || /\(\d{1,3}\.\d{1,3}\)/.test(lis[i].textContent)) {
+                        if (lis[i].dataset.rawIp || lis[i].querySelector('.sp-nick') || /\(\d{1,3}\.\d{1,3}\)\s*$/.test(getCleanText(lis[i]))) {
                             return lis[i];
                         }
                     }
-                    const dateIdx = lis.findIndex(li => /^(\d{2}:\d{2}|\d{2}\.\d{2}|\d{4}\.\d{2}\.\d{2})/.test(li.textContent.trim()));
+                    if (lis.length < 3) return null;
+                    const dateIdx = lis.findIndex(li => /^(\d{2}:\d{2}|\d{2}\.\d{2}|\d{4}\.\d{2}\.\d{2})/.test(getCleanText(li)));
                     if (dateIdx > 0) return lis[dateIdx - 1];
                     return lis[0] || null;
                 };
-                
-                function bypassDcStatisticsLinks() {
-                document.querySelectorAll('a[href^="javascript:go_statistics"]').forEach(a => {
-                const rawHref = a.getAttribute('href') || '';
-                const match = rawHref.match(/go_statistics\(\s*['"][^'"]*['"]\s*,\s*['"]([^'"]+)['"]/);
-                if (match && match[1]) {
-                a.setAttribute('href', match[1]);
-                }
-                });
-                }
 
-                ['touchstart', 'click'].forEach(evtType => {
-                document.addEventListener(evtType, (e) => {
-                const a = e.target && e.target.closest ? e.target.closest('a[href^="javascript:go_statistics"]') : null;
-                if (a) {
-                const rawHref = a.getAttribute('href') || '';
-                const match = rawHref.match(/go_statistics\(\s*['"][^'"]*['"]\s*,\s*['"]([^'"]+)['"]/);
-                if (match && match[1]) {
-                a.setAttribute('href', match[1]);
-                }
-                }
-                }, { capture: true, passive: true });
-                });
-                
                 function tagIPs() {
                     const selectors = '.ip, .block-ip, ul.ginfo > li, .gallview-tit-box ul.ginfo2 > li:first-child';
                     document.querySelectorAll(selectors).forEach(el => {
                         if (el.dataset.ipTagged === "true") return;
                         const text = getCleanText(el);
-                        const ipMatch = text.match(/\((\d{1,3}\.\d{1,3})\)/);
+                        const ipMatch = text.match(/\((\d{1,3}\.\d{1,3})\)\s*$/);
                         if (ipMatch && ipMatch[1]) {
                             const ip = ipMatch[1];
                             const label = getIpLabel(ip);
@@ -1291,9 +1420,9 @@
                 }
 
                 function loadOriginalImages() {
-                    // 1. 일반 짤 + 본문/댓글 이미지 디시콘 즉시 로딩
                     const imgSelectors = '.thum-txtin img, .write_div img, .gallview_contents img, ul.all-comment-lst img, .cmt_list img, .reply_list img, img.written_dccon';
                     document.querySelectorAll(imgSelectors).forEach(img => {
+                        if (img.dataset.dcImgInit === 'true') return;
                         const realSrc = img.getAttribute('data-original') || img.getAttribute('data-src') || img.getAttribute('data-lazy') || img.getAttribute('data-gif');
                         if (realSrc && img.getAttribute('src') !== realSrc) {
                             img.src = realSrc;
@@ -1304,9 +1433,9 @@
                             img.classList.remove('lazy');
                         }
                         img.loading = 'eager';
+                        img.dataset.dcImgInit = 'true';
                     });
 
-                    // 2. 본문/댓글 움짤(GIF->MP4) 및 움직이는 비디오 디시콘 즉시 로딩 & 투명 포스터 제거
                     const videoSelectors = '.thum-txtin video, .write_div video, .gallview_contents video, ul.all-comment-lst video, .cmt_list video, .reply_list video, video.written_dccon, video.dc_mv';
                     document.querySelectorAll(videoSelectors).forEach(video => {
                         let srcChanged = false;
@@ -1328,21 +1457,19 @@
                             }
                         });
 
-                        // 투명 로딩 이미지(dccon_loading_nobg200.png 등)가 비디오 화면을 가리지 않도록 제거
                         const poster = video.getAttribute('poster') || '';
                         if (poster.includes('loading')) {
                             video.removeAttribute('poster');
                         }
 
-                        video.classList.remove('lazy');
-                        video.muted = true;
-                        video.playsInline = true;
-                        video.setAttribute('muted', '');
-                        video.setAttribute('playsinline', '');
-                        video.setAttribute('webkit-playsinline', '');
-
                         if (srcChanged || video.dataset.dcVidInit !== 'true') {
                             video.dataset.dcVidInit = 'true';
+                            video.classList.remove('lazy');
+                            video.muted = true;
+                            video.playsInline = true;
+                            video.setAttribute('muted', '');
+                            video.setAttribute('playsinline', '');
+                            video.setAttribute('webkit-playsinline', '');
                             try {
                                 if (srcChanged) video.load();
                                 const p = video.play();
@@ -1470,10 +1597,16 @@
                                 const parsed = JSON.parse(input.trim());
                                 dynamicMutes = loadSavedMutes();
                                 if (Array.isArray(parsed.keywords)) {
-                                    parsed.keywords.forEach(kw => { if (!dynamicMutes.keywords.includes(kw)) dynamicMutes.keywords.push(String(kw).trim()); });
+                                    parsed.keywords.forEach(kw => {
+                                        const cleanKw = String(kw).trim();
+                                        if (cleanKw && !dynamicMutes.keywords.includes(cleanKw)) dynamicMutes.keywords.push(cleanKw);
+                                    });
                                 }
                                 if (Array.isArray(parsed.ips)) {
-                                    parsed.ips.forEach(ip => { if (!dynamicMutes.ips.includes(ip)) dynamicMutes.ips.push(String(ip).trim()); });
+                                    parsed.ips.forEach(ip => {
+                                        const cleanIp = String(ip).trim();
+                                        if (cleanIp && !dynamicMutes.ips.includes(cleanIp)) dynamicMutes.ips.push(cleanIp);
+                                    });
                                 }
                                 if (Array.isArray(parsed.uids)) {
                                     parsed.uids.forEach(u => {
@@ -1491,7 +1624,7 @@
                                         }
                                     });
                                 }
-                                dynamicMutes = writeHybridStore(dynamicMutes);
+                                dynamicMutes = saveMutesToStore(dynamicMutes);
                                 renderModalLists();
                                 refreshAllMuteStates();
                                 alert('✅ 차단 목록이 성공적으로 복원되었습니다!');
@@ -1502,7 +1635,7 @@
 
                         modalBackdrop.querySelector('#dc-mm-clear-btn').addEventListener('click', () => {
                             if (confirm('저장된 모든 차단 목록(키워드·IP·갤로그ID·닉네임)을 초기화하시겠습니까?')) {
-                                dynamicMutes = writeHybridStore({ ips: [], uids: [], nicks: [], keywords: [] });
+                                dynamicMutes = saveMutesToStore({ ips: [], uids: [], nicks: [], keywords: [] });
                                 renderModalLists();
                                 refreshAllMuteStates();
                             }
@@ -1625,17 +1758,29 @@
                         document.body.appendChild(bar);
                     }
                     if (bar) {
-                        bar.querySelector('button').textContent = `🚫 차단 관리 / 키워드 추가 (${totalCount}건 적용 중)`;
+                        const targetText = `🚫 차단 관리 / 키워드 추가 (${totalCount}건 적용 중)`;
+                        const btn = bar.querySelector('button');
+                        if (btn && btn.textContent !== targetText) {
+                            btn.textContent = targetText;
+                        }
                     }
                 }
 
+                // ★ [핵심 수정 8] 고닉/반고닉(uid) 차단 시 nicks 중복 저장으로 인해 해제가 안 되던 버그 해결 및 모바일·PC 연동 일원화
                 function processPostViewHeader() {
                     const allMutedIps = [...DC_MUTE_CONFIG.ips, ...dynamicMutes.ips];
                     const allMutedUidSet = new Set([
                         ...DC_MUTE_CONFIG.uids,
                         ...dynamicMutes.uids.map(e => parseUidEntry(e).uid)
                     ]);
-                    const allMutedNicks = [...DC_MUTE_CONFIG.nicks, ...dynamicMutes.nicks];
+                    const distinctNicksFromUids = dynamicMutes.uids
+                        .map(e => parseUidEntry(e).nick)
+                        .filter(nk => nk && !COMMON_DUP_NICKS.has(nk));
+                    const allMutedNicks = Array.from(new Set([
+                        ...DC_MUTE_CONFIG.nicks,
+                        ...dynamicMutes.nicks,
+                        ...distinctNicksFromUids
+                    ])).filter(nk => !COMMON_DUP_NICKS.has(nk));
 
                     const headerTargets = document.querySelectorAll('.gallview-tit-box ul.ginfo2 > li:first-child, .gallview_head .gall_writer');
 
@@ -1645,7 +1790,7 @@
 
                         const cleanText = getCleanText(headerEl);
                         if (!ip) {
-                            const ipMatch = cleanText.match(/\((\d{1,3}\.\d{1,3})\)/);
+                            const ipMatch = cleanText.match(/\((\d{1,3}\.\d{1,3})\)\s*$/);
                             if (ipMatch) ip = ipMatch[1];
                         }
                         if (!nick) {
@@ -1653,12 +1798,12 @@
                             if (nickEl) {
                                 nick = nickEl.textContent.trim();
                             } else {
-                                nick = cleanText.replace(/\(\d{1,3}\.\d{1,3}\).*$/, '').trim();
+                                nick = cleanText.replace(/\(\d{1,3}\.\d{1,3}\)\s*$/, '').trim();
                             }
                         }
 
                         const headerBox = headerEl.closest('.gallview-tit-box, .gallview_head') || headerEl;
-                        const uid = !ip ? extractGallogId(headerBox) : '';
+                        const uid = !ip ? (extractGallogId(headerEl) || extractGallogId(headerBox)) : '';
 
                         if (!ip && !nick && !uid) return;
 
@@ -1674,7 +1819,7 @@
                         const isAlreadyMuted =
                             (ip && allMutedIps.some(t => ip.startsWith(t))) ||
                             (uid && allMutedUidSet.has(uid)) ||
-                            (!ip && !uid && nick && allMutedNicks.includes(nick));
+                            (!ip && nick && !COMMON_DUP_NICKS.has(nick) && allMutedNicks.includes(nick));
 
                         let muteBtn = headerEl.querySelector('.dc-one-touch-mute-btn');
                         if (!muteBtn) {
@@ -1686,9 +1831,12 @@
 
                                 const currentlyMuted = muteBtn.classList.contains('is-muted');
                                 if (currentlyMuted) {
-                                    if (ip) removeMuteItem('ips', ip);
-                                    else if (uid) removeMuteItem('uids', uid);
-                                    else if (nick) removeMuteItem('nicks', nick);
+                                    if (ip) {
+                                        removeMuteItem('ips', ip);
+                                    } else {
+                                        if (uid) removeMuteItem('uids', uid);
+                                        if (nick) removeMuteItem('nicks', nick);
+                                    }
                                     refreshAllMuteStates();
                                     return;
                                 }
@@ -1703,9 +1851,6 @@
                                     const typeLabel = isSemi ? '반고닉' : '고닉';
                                     if (!DC_MUTE_CONFIG.confirmBeforeMute || confirm(`본문 ${typeLabel} [${nick}(#${uid})] 유저를 갤로그 ID로 핀셋 차단하시겠습니까?`)) {
                                         addMuteItem('uids', `${uid}:${nick}`);
-                                        if (nick && !COMMON_DUP_NICKS.has(nick)) {
-                                            addMuteItem('nicks', nick);
-                                        }
                                         runDcTasks();
                                         if (DC_MUTE_CONFIG.autoBackOnPostMute) window.history.back();
                                     }
@@ -1720,13 +1865,11 @@
                             headerEl.appendChild(muteBtn);
                         }
 
-                        if (isAlreadyMuted) {
-                            muteBtn.textContent = '[차단됨]';
-                            muteBtn.classList.add('is-muted');
-                        } else {
-                            muteBtn.textContent = '[차단]';
-                            muteBtn.classList.remove('is-muted');
+                        const nextLabel = isAlreadyMuted ? '[차단됨]' : '[차단]';
+                        if (muteBtn.textContent !== nextLabel) {
+                            muteBtn.textContent = nextLabel;
                         }
+                        muteBtn.classList.toggle('is-muted', !!isAlreadyMuted);
                     });
                 }
 
@@ -1747,33 +1890,34 @@
 
                     const allMutedKeywords = [...DC_MUTE_CONFIG.keywords, ...dynamicMutes.keywords];
 
-                    const itemSelectors = 'ul.gall-detail-lst > li, tr.ub-content, ul.all-comment-lst > li, .cmt_list > li.ub-content, .reply_list > li.ub-content';
+                    const itemSelectors = 'ul.gall-detail-lst > li, ul.typet-list > li, tr.ub-content, ul.all-comment-lst > li, .cmt_list > li.ub-content, .reply_list > li.ub-content';
                     document.querySelectorAll(itemSelectors).forEach(item => {
                         const writerEl = item.querySelector('.gall_writer');
                         const ginfoUl = item.querySelector('ul.ginfo');
                         const mobileWriterLi = findMobileWriterLi(ginfoUl);
 
                         let ipEl = item.querySelector('.ip, .block-ip, [data-raw-ip]');
-                        if (!ipEl && mobileWriterLi && /\(\d{1,3}\.\d{1,3}\)/.test(mobileWriterLi.textContent)) {
+                        if (!ipEl && mobileWriterLi && (mobileWriterLi.dataset.rawIp || /\(\d{1,3}\.\d{1,3}\)\s*$/.test(getCleanText(mobileWriterLi)))) {
                             ipEl = mobileWriterLi;
                         }
 
                         let ip = (writerEl && writerEl.getAttribute('data-ip')) || (ipEl && ipEl.dataset.rawIp) || '';
                         if (!ip && ipEl) {
-                            const m = getCleanText(ipEl).match(/\(?(\d{1,3}\.\d{1,3})\)?/);
+                            const m = getCleanText(ipEl).match(/\(?(\d{1,3}\.\d{1,3})\)?\s*$/);
                             if (m) ip = m[1];
                         }
 
                         let nickTargetEl = item.querySelector('a.nick, .nick, .gall_writer') || mobileWriterLi;
                         let nick = (writerEl && writerEl.getAttribute('data-nick')) || '';
                         if (!nick && nickTargetEl) {
-                            nick = getCleanText(nickTargetEl).replace(/\(\d{1,3}\.\d{1,3}\).*$/, '').trim();
+                            nick = getCleanText(nickTargetEl).replace(/\(\d{1,3}\.\d{1,3}\)\s*$/, '').trim();
                         }
 
                         const uid = !ip ? extractGallogId(writerEl || item) : '';
                         const isSemi = !ip && detectSemiFixedNick(writerEl || mobileWriterLi || item);
 
                         let btnAnchor = ipEl || nickTargetEl;
+                        const isNickAnchor = !ip && nickTargetEl && nickTargetEl.tagName === 'A' && nickTargetEl.classList.contains('nick');
                         if (btnAnchor && btnAnchor.tagName === 'A' && btnAnchor.classList.contains('nick')) {
                             btnAnchor = btnAnchor.parentElement || btnAnchor;
                         }
@@ -1787,7 +1931,9 @@
                             const semiSpan = document.createElement('span');
                             semiSpan.className = 'dc-semi-tag-span';
                             semiSpan.innerText = '[반고닉]';
-                            if (iconOuter && iconOuter.parentNode === btnAnchor) {
+                            if (isNickAnchor) {
+                                nickTargetEl.insertAdjacentElement('afterend', semiSpan);
+                            } else if (iconOuter && iconOuter.parentNode === btnAnchor) {
                                 iconOuter.insertAdjacentElement('afterend', semiSpan);
                             } else {
                                 btnAnchor.appendChild(semiSpan);
@@ -1813,9 +1959,6 @@
                                     const typeLabel = isSemi ? '반고닉' : '고닉';
                                     if (!DC_MUTE_CONFIG.confirmBeforeMute || confirm(`${typeLabel} [${nick}(#${uid})] 유저를 갤로그 ID로 핀셋 차단하시겠습니까?`)) {
                                         addMuteItem('uids', `${uid}:${nick}`);
-                                        if (nick && !COMMON_DUP_NICKS.has(nick)) {
-                                            addMuteItem('nicks', nick);
-                                        }
                                         runDcTasks();
                                     }
                                 } else if (nick && !COMMON_DUP_NICKS.has(nick)) {
@@ -1830,6 +1973,8 @@
                             const semiTag = item.querySelector('.dc-semi-tag-span');
                             if (semiTag && semiTag.parentNode === btnAnchor) {
                                 semiTag.insertAdjacentElement('afterend', muteBtn);
+                            } else if (isNickAnchor) {
+                                nickTargetEl.insertAdjacentElement('afterend', muteBtn);
                             } else if (!ip && iconOuter && iconOuter.parentNode === btnAnchor) {
                                 iconOuter.insertAdjacentElement('afterend', muteBtn);
                             } else {
@@ -1837,7 +1982,7 @@
                             }
                         }
 
-                        const textEl = item.querySelector('.subjectin, .gall_tit, .txt, .usertxt');
+                        const textEl = item.querySelector('.subjectin, .subjectTxt, .gall_tit, .txt, .usertxt');
                         const contentText = textEl ? textEl.textContent : '';
 
                         let shouldMute = false;
@@ -1849,13 +1994,13 @@
                             shouldMute = true;
                         } else if (uid && allMutedUidSet.has(uid)) {
                             shouldMute = true;
-                        } else if (!ip && !uid && nick && !COMMON_DUP_NICKS.has(nick) && allMutedNicks.includes(nick)) {
+                        } else if (!ip && nick && !COMMON_DUP_NICKS.has(nick) && allMutedNicks.includes(nick)) {
                             shouldMute = true;
                         } else if (contentText && allMutedKeywords.some(kw => contentText.includes(kw))) {
                             shouldMute = true;
                         }
 
-                        if (shouldMute) {
+                        if (shouldMute && item.getAttribute('data-muted-hidden') !== 'true') {
                             item.style.setProperty('display', 'none', 'important');
                             item.setAttribute('data-muted-hidden', 'true');
                         }
@@ -1863,8 +2008,10 @@
                 }
 
                 function runDcTasks() {
+                    ensureDcStyle();
+                    enforceStealthLocks();
                     dynamicMutes = loadSavedMutes();
-                    bypassDcStatisticsLinks();
+                    sanitizeDcLinks();
                     tagIPs();
                     loadOriginalImages();
                     processPostViewHeader();
@@ -1874,9 +2021,24 @@
 
                 runDcTasks();
 
+                // ★ [핵심 수정 9] 스크립트가 직접 추가한 배지/버튼 노드는 MutationObserver 감지에서 제외하여 무한 재귀 루프 차단
+                const isOwnInjectedNode = (node) => {
+                    if (!node || node.nodeType !== 1) return false;
+                    if (node.id === 'dc-mute-manage-bar' || node.id === 'dc-mute-modal-backdrop' || node.id === 'dc-custom-stealth-style') return true;
+                    const cls = node.classList;
+                    return cls ? (cls.contains('dc-ip-tag-span') || cls.contains('dc-semi-tag-span') || cls.contains('dc-one-touch-mute-btn')) : false;
+                };
+
                 let dcScheduled = false;
                 const dcObserver = new MutationObserver((mutations) => {
-                    if (!dcScheduled && mutations.some(m => m.addedNodes.length > 0)) {
+                    if (dcScheduled) return;
+                    const hasExternalAdd = mutations.some(m => {
+                        for (let i = 0; i < m.addedNodes.length; i++) {
+                            if (!isOwnInjectedNode(m.addedNodes[i])) return true;
+                        }
+                        return false;
+                    });
+                    if (hasExternalAdd) {
                         dcScheduled = true;
                         window.requestAnimationFrame(() => {
                             dcScheduled = false;
@@ -1891,6 +2053,7 @@
         })();
     }
     // ====================== [모듈 4: 디시인사이드 끝] ==========================
+
 
 
     // =========================================================================
