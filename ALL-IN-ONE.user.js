@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         [통합] 내 전용 웹사이트 편의성 & 광고 차단팩
 // @namespace    http://tampermonkey.net/
-// @version      3.8
+// @version      4.0
 // @description  1.나무위키 광고차단 | 2.툰코(서브도메인 대응) 스크롤메뉴·배너제거 | 3.유튜브 PiP·백그라운드 연속재생(rAF우회/0:00돌파)·최고화질 | 4.디시 스텔스·IP/반고닉·핀셋차단 | 5.블로그·티스토리 복사해제
 //
 // --- [1. 나무위키 주소 규칙] ---
@@ -736,11 +736,15 @@
 
 
     // =========================================================================
-    // 📦 [모듈 4] Dcinside Stealth, IP/반고닉 식별 & 갤로그 고유 ID 핀셋 차단 v6.7
-    // - 작동 조건: dcinside.com 접속 시 (이미지 전용 서버 및 단독 이미지 열람 제외)
+    // 📦 [모듈 4] Dcinside IP/반고닉 식별 & 핀셋 차단 경량화 버전 v7.0
+    // [반복 금지 규칙 (Anti-Repeat Rules)]
+    // 1. document-start 시점 개입, 전역 변수(window) 잠금, document.cookie 조작 절대 금지
+    // 2. a 태그 href/onclick 변조 및 touchstart/pointerdown/click 링크 가로채기 절대 금지
+    // 3. 이미지/비디오(loadOriginalImages) 강제 로딩 및 fetch/XHR 네트워크 후킹 절대 금지
+    // 4. .penalty-box CSS 숨김 금지 및 dataset.dcProcessed 1회 처리 플래그 필수 유지
     // =========================================================================
     if (ENABLE_MODULES.dcinside && currentHost.includes('dcinside.com') && !/^(nstatic|dcimg\d*|dccdn\d*|dcm\d*)\./i.test(currentHost) && !/^image\//i.test(document.contentType || '')) {
-        (function() {
+        runAtDocumentEnd(function() {
             const DC_MUTE_CONFIG = {
                 confirmBeforeMute: true,  // [차단] 터치 시 확인 창 띄우기 (바로 차단하려면 false)
                 autoBackOnPostMute: false,// 글 본문 상단에서 작성자 [차단] 시 자동으로 뒤로 가기 여부
@@ -777,47 +781,16 @@
 
             let cachedMutes = null;
 
-            const purgeLegacyMuteCookie = () => {
-                try {
-                    if (document.cookie.includes(STORAGE_KEY)) {
-                        document.cookie = `${STORAGE_KEY}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.dcinside.com; SameSite=Lax`;
-                        document.cookie = `${STORAGE_KEY}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.dcinside.com`;
-                        document.cookie = `${STORAGE_KEY}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/`;
-                    }
-                } catch (e) {}
-            };
-
             const loadSavedMutes = (forceReload = false) => {
                 if (cachedMutes && !forceReload) return cachedMutes;
-                let lsData = null;
-                let ckData = null;
-
                 try {
                     const raw = localStorage.getItem(STORAGE_KEY);
-                    if (raw) lsData = normalizeData(JSON.parse(raw));
+                    if (raw) {
+                        cachedMutes = normalizeData(JSON.parse(raw));
+                        return cachedMutes;
+                    }
                 } catch (e) {}
-
-                try {
-                    const m = document.cookie.match(new RegExp('(?:^|;\\s*)' + STORAGE_KEY + '=([^;]*)'));
-                    if (m && m[1]) ckData = normalizeData(JSON.parse(decodeURIComponent(m[1])));
-                } catch (e) {}
-
-                if (ckData) {
-                    const merged = normalizeData({
-                        ips: [...(lsData ? lsData.ips : []), ...ckData.ips],
-                        uids: [...(lsData ? lsData.uids : []), ...ckData.uids],
-                        nicks: [...(lsData ? lsData.nicks : []), ...ckData.nicks],
-                        keywords: [...(lsData ? lsData.keywords : []), ...ckData.keywords],
-                        t: Date.now()
-                    });
-                    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(merged)); } catch (e) {}
-                    purgeLegacyMuteCookie();
-                    cachedMutes = merged;
-                    return cachedMutes;
-                }
-
-                purgeLegacyMuteCookie();
-                cachedMutes = lsData || { ips: [], uids: [], nicks: [], keywords: [], t: 0 };
+                cachedMutes = { ips: [], uids: [], nicks: [], keywords: [], t: 0 };
                 return cachedMutes;
             };
 
@@ -834,7 +807,6 @@
                 try {
                     localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
                 } catch (e) {}
-                purgeLegacyMuteCookie();
                 return payload;
             };
 
@@ -843,6 +815,7 @@
             window.addEventListener('storage', (e) => {
                 if (e.key === STORAGE_KEY) {
                     dynamicMutes = loadSavedMutes(true);
+                    refreshAllMuteStates();
                 }
             });
 
@@ -883,133 +856,9 @@
                 dynamicMutes = saveMutesToStore(dynamicMutes);
             };
 
-            const lock = (p, v) => {
-                try {
-                    const desc = Object.getOwnPropertyDescriptor(window, p);
-                    if (!desc || desc.configurable) {
-                        Object.defineProperty(window, p, {
-                            get: () => v,
-                            set: () => {},
-                            configurable: true
-                        });
-                    } else if (desc.writable) {
-                        Object.defineProperty(window, p, {
-                            value: v,
-                            writable: false
-                        });
-                    }
-                } catch (e) {
-                    try { window[p] = v; } catch (err) {}
-                }
-            };
-
-            if (typeof window.getCookie === 'undefined') {
-                window.getCookie = (name) => {
-                    if (!name || /find_ab|adblock/i.test(name)) return '';
-                    try {
-                        const escapedName = String(name).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-                        const m = document.cookie.match(new RegExp('(?:^|;\\s*)' + escapedName + '=([^;]*)'));
-                        if (!m) return '';
-                        try {
-                            return decodeURIComponent(m[1]);
-                        } catch (err) {
-                            return unescape(m[1]);
-                        }
-                    } catch (e) {
-                        return '';
-                    }
-                };
-            }
-            if (typeof window.setCookie_hk_hour === 'undefined') window.setCookie_hk_hour = () => {};
-
-            const laundryDC = () => {
-                try {
-                    localStorage.removeItem('adblock_detected');
-                    localStorage.removeItem('find_ab');
-                    localStorage.removeItem('find_ab_check');
-                    if (document.cookie.includes('find_ab=ok')) {
-                        document.cookie = "find_ab=no; expires=Thu, 01 Jan 2030 00:00:00 UTC; path=/; domain=.dcinside.com";
-                    }
-                    purgeLegacyMuteCookie();
-                } catch (e) {}
-            };
-
-            const normalizeDcUrl = (rawUrl) => {
-                if (!rawUrl || typeof rawUrl !== 'string') return '';
-                const trimmed = rawUrl.trim();
-                if (/^\/\/[^/]/.test(trimmed)) return 'https:' + trimmed;
-                if (/^http:\/\/([^/]*dcinside\.com)/i.test(trimmed)) {
-                    return trimmed.replace(/^http:\/\//i, 'https://');
-                }
-                if (/^https?:\/\//i.test(trimmed) || trimmed.startsWith('/')) {
-                    return trimmed;
-                }
-                return '';
-            };
-
-            const extractUrlFromStatCall = (str) => {
-                if (!str || typeof str !== 'string') return '';
-                const matches = str.match(/['"]((?:https?:)?\/\/[^'"]+|\/(?:board|mini|mgallery|person|gallog)\/[^'"]+)['"]/gi);
-                if (!matches || matches.length === 0) return '';
-                const lastMatch = matches[matches.length - 1].slice(1, -1);
-                return normalizeDcUrl(lastMatch);
-            };
-
-            const enforceStealthLocks = () => {
-                lock('is_adblock', false);
-                lock('adblock_chk', () => false);
-                lock('canRunAds', true);
-                lock('is_ad_block', 'N');
-                lock('go_statistics', (...args) => {
-                    for (let i = args.length - 1; i >= 0; i--) {
-                        const candidate = normalizeDcUrl(args[i]);
-                        if (candidate) {
-                            window.location.href = candidate;
-                            break;
-                        }
-                    }
-                    return false;
-                });
-            };
-
-            laundryDC();
-            enforceStealthLocks();
-
-            const cleanSingleLink = (a) => {
-                if (!a || a.nodeType !== 1) return;
-                if (a.hasAttribute('download')) {
-                    a.removeAttribute('download');
-                }
-                const rawHref = a.getAttribute('href') || '';
-                const rawOnclick = a.getAttribute('onclick') || '';
-
-                if (rawHref.includes('go_statistics')) {
-                    const realUrl = extractUrlFromStatCall(rawHref);
-                    if (realUrl) a.setAttribute('href', realUrl);
-                }
-                if (rawOnclick.includes('go_statistics')) {
-                    const realUrl = extractUrlFromStatCall(rawOnclick);
-                    if (realUrl && (!rawHref || rawHref.startsWith('javascript:') || rawHref === '#')) {
-                        a.setAttribute('href', realUrl);
-                    }
-                    a.removeAttribute('onclick');
-                }
-            };
-
-            function sanitizeDcLinks() {
-                document.querySelectorAll('a[href*="go_statistics"], a[onclick*="go_statistics"], a[download]').forEach(cleanSingleLink);
-            }
-
-            // ★ [패치 1] .penalty-box를 CSS로 숨겨 하얀 백지 화면(ㅎㅎ.txt)이 되던 문제 해결
             const dcStyle = document.createElement('style');
             dcStyle.id = 'dc-custom-stealth-style';
             dcStyle.textContent = `
-                #moveOverlay, #moveimg, .adv-group, .adv-groupin, .adv-grouptop, .pwlink,
-                div[id*="ad_middle"], iframe[src*="netinsight"] {
-                    position: absolute !important; left: -9999px !important; top: -9999px !important;
-                    width: 1px !important; height: 1px !important; overflow: hidden !important;
-                    opacity: 0 !important; pointer-events: none !important;
-                }
                 ul.gall-detail-lst ul.ginfo > li,
                 .gallview-tit-box ul.ginfo2 > li {
                     max-width: none !important;
@@ -1191,582 +1040,467 @@
                     border-color: #f5c6cb;
                 }
             `;
+            (document.head || document.documentElement).appendChild(dcStyle);
 
-            const ensureDcStyle = () => {
-                const root = document.head || document.documentElement;
-                if (root && !document.getElementById('dc-custom-stealth-style')) {
-                    root.appendChild(dcStyle);
+            const ipCategories = [
+                {
+                    label: "통피",
+                    ips: new Set([
+                        "39.7", "39.118", "39.119", "61.43", "106.101", "106.102",
+                        "110.70", "114.200", "114.201", "115.161", "117.111", "118.235",
+                        "125.188", "175.223", "175.252", "210.125", "211.33", "211.36",
+                        "211.224", "211.234", "211.235", "211.246", "223.32", "223.33",
+                        "223.38", "223.39", "223.56", "223.57", "223.62"
+                    ])
+                },
+                {
+                    label: "비공개",
+                    ips: new Set([
+                        "8.20", "8.21", "8.22", "8.23", "8.25", "8.26", "8.28", "8.29",
+                        "104.16", "104.17", "104.18", "104.19", "104.20", "104.21", "104.22",
+                        "104.23", "104.24", "104.25", "104.26", "104.27", "104.28",
+                        "141.101", "162.158", "162.159", "172.64", "172.65", "172.66", "172.67",
+                        "172.68", "172.69", "172.70", "172.71", "172.224", "172.225", "172.226",
+                        "172.227", "188.114", "198.41"
+                    ])
+                },
+                {
+                    label: "VPN",
+                    ips: new Set([
+                        "3.34", "3.35", "3.36", "3.37", "3.38", "3.39", "3.112", "3.113", "3.114", "3.115",
+                        "13.112", "13.114", "13.115", "13.124", "13.125", "13.209", "15.164", "15.165",
+                        "18.176", "18.177", "18.178", "18.179", "18.180", "18.181", "18.182", "18.183",
+                        "20.196", "20.200", "20.214", "34.22", "34.47", "34.64", "34.84", "34.85", "34.146",
+                        "35.187", "35.194", "35.200", "35.216", "37.19", "37.120",
+                        "43.200", "43.201", "43.202", "43.203", "43.206", "43.207",
+                        "45.12", "45.13", "45.14", "45.32", "45.63", "45.76", "45.77", "45.83", "45.87",
+                        "45.89", "45.133", "45.134", "52.78", "52.79", "52.192", "52.193", "52.194",
+                        "54.64", "54.65", "54.95", "54.178", "54.180", "54.199", "54.248", "54.250",
+                        "64.176", "66.42", "77.111", "79.110", "84.17", "89.39", "89.40", "89.187",
+                        "91.90", "91.108", "91.132", "92.119", "95.179",
+                        "103.115", "103.125", "103.153", "103.208", "104.156", "104.207", "104.238",
+                        "107.191", "108.61", "108.160", "108.162", "129.154", "132.145",
+                        "138.2", "138.199", "139.84", "139.162", "139.180", "140.82", "140.238", "140.248",
+                        "141.164", "144.24", "144.202", "146.56", "146.70", "149.28", "149.34", "149.40",
+                        "149.88", "149.102", "149.154", "149.248", "150.230", "152.67", "152.70", "152.233",
+                        "154.47", "155.138", "156.146", "158.101", "158.247", "167.179", "168.138", "169.150",
+                        "172.104", "172.105", "172.233", "173.245", "178.249",
+                        "185.123", "185.156", "185.159", "185.212", "185.220", "185.240", "185.242", "185.244", "185.246",
+                        "192.145", "193.32", "193.122", "193.123", "193.148", "193.176",
+                        "194.33", "194.35", "194.110", "194.226", "195.181", "198.13",
+                        "202.182", "207.148", "207.246", "212.102", "216.128", "217.138"
+                    ])
                 }
-            };
-            ensureDcStyle();
+            ];
 
-            const originalFetch = window.fetch;
-            if (typeof originalFetch === 'function') {
-                window.fetch = async (...args) => {
-                    const url = typeof args[0] === 'string' ? args[0] : args[0]?.url;
-                    if (url && (url.includes('ajax/naverad') || url.includes('naverad'))) {
-                        return new Response(JSON.stringify({ ads: [] }), {
-                            status: 200,
-                            headers: { 'Content-Type': 'application/json' }
-                        });
+            const getIpLabel = (ip) => {
+                for (const category of ipCategories) {
+                    if (category.ips.has(ip)) return category.label;
+                }
+                return "개인";
+            };
+
+            const getCleanText = (el) => {
+                if (!el) return '';
+                const clone = el.cloneNode(true);
+                clone.querySelectorAll('.dc-ip-tag-span, .dc-semi-tag-span, .dc-one-touch-mute-btn, .sp-nick, .writer_nikcon').forEach(n => n.remove());
+                return clone.textContent.trim();
+            };
+
+            const extractGallogId = (scopeEl) => {
+                if (!scopeEl) return '';
+                if (scopeEl.getAttribute && scopeEl.getAttribute('data-uid')) {
+                    return scopeEl.getAttribute('data-uid').trim();
+                }
+                const uidNode = scopeEl.querySelector ? scopeEl.querySelector('[data-uid]') : null;
+                if (uidNode && uidNode.getAttribute('data-uid')) {
+                    return uidNode.getAttribute('data-uid').trim();
+                }
+                const gallogLinks = scopeEl.querySelectorAll ? scopeEl.querySelectorAll('a[href*="/gallog/"], [onclick*="gallog"]') : [];
+                for (let i = 0; i < gallogLinks.length; i++) {
+                    const href = gallogLinks[i].getAttribute('href') || '';
+                    const onclick = gallogLinks[i].getAttribute('onclick') || '';
+                    const mHref = href.match(/\/gallog\/([a-zA-Z0-9_.\-]+)/);
+                    if (mHref && mHref[1] && mHref[1] !== 'index.php') return mHref[1];
+                    const mClickPath = onclick.match(/\/gallog\/([a-zA-Z0-9_.\-]+)/);
+                    if (mClickPath && mClickPath[1] && mClickPath[1] !== 'index.php') return mClickPath[1];
+                    const mClickArg = onclick.match(/gallog[^'"]*['"]([a-zA-Z0-9_.\-]+)['"]/);
+                    if (mClickArg && mClickArg[1] && mClickArg[1] !== 'index.php') return mClickArg[1];
+                }
+                return '';
+            };
+
+            const detectSemiFixedNick = (containerEl) => {
+                if (!containerEl) return false;
+                const spNick = containerEl.querySelector('.sp-nick');
+                if (spNick) {
+                    return !spNick.classList.contains('gonick') &&
+                           !spNick.classList.contains('man') &&
+                           !spNick.classList.contains('subman');
+                }
+                const pcIcon = containerEl.querySelector('.writer_nikcon img');
+                if (pcIcon && pcIcon.src) {
+                    return pcIcon.src.includes('nik.gif') && !pcIcon.src.includes('fix_nik.gif');
+                }
+                return false;
+            };
+
+            const findMobileWriterLi = (ginfoUl) => {
+                if (!ginfoUl) return null;
+                const lis = Array.from(ginfoUl.children);
+                for (let i = 0; i < lis.length; i++) {
+                    if (lis[i].dataset.rawIp || lis[i].querySelector('.sp-nick') || /\(\d{1,3}\.\d{1,3}\)\s*$/.test(getCleanText(lis[i]))) {
+                        return lis[i];
                     }
-                    return originalFetch.apply(window, args);
-                };
+                }
+                if (lis.length < 3) return null;
+                const dateIdx = lis.findIndex(li => /^(\d{2}:\d{2}|\d{2}\.\d{2}|\d{4}\.\d{2}\.\d{2})/.test(getCleanText(li)));
+                if (dateIdx > 0) return lis[dateIdx - 1];
+                return lis[0] || null;
+            };
+
+            const buildActiveMuteRules = () => {
+                dynamicMutes = loadSavedMutes();
+                const allMutedIps = [...DC_MUTE_CONFIG.ips, ...dynamicMutes.ips];
+                const allMutedUidSet = new Set([
+                    ...DC_MUTE_CONFIG.uids,
+                    ...dynamicMutes.uids.map(e => parseUidEntry(e).uid)
+                ]);
+                const distinctNicksFromUids = dynamicMutes.uids
+                    .map(e => parseUidEntry(e).nick)
+                    .filter(nk => nk && !COMMON_DUP_NICKS.has(nk));
+                const allMutedNicks = Array.from(new Set([
+                    ...DC_MUTE_CONFIG.nicks,
+                    ...dynamicMutes.nicks,
+                    ...distinctNicksFromUids
+                ])).filter(nk => !COMMON_DUP_NICKS.has(nk));
+                const allMutedKeywords = [...DC_MUTE_CONFIG.keywords, ...dynamicMutes.keywords];
+
+                return { allMutedIps, allMutedUidSet, allMutedNicks, allMutedKeywords };
+            };
+
+            function tagIPs() {
+                const selectors = '.ip, .block-ip, ul.ginfo > li, .gallview-tit-box ul.ginfo2 > li:first-child';
+                document.querySelectorAll(selectors).forEach(el => {
+                    if (el.dataset.ipTagged === "true") return;
+                    const text = getCleanText(el);
+                    const ipMatch = text.match(/\((\d{1,3}\.\d{1,3})\)\s*$/);
+                    if (ipMatch && ipMatch[1]) {
+                        const ip = ipMatch[1];
+                        const label = getIpLabel(ip);
+                        const tagSpan = document.createElement('span');
+                        tagSpan.className = 'dc-ip-tag-span';
+                        tagSpan.innerText = `[${label}]`;
+                        el.appendChild(tagSpan);
+                        el.dataset.ipTagged = "true";
+                        el.dataset.rawIp = ip;
+                        el.dataset.ipCategory = label;
+                    } else {
+                        el.dataset.ipTagged = "true";
+                    }
+                });
             }
 
-            runAtDocumentEnd(() => {
-                ensureDcStyle();
-                laundryDC();
-                enforceStealthLocks();
-
-                // ★ [패치 2] 게시글 진입 시 일시적 DB 지연으로 .penalty-box(ㅎㅎ.txt)가 뜬 경우 1회 자동 새로고침하여 정상 본문 로드
-                const penaltyBox = document.querySelector('.penalty-box');
-                if (penaltyBox && /^\/(board|mini|mgallery|person)\/[^/]+\/\d+/.test(window.location.pathname)) {
-                    const retryKey = 'dc_penalty_retry_' + window.location.pathname;
-                    try {
-                        if (!sessionStorage.getItem(retryKey)) {
-                            sessionStorage.setItem(retryKey, '1');
-                            window.location.replace(window.location.href);
-                            return;
-                        }
-                    } catch (e) {}
-                }
-
-                const ipCategories = [
-                    {
-                        label: "통피",
-                        ips: new Set([
-                            "39.7", "39.118", "39.119", "61.43", "106.101", "106.102",
-                            "110.70", "114.200", "114.201", "115.161", "117.111", "118.235",
-                            "125.188", "175.223", "175.252", "210.125", "211.33", "211.36",
-                            "211.224", "211.234", "211.235", "211.246", "223.32", "223.33",
-                            "223.38", "223.39", "223.56", "223.57", "223.62"
-                        ])
-                    },
-                    {
-                        label: "비공개",
-                        ips: new Set([
-                            "8.20", "8.21", "8.22", "8.23", "8.25", "8.26", "8.28", "8.29",
-                            "104.16", "104.17", "104.18", "104.19", "104.20", "104.21", "104.22",
-                            "104.23", "104.24", "104.25", "104.26", "104.27", "104.28",
-                            "141.101", "162.158", "162.159", "172.64", "172.65", "172.66", "172.67",
-                            "172.68", "172.69", "172.70", "172.71", "172.224", "172.225", "172.226",
-                            "172.227", "188.114", "198.41"
-                        ])
-                    },
-                    {
-                        label: "VPN",
-                        ips: new Set([
-                            "3.34", "3.35", "3.36", "3.37", "3.38", "3.39", "3.112", "3.113", "3.114", "3.115",
-                            "13.112", "13.114", "13.115", "13.124", "13.125", "13.209", "15.164", "15.165",
-                            "18.176", "18.177", "18.178", "18.179", "18.180", "18.181", "18.182", "18.183",
-                            "20.196", "20.200", "20.214", "34.22", "34.47", "34.64", "34.84", "34.85", "34.146",
-                            "35.187", "35.194", "35.200", "35.216", "37.19", "37.120",
-                            "43.200", "43.201", "43.202", "43.203", "43.206", "43.207",
-                            "45.12", "45.13", "45.14", "45.32", "45.63", "45.76", "45.77", "45.83", "45.87",
-                            "45.89", "45.133", "45.134", "52.78", "52.79", "52.192", "52.193", "52.194",
-                            "54.64", "54.65", "54.95", "54.178", "54.180", "54.199", "54.248", "54.250",
-                            "64.176", "66.42", "77.111", "79.110", "84.17", "89.39", "89.40", "89.187",
-                            "91.90", "91.108", "91.132", "92.119", "95.179",
-                            "103.115", "103.125", "103.153", "103.208", "104.156", "104.207", "104.238",
-                            "107.191", "108.61", "108.160", "108.162", "129.154", "132.145",
-                            "138.2", "138.199", "139.84", "139.162", "139.180", "140.82", "140.238", "140.248",
-                            "141.164", "144.24", "144.202", "146.56", "146.70", "149.28", "149.34", "149.40",
-                            "149.88", "149.102", "149.154", "149.248", "150.230", "152.67", "152.70", "152.233",
-                            "154.47", "155.138", "156.146", "158.101", "158.247", "167.179", "168.138", "169.150",
-                            "172.104", "172.105", "172.233", "173.245", "178.249",
-                            "185.123", "185.156", "185.159", "185.212", "185.220", "185.240", "185.242", "185.244", "185.246",
-                            "192.145", "193.32", "193.122", "193.123", "193.148", "193.176",
-                            "194.33", "194.35", "194.110", "194.226", "195.181", "198.13",
-                            "202.182", "207.148", "207.246", "212.102", "216.128", "217.138"
-                        ])
+            const copyTextToClipboard = async (text) => {
+                try {
+                    if (navigator.clipboard && navigator.clipboard.writeText) {
+                        await navigator.clipboard.writeText(text);
+                        return true;
                     }
-                ];
-
-                const getIpLabel = (ip) => {
-                    for (const category of ipCategories) {
-                        if (category.ips.has(ip)) return category.label;
-                    }
-                    return "개인";
-                };
-
-                const getCleanText = (el) => {
-                    if (!el) return '';
-                    const clone = el.cloneNode(true);
-                    clone.querySelectorAll('.dc-ip-tag-span, .dc-semi-tag-span, .dc-one-touch-mute-btn, .sp-nick, .writer_nikcon').forEach(n => n.remove());
-                    return clone.textContent.trim();
-                };
-
-                const extractGallogId = (scopeEl) => {
-                    if (!scopeEl) return '';
-                    if (scopeEl.getAttribute && scopeEl.getAttribute('data-uid')) {
-                        return scopeEl.getAttribute('data-uid').trim();
-                    }
-                    const uidNode = scopeEl.querySelector ? scopeEl.querySelector('[data-uid]') : null;
-                    if (uidNode && uidNode.getAttribute('data-uid')) {
-                        return uidNode.getAttribute('data-uid').trim();
-                    }
-                    const gallogLinks = scopeEl.querySelectorAll ? scopeEl.querySelectorAll('a[href*="/gallog/"], [onclick*="gallog"]') : [];
-                    for (let i = 0; i < gallogLinks.length; i++) {
-                        const href = gallogLinks[i].getAttribute('href') || '';
-                        const onclick = gallogLinks[i].getAttribute('onclick') || '';
-                        const mHref = href.match(/\/gallog\/([a-zA-Z0-9_.\-]+)/);
-                        if (mHref && mHref[1] && mHref[1] !== 'index.php') return mHref[1];
-                        const mClickPath = onclick.match(/\/gallog\/([a-zA-Z0-9_.\-]+)/);
-                        if (mClickPath && mClickPath[1] && mClickPath[1] !== 'index.php') return mClickPath[1];
-                        const mClickArg = onclick.match(/gallog[^'"]*['"]([a-zA-Z0-9_.\-]+)['"]/);
-                        if (mClickArg && mClickArg[1] && mClickArg[1] !== 'index.php') return mClickArg[1];
-                    }
-                    return '';
-                };
-
-                const detectSemiFixedNick = (containerEl) => {
-                    if (!containerEl) return false;
-                    const spNick = containerEl.querySelector('.sp-nick');
-                    if (spNick) {
-                        return !spNick.classList.contains('gonick') &&
-                               !spNick.classList.contains('man') &&
-                               !spNick.classList.contains('subman');
-                    }
-                    const pcIcon = containerEl.querySelector('.writer_nikcon img');
-                    if (pcIcon && pcIcon.src) {
-                        return pcIcon.src.includes('nik.gif') && !pcIcon.src.includes('fix_nik.gif');
-                    }
+                } catch (e) {}
+                try {
+                    const ta = document.createElement('textarea');
+                    ta.value = text;
+                    ta.style.cssText = 'position:fixed;left:-9999px;top:0;';
+                    document.body.appendChild(ta);
+                    ta.focus();
+                    ta.select();
+                    const ok = document.execCommand('copy');
+                    ta.remove();
+                    return ok;
+                } catch (e) {
                     return false;
-                };
-
-                const findMobileWriterLi = (ginfoUl) => {
-                    if (!ginfoUl) return null;
-                    const lis = Array.from(ginfoUl.children);
-                    for (let i = 0; i < lis.length; i++) {
-                        if (lis[i].dataset.rawIp || lis[i].querySelector('.sp-nick') || /\(\d{1,3}\.\d{1,3}\)\s*$/.test(getCleanText(lis[i]))) {
-                            return lis[i];
-                        }
-                    }
-                    if (lis.length < 3) return null;
-                    const dateIdx = lis.findIndex(li => /^(\d{2}:\d{2}|\d{2}\.\d{2}|\d{4}\.\d{2}\.\d{2})/.test(getCleanText(li)));
-                    if (dateIdx > 0) return lis[dateIdx - 1];
-                    return lis[0] || null;
-                };
-
-                function tagIPs() {
-                    const selectors = '.ip, .block-ip, ul.ginfo > li, .gallview-tit-box ul.ginfo2 > li:first-child';
-                    document.querySelectorAll(selectors).forEach(el => {
-                        if (el.dataset.ipTagged === "true") return;
-                        const text = getCleanText(el);
-                        const ipMatch = text.match(/\((\d{1,3}\.\d{1,3})\)\s*$/);
-                        if (ipMatch && ipMatch[1]) {
-                            const ip = ipMatch[1];
-                            const label = getIpLabel(ip);
-                            const tagSpan = document.createElement('span');
-                            tagSpan.className = 'dc-ip-tag-span';
-                            tagSpan.innerText = `[${label}]`;
-                            el.appendChild(tagSpan);
-                            el.dataset.ipTagged = "true";
-                            el.dataset.rawIp = ip;
-                            el.dataset.ipCategory = label;
-                        }
-                    });
                 }
+            };
 
-                // ★ [패치 3] 페이지 내 수십 개 이미지를 한꺼번에 eager로 당겨 프록시를 마비시키고 계단식 지연을 유발하던 로직을
-                // 화면 근처(IntersectionObserver 500px)에 도달할 때만 순차 로드하도록 변경 (목록 썸네일은 디시 순정 lazyload 유지)
-                const activateMediaElement = (el) => {
-                    if (!el || el.dataset.dcMediaLoaded === 'true') return;
-                    el.dataset.dcMediaLoaded = 'true';
+            const refreshAllMuteStates = () => {
+                document.querySelectorAll('[data-muted-hidden="true"]').forEach(el => {
+                    el.style.removeProperty('display');
+                    el.removeAttribute('data-muted-hidden');
+                });
+                document.querySelectorAll('[data-dc-processed="true"]').forEach(el => {
+                    el.removeAttribute('data-dc-processed');
+                });
+                runDcTasks();
+            };
 
-                    if (el.tagName === 'IMG') {
-                        const realSrc = el.getAttribute('data-original') || el.getAttribute('data-src') || el.getAttribute('data-lazy') || el.getAttribute('data-gif');
-                        if (realSrc && el.getAttribute('src') !== realSrc) {
-                            el.src = realSrc;
-                            el.removeAttribute('data-original');
-                            el.removeAttribute('data-src');
-                            el.removeAttribute('data-lazy');
-                            el.removeAttribute('data-gif');
-                            el.classList.remove('lazy');
-                        }
-                    } else if (el.tagName === 'VIDEO') {
-                        let srcChanged = false;
-                        const realVidSrc = el.getAttribute('data-src') || el.getAttribute('data-original') || el.getAttribute('data-mp4');
-                        if (realVidSrc && el.getAttribute('src') !== realVidSrc) {
-                            el.src = realVidSrc;
-                            el.removeAttribute('data-src');
-                            el.removeAttribute('data-original');
-                            el.removeAttribute('data-mp4');
-                            srcChanged = true;
-                        }
-                        el.querySelectorAll('source').forEach(srcEl => {
-                            const sUrl = srcEl.getAttribute('data-src') || srcEl.getAttribute('data-original');
-                            if (sUrl && srcEl.getAttribute('src') !== sUrl) {
-                                srcEl.src = sUrl;
-                                srcEl.removeAttribute('data-src');
-                                srcEl.removeAttribute('data-original');
-                                srcChanged = true;
-                            }
-                        });
-                        const poster = el.getAttribute('poster') || '';
-                        if (poster.includes('loading')) {
-                            el.removeAttribute('poster');
-                        }
-                        el.classList.remove('lazy');
-                        el.muted = true;
-                        el.playsInline = true;
-                        el.setAttribute('muted', '');
-                        el.setAttribute('playsinline', '');
-                        el.setAttribute('webkit-playsinline', '');
-                        try {
-                            if (srcChanged) el.load();
-                            const p = el.play();
-                            if (p && typeof p.catch === 'function') p.catch(() => {});
-                        } catch (e) {}
-                    }
-                };
-
-                const mediaObserver = ('IntersectionObserver' in window)
-                    ? new IntersectionObserver((entries, obs) => {
-                        entries.forEach(entry => {
-                            if (entry.isIntersecting) {
-                                activateMediaElement(entry.target);
-                                obs.unobserve(entry.target);
-                            }
-                        });
-                    }, { rootMargin: '500px 0px' })
-                    : null;
-
-                function loadOriginalImages() {
-                    const mediaSelectors = '.write_div img, .gallview_contents img, ul.all-comment-lst img, .cmt_list img, .reply_list img, img.written_dccon, .thum-txtin video, .write_div video, .gallview_contents video, ul.all-comment-lst video, .cmt_list video, .reply_list video, video.written_dccon, video.dc_mv';
-                    document.querySelectorAll(mediaSelectors).forEach(el => {
-                        if (el.dataset.dcMediaObs === 'true') return;
-                        el.dataset.dcMediaObs = 'true';
-                        if (mediaObserver) {
-                            mediaObserver.observe(el);
-                        } else {
-                            activateMediaElement(el);
-                        }
-                    });
-                }
-
-                // ★ [패치 4] 사파리 뒤로가기 제스처 시 이전 페이지의 비디오 스트림이 프록시 연결을 계속 점유하지 않도록 정리 및 BFCache 복원 대응
-                window.addEventListener('pagehide', () => {
-                    document.querySelectorAll('video').forEach(v => {
-                        try { v.pause(); } catch (e) {}
-                    });
-                }, { passive: true });
-
-                window.addEventListener('pageshow', (e) => {
-                    if (e.persisted) {
-                        runDcTasks();
-                    }
-                }, { passive: true });
-
-                const copyTextToClipboard = async (text) => {
-                    try {
-                        if (navigator.clipboard && navigator.clipboard.writeText) {
-                            await navigator.clipboard.writeText(text);
-                            return true;
-                        }
-                    } catch (e) {}
-                    try {
-                        const ta = document.createElement('textarea');
-                        ta.value = text;
-                        ta.style.cssText = 'position:fixed;left:-9999px;top:0;';
-                        document.body.appendChild(ta);
-                        ta.focus();
-                        ta.select();
-                        const ok = document.execCommand('copy');
-                        ta.remove();
-                        return ok;
-                    } catch (e) {
-                        return false;
-                    }
-                };
-
-                const refreshAllMuteStates = () => {
-                    document.querySelectorAll('[data-muted-hidden="true"]').forEach(el => {
-                        el.style.removeProperty('display');
-                        el.removeAttribute('data-muted-hidden');
-                    });
-                    runDcTasks();
-                };
-
-                let modalBackdrop = null;
-                function openMuteManagerModal() {
-                    dynamicMutes = loadSavedMutes();
-                    if (!modalBackdrop) {
-                        modalBackdrop = document.createElement('div');
-                        modalBackdrop.id = 'dc-mute-modal-backdrop';
-                        modalBackdrop.innerHTML = `
-                            <div id="dc-mute-modal" role="dialog" aria-label="차단 목록 관리">
-                                <div class="dc-mm-head">
-                                    <span>🚫 디시 차단 관리 (키워드 / IP / 갤로그ID / 닉네임)</span>
-                                    <button type="button" class="dc-mm-close" aria-label="닫기">✕</button>
-                                </div>
-                                <div class="dc-mm-body">
-                                    <div class="dc-mm-sec-title">차단 키워드 추가 (제목·댓글 포함 시 숨김, 쉼표 구분 가능)</div>
-                                    <div class="dc-mm-kw-row">
-                                        <input type="text" id="dc-mm-kw-input" placeholder="예: 카지노, 도박, 스포" autocomplete="off">
-                                        <button type="button" id="dc-mm-kw-add-btn">+ 추가</button>
-                                    </div>
-                                    <div id="dc-mm-kw-list" class="dc-mm-chips"></div>
-
-                                    <div class="dc-mm-sec-title">차단된 유동 IP (✕ 터치 시 개별 해제)</div>
-                                    <div id="dc-mm-ip-list" class="dc-mm-chips"></div>
-
-                                    <div class="dc-mm-sec-title">핀셋 차단된 갤로그 ID (반고닉·고닉 고유 ID)</div>
-                                    <div id="dc-mm-uid-list" class="dc-mm-chips"></div>
-
-                                    <div class="dc-mm-sec-title">차단된 고유 닉네임 (모바일 목록 차단)</div>
-                                    <div id="dc-mm-nick-list" class="dc-mm-chips"></div>
-                                </div>
-                                <div class="dc-mm-foot">
-                                    <button type="button" id="dc-mm-copy-btn">📋 백업 복사</button>
-                                    <button type="button" id="dc-mm-restore-btn">📥 복원(붙여넣기)</button>
-                                    <button type="button" id="dc-mm-clear-btn" class="danger">🗑️ 전체 초기화</button>
-                                </div>
+            let modalBackdrop = null;
+            function openMuteManagerModal() {
+                dynamicMutes = loadSavedMutes();
+                if (!modalBackdrop) {
+                    modalBackdrop = document.createElement('div');
+                    modalBackdrop.id = 'dc-mute-modal-backdrop';
+                    modalBackdrop.innerHTML = `
+                        <div id="dc-mute-modal" role="dialog" aria-label="차단 목록 관리">
+                            <div class="dc-mm-head">
+                                <span>디시 차단 관리 (키워드 / IP / 갤로그ID / 닉네임)</span>
+                                <button type="button" class="dc-mm-close" aria-label="닫기">✕</button>
                             </div>
-                        `;
-                        document.body.appendChild(modalBackdrop);
+                            <div class="dc-mm-body">
+                                <div class="dc-mm-sec-title">차단 키워드 추가 (제목·댓글 포함 시 숨김, 쉼표 구분 가능)</div>
+                                <div class="dc-mm-kw-row">
+                                    <input type="text" id="dc-mm-kw-input" placeholder="예: 카지노, 도박, 스포" autocomplete="off">
+                                    <button type="button" id="dc-mm-kw-add-btn">+ 추가</button>
+                                </div>
+                                <div id="dc-mm-kw-list" class="dc-mm-chips"></div>
 
-                        modalBackdrop.addEventListener('click', (e) => {
-                            if (e.target === modalBackdrop || e.target.classList.contains('dc-mm-close')) {
-                                modalBackdrop.classList.remove('on');
-                            }
+                                <div class="dc-mm-sec-title">차단된 유동 IP (✕ 터치 시 개별 해제)</div>
+                                <div id="dc-mm-ip-list" class="dc-mm-chips"></div>
+
+                                <div class="dc-mm-sec-title">핀셋 차단된 갤로그 ID (반고닉·고닉 고유 ID)</div>
+                                <div id="dc-mm-uid-list" class="dc-mm-chips"></div>
+
+                                <div class="dc-mm-sec-title">차단된 고유 닉네임 (모바일 목록 차단)</div>
+                                <div id="dc-mm-nick-list" class="dc-mm-chips"></div>
+                            </div>
+                            <div class="dc-mm-foot">
+                                <button type="button" id="dc-mm-copy-btn">📋 백업 복사</button>
+                                <button type="button" id="dc-mm-restore-btn">📥 복원(붙여넣기)</button>
+                                <button type="button" id="dc-mm-clear-btn" class="danger">🗑️ 전체 초기화</button>
+                            </div>
+                        </div>
+                    `;
+                    document.body.appendChild(modalBackdrop);
+
+                    modalBackdrop.addEventListener('click', (e) => {
+                        if (e.target === modalBackdrop || e.target.classList.contains('dc-mm-close')) {
+                            modalBackdrop.classList.remove('on');
+                        }
+                    });
+
+                    const kwInput = modalBackdrop.querySelector('#dc-mm-kw-input');
+                    const handleAddKeywords = () => {
+                        const raw = kwInput.value.trim();
+                        if (!raw) return;
+                        raw.split(',').forEach(part => {
+                            const clean = part.trim();
+                            if (clean) addMuteItem('keywords', clean);
                         });
+                        kwInput.value = '';
+                        renderModalLists();
+                        refreshAllMuteStates();
+                    };
+                    modalBackdrop.querySelector('#dc-mm-kw-add-btn').addEventListener('click', handleAddKeywords);
+                    kwInput.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            handleAddKeywords();
+                        }
+                    });
 
-                        const kwInput = modalBackdrop.querySelector('#dc-mm-kw-input');
-                        const handleAddKeywords = () => {
-                            const raw = kwInput.value.trim();
-                            if (!raw) return;
-                            raw.split(',').forEach(part => {
-                                const clean = part.trim();
-                                if (clean) addMuteItem('keywords', clean);
-                            });
-                            kwInput.value = '';
+                    modalBackdrop.querySelector('#dc-mm-copy-btn').addEventListener('click', async () => {
+                        dynamicMutes = loadSavedMutes();
+                        const exportObj = {
+                            keywords: dynamicMutes.keywords,
+                            ips: dynamicMutes.ips,
+                            uids: dynamicMutes.uids,
+                            nicks: dynamicMutes.nicks
+                        };
+                        const exportStr = JSON.stringify(exportObj);
+                        const ok = await copyTextToClipboard(exportStr);
+                        if (ok) {
+                            alert(`클립보드에 차단 목록이 복사되었습니다!\n\n${exportStr}`);
+                        } else {
+                            prompt('아래 텍스트를 복사해 보관하세요:', exportStr);
+                        }
+                    });
+
+                    modalBackdrop.querySelector('#dc-mm-restore-btn').addEventListener('click', () => {
+                        const input = prompt('백업해 둔 JSON 텍스트를 붙여넣으세요:\n예: {"keywords":["도박"],"ips":["39.7"],"uids":["abc1234:ㅇㅇ"],"nicks":["어그로"]}');
+                        if (!input) return;
+                        try {
+                            const parsed = JSON.parse(input.trim());
+                            dynamicMutes = loadSavedMutes();
+                            if (Array.isArray(parsed.keywords)) {
+                                parsed.keywords.forEach(kw => {
+                                    const cleanKw = String(kw).trim();
+                                    if (cleanKw && !dynamicMutes.keywords.includes(cleanKw)) dynamicMutes.keywords.push(cleanKw);
+                                });
+                            }
+                            if (Array.isArray(parsed.ips)) {
+                                parsed.ips.forEach(ip => {
+                                    const cleanIp = String(ip).trim();
+                                    if (cleanIp && !dynamicMutes.ips.includes(cleanIp)) dynamicMutes.ips.push(cleanIp);
+                                });
+                            }
+                            if (Array.isArray(parsed.uids)) {
+                                parsed.uids.forEach(u => {
+                                    const targetUid = parseUidEntry(u).uid;
+                                    if (targetUid && !dynamicMutes.uids.some(e => parseUidEntry(e).uid === targetUid)) {
+                                        dynamicMutes.uids.push(String(u).trim());
+                                    }
+                                });
+                            }
+                            if (Array.isArray(parsed.nicks)) {
+                                parsed.nicks.forEach(nk => {
+                                    const cleanNk = String(nk).trim();
+                                    if (cleanNk && !COMMON_DUP_NICKS.has(cleanNk) && !dynamicMutes.nicks.includes(cleanNk)) {
+                                        dynamicMutes.nicks.push(cleanNk);
+                                    }
+                                });
+                            }
+                            dynamicMutes = saveMutesToStore(dynamicMutes);
+                            renderModalLists();
+                            refreshAllMuteStates();
+                            alert('차단 목록이 성공적으로 복원되었습니다!');
+                        } catch (err) {
+                            alert('올바른 백업 형식(JSON)이 아닙니다.');
+                        }
+                    });
+
+                    modalBackdrop.querySelector('#dc-mm-clear-btn').addEventListener('click', () => {
+                        if (confirm('저장된 모든 차단 목록(키워드·IP·갤로그ID·닉네임)을 초기화하시겠습니까?')) {
+                            dynamicMutes = saveMutesToStore({ ips: [], uids: [], nicks: [], keywords: [] });
+                            renderModalLists();
+                            refreshAllMuteStates();
+                        }
+                    });
+                }
+
+                renderModalLists();
+                modalBackdrop.classList.add('on');
+            }
+
+            function renderModalLists() {
+                if (!modalBackdrop) return;
+                dynamicMutes = loadSavedMutes();
+                const kwBox = modalBackdrop.querySelector('#dc-mm-kw-list');
+                const ipBox = modalBackdrop.querySelector('#dc-mm-ip-list');
+                const uidBox = modalBackdrop.querySelector('#dc-mm-uid-list');
+                const nickBox = modalBackdrop.querySelector('#dc-mm-nick-list');
+                kwBox.innerHTML = '';
+                ipBox.innerHTML = '';
+                uidBox.innerHTML = '';
+                nickBox.innerHTML = '';
+
+                if (dynamicMutes.keywords.length === 0) {
+                    kwBox.innerHTML = '<span class="dc-mm-empty">등록된 차단 키워드가 없습니다.</span>';
+                } else {
+                    dynamicMutes.keywords.forEach(kw => {
+                        const chip = document.createElement('span');
+                        chip.className = 'dc-mm-chip';
+                        chip.textContent = kw;
+                        const delBtn = document.createElement('button');
+                        delBtn.type = 'button';
+                        delBtn.textContent = '✕';
+                        delBtn.onclick = () => {
+                            removeMuteItem('keywords', kw);
                             renderModalLists();
                             refreshAllMuteStates();
                         };
-                        modalBackdrop.querySelector('#dc-mm-kw-add-btn').addEventListener('click', handleAddKeywords);
-                        kwInput.addEventListener('keydown', (e) => {
-                            if (e.key === 'Enter') {
-                                e.preventDefault();
-                                handleAddKeywords();
-                            }
-                        });
-
-                        modalBackdrop.querySelector('#dc-mm-copy-btn').addEventListener('click', async () => {
-                            dynamicMutes = loadSavedMutes();
-                            const exportObj = {
-                                keywords: dynamicMutes.keywords,
-                                ips: dynamicMutes.ips,
-                                uids: dynamicMutes.uids,
-                                nicks: dynamicMutes.nicks
-                            };
-                            const exportStr = JSON.stringify(exportObj);
-                            const ok = await copyTextToClipboard(exportStr);
-                            if (ok) {
-                                alert(`✅ 클립보드에 차단 목록이 복사되었습니다!\n\n${exportStr}`);
-                            } else {
-                                prompt('아래 텍스트를 복사해 보관하세요:', exportStr);
-                            }
-                        });
-
-                        modalBackdrop.querySelector('#dc-mm-restore-btn').addEventListener('click', () => {
-                            const input = prompt('백업해 둔 JSON 텍스트를 붙여넣으세요:\n예: {"keywords":["도박"],"ips":["39.7"],"uids":["abc1234:ㅇㅇ"],"nicks":["어그로"]}');
-                            if (!input) return;
-                            try {
-                                const parsed = JSON.parse(input.trim());
-                                dynamicMutes = loadSavedMutes();
-                                if (Array.isArray(parsed.keywords)) {
-                                    parsed.keywords.forEach(kw => {
-                                        const cleanKw = String(kw).trim();
-                                        if (cleanKw && !dynamicMutes.keywords.includes(cleanKw)) dynamicMutes.keywords.push(cleanKw);
-                                    });
-                                }
-                                if (Array.isArray(parsed.ips)) {
-                                    parsed.ips.forEach(ip => {
-                                        const cleanIp = String(ip).trim();
-                                        if (cleanIp && !dynamicMutes.ips.includes(cleanIp)) dynamicMutes.ips.push(cleanIp);
-                                    });
-                                }
-                                if (Array.isArray(parsed.uids)) {
-                                    parsed.uids.forEach(u => {
-                                        const targetUid = parseUidEntry(u).uid;
-                                        if (targetUid && !dynamicMutes.uids.some(e => parseUidEntry(e).uid === targetUid)) {
-                                            dynamicMutes.uids.push(String(u).trim());
-                                        }
-                                    });
-                                }
-                                if (Array.isArray(parsed.nicks)) {
-                                    parsed.nicks.forEach(nk => {
-                                        const cleanNk = String(nk).trim();
-                                        if (cleanNk && !COMMON_DUP_NICKS.has(cleanNk) && !dynamicMutes.nicks.includes(cleanNk)) {
-                                            dynamicMutes.nicks.push(cleanNk);
-                                        }
-                                    });
-                                }
-                                dynamicMutes = saveMutesToStore(dynamicMutes);
-                                renderModalLists();
-                                refreshAllMuteStates();
-                                alert('✅ 차단 목록이 성공적으로 복원되었습니다!');
-                            } catch (err) {
-                                alert('❌ 올바른 백업 형식(JSON)이 아닙니다.');
-                            }
-                        });
-
-                        modalBackdrop.querySelector('#dc-mm-clear-btn').addEventListener('click', () => {
-                            if (confirm('저장된 모든 차단 목록(키워드·IP·갤로그ID·닉네임)을 초기화하시겠습니까?')) {
-                                dynamicMutes = saveMutesToStore({ ips: [], uids: [], nicks: [], keywords: [] });
-                                renderModalLists();
-                                refreshAllMuteStates();
-                            }
-                        });
-                    }
-
-                    renderModalLists();
-                    modalBackdrop.classList.add('on');
+                        chip.appendChild(delBtn);
+                        kwBox.appendChild(chip);
+                    });
                 }
 
-                function renderModalLists() {
-                    if (!modalBackdrop) return;
-                    dynamicMutes = loadSavedMutes();
-                    const kwBox = modalBackdrop.querySelector('#dc-mm-kw-list');
-                    const ipBox = modalBackdrop.querySelector('#dc-mm-ip-list');
-                    const uidBox = modalBackdrop.querySelector('#dc-mm-uid-list');
-                    const nickBox = modalBackdrop.querySelector('#dc-mm-nick-list');
-                    kwBox.innerHTML = '';
-                    ipBox.innerHTML = '';
-                    uidBox.innerHTML = '';
-                    nickBox.innerHTML = '';
-
-                    if (dynamicMutes.keywords.length === 0) {
-                        kwBox.innerHTML = '<span class="dc-mm-empty">등록된 차단 키워드가 없습니다.</span>';
-                    } else {
-                        dynamicMutes.keywords.forEach(kw => {
-                            const chip = document.createElement('span');
-                            chip.className = 'dc-mm-chip';
-                            chip.textContent = kw;
-                            const delBtn = document.createElement('button');
-                            delBtn.type = 'button';
-                            delBtn.textContent = '✕';
-                            delBtn.onclick = () => {
-                                removeMuteItem('keywords', kw);
-                                renderModalLists();
-                                refreshAllMuteStates();
-                            };
-                            chip.appendChild(delBtn);
-                            kwBox.appendChild(chip);
-                        });
-                    }
-
-                    if (dynamicMutes.ips.length === 0) {
-                        ipBox.innerHTML = '<span class="dc-mm-empty">차단된 IP가 없습니다.</span>';
-                    } else {
-                        dynamicMutes.ips.forEach(ip => {
-                            const chip = document.createElement('span');
-                            chip.className = 'dc-mm-chip';
-                            chip.textContent = `${ip}[${getIpLabel(ip)}]`;
-                            const delBtn = document.createElement('button');
-                            delBtn.type = 'button';
-                            delBtn.textContent = '✕';
-                            delBtn.onclick = () => {
-                                removeMuteItem('ips', ip);
-                                renderModalLists();
-                                refreshAllMuteStates();
-                            };
-                            chip.appendChild(delBtn);
-                            ipBox.appendChild(chip);
-                        });
-                    }
-
-                    if (dynamicMutes.uids.length === 0) {
-                        uidBox.innerHTML = '<span class="dc-mm-empty">핀셋 차단된 갤로그 ID가 없습니다.</span>';
-                    } else {
-                        dynamicMutes.uids.forEach(entry => {
-                            const { uid, nick } = parseUidEntry(entry);
-                            const chip = document.createElement('span');
-                            chip.className = 'dc-mm-chip';
-                            chip.textContent = nick ? `${nick}(#${uid})` : `#${uid}`;
-                            const delBtn = document.createElement('button');
-                            delBtn.type = 'button';
-                            delBtn.textContent = '✕';
-                            delBtn.onclick = () => {
-                                removeMuteItem('uids', uid);
-                                renderModalLists();
-                                refreshAllMuteStates();
-                            };
-                            chip.appendChild(delBtn);
-                            uidBox.appendChild(chip);
-                        });
-                    }
-
-                    if (dynamicMutes.nicks.length === 0) {
-                        nickBox.innerHTML = '<span class="dc-mm-empty">차단된 고유 닉네임이 없습니다.</span>';
-                    } else {
-                        dynamicMutes.nicks.forEach(nk => {
-                            const chip = document.createElement('span');
-                            chip.className = 'dc-mm-chip';
-                            chip.textContent = nk;
-                            const delBtn = document.createElement('button');
-                            delBtn.type = 'button';
-                            delBtn.textContent = '✕';
-                            delBtn.onclick = () => {
-                                removeMuteItem('nicks', nk);
-                                renderModalLists();
-                                refreshAllMuteStates();
-                            };
-                            chip.appendChild(delBtn);
-                            nickBox.appendChild(chip);
-                        });
-                    }
+                if (dynamicMutes.ips.length === 0) {
+                    ipBox.innerHTML = '<span class="dc-mm-empty">차단된 IP가 없습니다.</span>';
+                } else {
+                    dynamicMutes.ips.forEach(ip => {
+                        const chip = document.createElement('span');
+                        chip.className = 'dc-mm-chip';
+                        chip.textContent = `${ip}[${getIpLabel(ip)}]`;
+                        const delBtn = document.createElement('button');
+                        delBtn.type = 'button';
+                        delBtn.textContent = '✕';
+                        delBtn.onclick = () => {
+                            removeMuteItem('ips', ip);
+                            renderModalLists();
+                            refreshAllMuteStates();
+                        };
+                        chip.appendChild(delBtn);
+                        ipBox.appendChild(chip);
+                    });
                 }
 
-                function updateManageBar() {
-                    dynamicMutes = loadSavedMutes();
-                    const totalCount =
-                        dynamicMutes.ips.length +
-                        dynamicMutes.uids.length +
-                        dynamicMutes.nicks.length +
-                        dynamicMutes.keywords.length;
-                    let bar = document.getElementById('dc-mute-manage-bar');
-                    if (!bar && document.body) {
-                        bar = document.createElement('div');
-                        bar.id = 'dc-mute-manage-bar';
-                        const btn = document.createElement('button');
-                        btn.type = 'button';
-                        btn.onclick = openMuteManagerModal;
-                        bar.appendChild(btn);
-                        document.body.appendChild(bar);
-                    }
-                    if (bar) {
-                        const targetText = `🚫 차단 관리 / 키워드 추가 (${totalCount}건 적용 중)`;
-                        const btn = bar.querySelector('button');
-                        if (btn && btn.textContent !== targetText) {
-                            btn.textContent = targetText;
-                        }
-                    }
+                if (dynamicMutes.uids.length === 0) {
+                    uidBox.innerHTML = '<span class="dc-mm-empty">핀셋 차단된 갤로그 ID가 없습니다.</span>';
+                } else {
+                    dynamicMutes.uids.forEach(entry => {
+                        const { uid, nick } = parseUidEntry(entry);
+                        const chip = document.createElement('span');
+                        chip.className = 'dc-mm-chip';
+                        chip.textContent = nick ? `${nick}(#${uid})` : `#${uid}`;
+                        const delBtn = document.createElement('button');
+                        delBtn.type = 'button';
+                        delBtn.textContent = '✕';
+                        delBtn.onclick = () => {
+                            removeMuteItem('uids', uid);
+                            renderModalLists();
+                            refreshAllMuteStates();
+                        };
+                        chip.appendChild(delBtn);
+                        uidBox.appendChild(chip);
+                    });
                 }
 
-                function processPostViewHeader() {
-                    const allMutedIps = [...DC_MUTE_CONFIG.ips, ...dynamicMutes.ips];
-                    const allMutedUidSet = new Set([
-                        ...DC_MUTE_CONFIG.uids,
-                        ...dynamicMutes.uids.map(e => parseUidEntry(e).uid)
-                    ]);
-                    const distinctNicksFromUids = dynamicMutes.uids
-                        .map(e => parseUidEntry(e).nick)
-                        .filter(nk => nk && !COMMON_DUP_NICKS.has(nk));
-                    const allMutedNicks = Array.from(new Set([
-                        ...DC_MUTE_CONFIG.nicks,
-                        ...dynamicMutes.nicks,
-                        ...distinctNicksFromUids
-                    ])).filter(nk => !COMMON_DUP_NICKS.has(nk));
+                if (dynamicMutes.nicks.length === 0) {
+                    nickBox.innerHTML = '<span class="dc-mm-empty">차단된 고유 닉네임이 없습니다.</span>';
+                } else {
+                    dynamicMutes.nicks.forEach(nk => {
+                        const chip = document.createElement('span');
+                        chip.className = 'dc-mm-chip';
+                        chip.textContent = nk;
+                        const delBtn = document.createElement('button');
+                        delBtn.type = 'button';
+                        delBtn.textContent = '✕';
+                        delBtn.onclick = () => {
+                            removeMuteItem('nicks', nk);
+                            renderModalLists();
+                            refreshAllMuteStates();
+                        };
+                        chip.appendChild(delBtn);
+                        nickBox.appendChild(chip);
+                    });
+                }
+            }
 
-                    const headerTargets = document.querySelectorAll('.gallview-tit-box ul.ginfo2 > li:first-child, .gallview_head .gall_writer');
+            function updateManageBar() {
+                dynamicMutes = loadSavedMutes();
+                const totalCount =
+                    dynamicMutes.ips.length +
+                    dynamicMutes.uids.length +
+                    dynamicMutes.nicks.length +
+                    dynamicMutes.keywords.length;
+                let bar = document.getElementById('dc-mute-manage-bar');
+                if (!bar && document.body) {
+                    bar = document.createElement('div');
+                    bar.id = 'dc-mute-manage-bar';
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.onclick = openMuteManagerModal;
+                    bar.appendChild(btn);
+                    document.body.appendChild(bar);
+                }
+                if (bar) {
+                    const targetText = `🚫 차단 관리 / 키워드 추가 (${totalCount}건 적용 중)`;
+                    const btn = bar.querySelector('button');
+                    if (btn && btn.textContent !== targetText) {
+                        btn.textContent = targetText;
+                    }
+                }
+            }
 
-                    headerTargets.forEach(headerEl => {
-                        let ip = headerEl.getAttribute('data-ip') || headerEl.dataset.rawIp || '';
-                        let nick = headerEl.getAttribute('data-nick') || '';
+            function processPostViewHeader(rules) {
+                const { allMutedIps, allMutedUidSet, allMutedNicks } = rules;
+                const headerTargets = document.querySelectorAll('.gallview-tit-box ul.ginfo2 > li:first-child, .gallview_head .gall_writer');
 
+                headerTargets.forEach(headerEl => {
+                    let ip = headerEl.dataset.dcIp || headerEl.getAttribute('data-ip') || headerEl.dataset.rawIp || '';
+                    let nick = headerEl.dataset.dcNick || headerEl.getAttribute('data-nick') || '';
+                    let uid = headerEl.dataset.dcUid || '';
+
+                    if (headerEl.dataset.dcProcessed !== 'true') {
                         const cleanText = getCleanText(headerEl);
                         if (!ip) {
                             const ipMatch = cleanText.match(/\((\d{1,3}\.\d{1,3})\)\s*$/);
@@ -1782,12 +1516,18 @@
                         }
 
                         const headerBox = headerEl.closest('.gallview-tit-box, .gallview_head') || headerEl;
-                        const uid = !ip ? (extractGallogId(headerEl) || extractGallogId(headerBox)) : '';
+                        if (!ip && !uid) {
+                            uid = extractGallogId(headerEl) || extractGallogId(headerBox);
+                        }
+
+                        headerEl.dataset.dcIp = ip;
+                        headerEl.dataset.dcNick = nick;
+                        headerEl.dataset.dcUid = uid;
+                        headerEl.dataset.dcProcessed = 'true';
 
                         if (!ip && !nick && !uid) return;
 
                         const isSemi = !ip && detectSemiFixedNick(headerEl);
-
                         if (isSemi && !headerEl.querySelector('.dc-semi-tag-span')) {
                             const semiSpan = document.createElement('span');
                             semiSpan.className = 'dc-semi-tag-span';
@@ -1795,14 +1535,8 @@
                             headerEl.appendChild(semiSpan);
                         }
 
-                        const isAlreadyMuted =
-                            (ip && allMutedIps.some(t => ip.startsWith(t))) ||
-                            (uid && allMutedUidSet.has(uid)) ||
-                            (!ip && nick && !COMMON_DUP_NICKS.has(nick) && allMutedNicks.includes(nick));
-
-                        let muteBtn = headerEl.querySelector('.dc-one-touch-mute-btn');
-                        if (!muteBtn) {
-                            muteBtn = document.createElement('span');
+                        if (!headerEl.querySelector('.dc-one-touch-mute-btn')) {
+                            const muteBtn = document.createElement('span');
                             muteBtn.className = 'dc-one-touch-mute-btn';
                             muteBtn.addEventListener('click', (e) => {
                                 e.preventDefault();
@@ -1823,215 +1557,216 @@
                                 if (ip) {
                                     if (!DC_MUTE_CONFIG.confirmBeforeMute || confirm(`본문 유동 IP [${ip}] 유저를 차단하시겠습니까?`)) {
                                         addMuteItem('ips', ip);
-                                        runDcTasks();
+                                        refreshAllMuteStates();
                                         if (DC_MUTE_CONFIG.autoBackOnPostMute) window.history.back();
                                     }
                                 } else if (uid) {
                                     const typeLabel = isSemi ? '반고닉' : '고닉';
                                     if (!DC_MUTE_CONFIG.confirmBeforeMute || confirm(`본문 ${typeLabel} [${nick}(#${uid})] 유저를 갤로그 ID로 핀셋 차단하시겠습니까?`)) {
                                         addMuteItem('uids', `${uid}:${nick}`);
-                                        runDcTasks();
+                                        refreshAllMuteStates();
                                         if (DC_MUTE_CONFIG.autoBackOnPostMute) window.history.back();
                                     }
                                 } else if (nick && !COMMON_DUP_NICKS.has(nick)) {
                                     if (!DC_MUTE_CONFIG.confirmBeforeMute || confirm(`본문 닉네임 [${nick}] 유저를 차단하시겠습니까?`)) {
                                         addMuteItem('nicks', nick);
-                                        runDcTasks();
+                                        refreshAllMuteStates();
                                         if (DC_MUTE_CONFIG.autoBackOnPostMute) window.history.back();
                                     }
                                 }
                             }, false);
                             headerEl.appendChild(muteBtn);
                         }
+                    }
+
+                    const muteBtn = headerEl.querySelector('.dc-one-touch-mute-btn');
+                    if (muteBtn) {
+                        const isAlreadyMuted =
+                            (ip && allMutedIps.some(t => ip.startsWith(t))) ||
+                            (uid && allMutedUidSet.has(uid)) ||
+                            (!ip && nick && !COMMON_DUP_NICKS.has(nick) && allMutedNicks.includes(nick));
 
                         const nextLabel = isAlreadyMuted ? '[차단됨]' : '[차단]';
                         if (muteBtn.textContent !== nextLabel) {
                             muteBtn.textContent = nextLabel;
                         }
                         muteBtn.classList.toggle('is-muted', !!isAlreadyMuted);
-                    });
-                }
-
-                function processItemsAndMute() {
-                    const allMutedIps = [...DC_MUTE_CONFIG.ips, ...dynamicMutes.ips];
-                    const allMutedUidSet = new Set([
-                        ...DC_MUTE_CONFIG.uids,
-                        ...dynamicMutes.uids.map(e => parseUidEntry(e).uid)
-                    ]);
-                    const distinctNicksFromUids = dynamicMutes.uids
-                        .map(e => parseUidEntry(e).nick)
-                        .filter(nk => nk && !COMMON_DUP_NICKS.has(nk));
-                    const allMutedNicks = Array.from(new Set([
-                        ...DC_MUTE_CONFIG.nicks,
-                        ...dynamicMutes.nicks,
-                        ...distinctNicksFromUids
-                    ])).filter(nk => !COMMON_DUP_NICKS.has(nk));
-
-                    const allMutedKeywords = [...DC_MUTE_CONFIG.keywords, ...dynamicMutes.keywords];
-
-                    const itemSelectors = 'ul.gall-detail-lst > li, ul.typet-list > li, tr.ub-content, ul.all-comment-lst > li, .cmt_list > li.ub-content, .reply_list > li.ub-content';
-                    document.querySelectorAll(itemSelectors).forEach(item => {
-                        const writerEl = item.querySelector('.gall_writer');
-                        const ginfoUl = item.querySelector('ul.ginfo');
-                        const mobileWriterLi = findMobileWriterLi(ginfoUl);
-
-                        let ipEl = item.querySelector('.ip, .block-ip, [data-raw-ip]');
-                        if (!ipEl && mobileWriterLi && (mobileWriterLi.dataset.rawIp || /\(\d{1,3}\.\d{1,3}\)\s*$/.test(getCleanText(mobileWriterLi)))) {
-                            ipEl = mobileWriterLi;
-                        }
-
-                        let ip = (writerEl && writerEl.getAttribute('data-ip')) || (ipEl && ipEl.dataset.rawIp) || '';
-                        if (!ip && ipEl) {
-                            const m = getCleanText(ipEl).match(/\(?(\d{1,3}\.\d{1,3})\)?\s*$/);
-                            if (m) ip = m[1];
-                        }
-
-                        let nickTargetEl = item.querySelector('a.nick, .nick, .gall_writer') || mobileWriterLi;
-                        let nick = (writerEl && writerEl.getAttribute('data-nick')) || '';
-                        if (!nick && nickTargetEl) {
-                            nick = getCleanText(nickTargetEl).replace(/\(\d{1,3}\.\d{1,3}\)\s*$/, '').trim();
-                        }
-
-                        const uid = !ip ? extractGallogId(writerEl || item) : '';
-                        const isSemi = !ip && detectSemiFixedNick(writerEl || mobileWriterLi || item);
-
-                        let btnAnchor = ipEl || nickTargetEl;
-                        const isNickAnchor = !ip && nickTargetEl && nickTargetEl.tagName === 'A' && nickTargetEl.classList.contains('nick');
-                        if (btnAnchor && btnAnchor.tagName === 'A' && btnAnchor.classList.contains('nick')) {
-                            btnAnchor = btnAnchor.parentElement || btnAnchor;
-                        }
-
-                        const rawSpIcon = item.querySelector('.sp-nick');
-                        const iconOuter = (rawSpIcon && rawSpIcon.parentElement && rawSpIcon.parentElement.tagName === 'A' && !rawSpIcon.parentElement.classList.contains('nick'))
-                            ? rawSpIcon.parentElement
-                            : rawSpIcon;
-
-                        if (isSemi && btnAnchor && !item.querySelector('.dc-semi-tag-span')) {
-                            const semiSpan = document.createElement('span');
-                            semiSpan.className = 'dc-semi-tag-span';
-                            semiSpan.innerText = '[반고닉]';
-                            if (isNickAnchor) {
-                                nickTargetEl.insertAdjacentElement('afterend', semiSpan);
-                            } else if (iconOuter && iconOuter.parentNode === btnAnchor) {
-                                iconOuter.insertAdjacentElement('afterend', semiSpan);
-                            } else {
-                                btnAnchor.appendChild(semiSpan);
-                            }
-                        }
-
-                        const isUnidentifiableCommonNick = !ip && !uid && COMMON_DUP_NICKS.has(nick);
-
-                        if (btnAnchor && !item.querySelector('.dc-one-touch-mute-btn') && (ip || uid || (!isUnidentifiableCommonNick && nick))) {
-                            const muteBtn = document.createElement('span');
-                            muteBtn.className = 'dc-one-touch-mute-btn';
-                            muteBtn.textContent = '[차단]';
-                            muteBtn.addEventListener('click', (e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-
-                                if (ip) {
-                                    if (!DC_MUTE_CONFIG.confirmBeforeMute || confirm(`유동 IP [${ip}] 유저를 차단하시겠습니까?`)) {
-                                        addMuteItem('ips', ip);
-                                        runDcTasks();
-                                    }
-                                } else if (uid) {
-                                    const typeLabel = isSemi ? '반고닉' : '고닉';
-                                    if (!DC_MUTE_CONFIG.confirmBeforeMute || confirm(`${typeLabel} [${nick}(#${uid})] 유저를 갤로그 ID로 핀셋 차단하시겠습니까?`)) {
-                                        addMuteItem('uids', `${uid}:${nick}`);
-                                        runDcTasks();
-                                    }
-                                } else if (nick && !COMMON_DUP_NICKS.has(nick)) {
-                                    const typeLabel = isSemi ? '반고닉' : '고닉';
-                                    if (!DC_MUTE_CONFIG.confirmBeforeMute || confirm(`${typeLabel} [${nick}] 유저를 닉네임으로 차단하시겠습니까?`)) {
-                                        addMuteItem('nicks', nick);
-                                        runDcTasks();
-                                    }
-                                }
-                            }, false);
-
-                            const semiTag = item.querySelector('.dc-semi-tag-span');
-                            if (semiTag && semiTag.parentNode === btnAnchor) {
-                                semiTag.insertAdjacentElement('afterend', muteBtn);
-                            } else if (isNickAnchor) {
-                                nickTargetEl.insertAdjacentElement('afterend', muteBtn);
-                            } else if (!ip && iconOuter && iconOuter.parentNode === btnAnchor) {
-                                iconOuter.insertAdjacentElement('afterend', muteBtn);
-                            } else {
-                                btnAnchor.appendChild(muteBtn);
-                            }
-                        }
-
-                        const textEl = item.querySelector('.subjectin, .subjectTxt, .gall_tit, .txt, .usertxt');
-                        const contentText = textEl ? textEl.textContent : '';
-
-                        let shouldMute = false;
-                        if (ip && allMutedIps.some(targetIp => ip.startsWith(targetIp))) {
-                            shouldMute = true;
-                        } else if (ip && DC_MUTE_CONFIG.categories.length > 0 && DC_MUTE_CONFIG.categories.includes(getIpLabel(ip))) {
-                            shouldMute = true;
-                        } else if (isSemi && DC_MUTE_CONFIG.categories.includes('반고닉')) {
-                            shouldMute = true;
-                        } else if (uid && allMutedUidSet.has(uid)) {
-                            shouldMute = true;
-                        } else if (!ip && nick && !COMMON_DUP_NICKS.has(nick) && allMutedNicks.includes(nick)) {
-                            shouldMute = true;
-                        } else if (contentText && allMutedKeywords.some(kw => contentText.includes(kw))) {
-                            shouldMute = true;
-                        }
-
-                        if (shouldMute && item.getAttribute('data-muted-hidden') !== 'true') {
-                            item.style.setProperty('display', 'none', 'important');
-                            item.setAttribute('data-muted-hidden', 'true');
-                        }
-                    });
-                }
-
-                function runDcTasks() {
-                    ensureDcStyle();
-                    enforceStealthLocks();
-                    dynamicMutes = loadSavedMutes();
-                    sanitizeDcLinks();
-                    tagIPs();
-                    loadOriginalImages();
-                    processPostViewHeader();
-                    processItemsAndMute();
-                    updateManageBar();
-                }
-
-                runDcTasks();
-
-                const isOwnInjectedNode = (node) => {
-                    if (!node || node.nodeType !== 1) return false;
-                    if (node.id === 'dc-mute-manage-bar' || node.id === 'dc-mute-modal-backdrop' || node.id === 'dc-custom-stealth-style') return true;
-                    const cls = node.classList;
-                    return cls ? (cls.contains('dc-ip-tag-span') || cls.contains('dc-semi-tag-span') || cls.contains('dc-one-touch-mute-btn')) : false;
-                };
-
-                let dcScheduled = false;
-                const dcObserver = new MutationObserver((mutations) => {
-                    if (dcScheduled) return;
-                    const hasExternalAdd = mutations.some(m => {
-                        for (let i = 0; i < m.addedNodes.length; i++) {
-                            if (!isOwnInjectedNode(m.addedNodes[i])) return true;
-                        }
-                        return false;
-                    });
-                    if (hasExternalAdd) {
-                        dcScheduled = true;
-                        window.requestAnimationFrame(() => {
-                            dcScheduled = false;
-                            runDcTasks();
-                        });
                     }
                 });
-                if (document.body) {
-                    dcObserver.observe(document.body, { childList: true, subtree: true });
+            }
+
+            function processItemsAndMute(rules) {
+                const { allMutedIps, allMutedUidSet, allMutedNicks, allMutedKeywords } = rules;
+                const itemSelectors = 'ul.gall-detail-lst > li, ul.typet-list > li, tr.ub-content, ul.all-comment-lst > li, .cmt_list > li.ub-content, .reply_list > li.ub-content';
+
+                document.querySelectorAll(itemSelectors).forEach(item => {
+                    // 1회 처리 완료 플래그: 이미 검사·배지 부착이 끝난 항목은 즉시 건너뛰어 과부하 차단
+                    if (item.dataset.dcProcessed === 'true') return;
+                    item.dataset.dcProcessed = 'true';
+
+                    const writerEl = item.querySelector('.gall_writer');
+                    const ginfoUl = item.querySelector('ul.ginfo');
+                    const mobileWriterLi = findMobileWriterLi(ginfoUl);
+
+                    let ipEl = item.querySelector('.ip, .block-ip, [data-raw-ip]');
+                    if (!ipEl && mobileWriterLi && (mobileWriterLi.dataset.rawIp || /\(\d{1,3}\.\d{1,3}\)\s*$/.test(getCleanText(mobileWriterLi)))) {
+                        ipEl = mobileWriterLi;
+                    }
+
+                    let ip = (writerEl && writerEl.getAttribute('data-ip')) || (ipEl && ipEl.dataset.rawIp) || '';
+                    if (!ip && ipEl) {
+                        const m = getCleanText(ipEl).match(/\(?(\d{1,3}\.\d{1,3})\)?\s*$/);
+                        if (m) ip = m[1];
+                    }
+
+                    let nickTargetEl = item.querySelector('a.nick, .nick, .gall_writer') || mobileWriterLi;
+                    let nick = (writerEl && writerEl.getAttribute('data-nick')) || '';
+                    if (!nick && nickTargetEl) {
+                        nick = getCleanText(nickTargetEl).replace(/\(\d{1,3}\.\d{1,3}\)\s*$/, '').trim();
+                    }
+
+                    const uid = !ip ? extractGallogId(writerEl || item) : '';
+                    const isSemi = !ip && detectSemiFixedNick(writerEl || mobileWriterLi || item);
+
+                    let btnAnchor = ipEl || nickTargetEl;
+                    const isNickAnchor = !ip && nickTargetEl && nickTargetEl.tagName === 'A' && nickTargetEl.classList.contains('nick');
+                    if (btnAnchor && btnAnchor.tagName === 'A' && btnAnchor.classList.contains('nick')) {
+                        btnAnchor = btnAnchor.parentElement || btnAnchor;
+                    }
+
+                    const rawSpIcon = item.querySelector('.sp-nick');
+                    const iconOuter = (rawSpIcon && rawSpIcon.parentElement && rawSpIcon.parentElement.tagName === 'A' && !rawSpIcon.parentElement.classList.contains('nick'))
+                        ? rawSpIcon.parentElement
+                        : rawSpIcon;
+
+                    if (isSemi && btnAnchor && !item.querySelector('.dc-semi-tag-span')) {
+                        const semiSpan = document.createElement('span');
+                        semiSpan.className = 'dc-semi-tag-span';
+                        semiSpan.innerText = '[반고닉]';
+                        if (isNickAnchor) {
+                            nickTargetEl.insertAdjacentElement('afterend', semiSpan);
+                        } else if (iconOuter && iconOuter.parentNode === btnAnchor) {
+                            iconOuter.insertAdjacentElement('afterend', semiSpan);
+                        } else {
+                            btnAnchor.appendChild(semiSpan);
+                        }
+                    }
+
+                    const isUnidentifiableCommonNick = !ip && !uid && COMMON_DUP_NICKS.has(nick);
+
+                    if (btnAnchor && !item.querySelector('.dc-one-touch-mute-btn') && (ip || uid || (!isUnidentifiableCommonNick && nick))) {
+                        const muteBtn = document.createElement('span');
+                        muteBtn.className = 'dc-one-touch-mute-btn';
+                        muteBtn.textContent = '[차단]';
+                        muteBtn.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+
+                            if (ip) {
+                                if (!DC_MUTE_CONFIG.confirmBeforeMute || confirm(`유동 IP [${ip}] 유저를 차단하시겠습니까?`)) {
+                                    addMuteItem('ips', ip);
+                                    refreshAllMuteStates();
+                                }
+                            } else if (uid) {
+                                const typeLabel = isSemi ? '반고닉' : '고닉';
+                                if (!DC_MUTE_CONFIG.confirmBeforeMute || confirm(`${typeLabel} [${nick}(#${uid})] 유저를 갤로그 ID로 핀셋 차단하시겠습니까?`)) {
+                                    addMuteItem('uids', `${uid}:${nick}`);
+                                    refreshAllMuteStates();
+                                }
+                            } else if (nick && !COMMON_DUP_NICKS.has(nick)) {
+                                const typeLabel = isSemi ? '반고닉' : '고닉';
+                                if (!DC_MUTE_CONFIG.confirmBeforeMute || confirm(`${typeLabel} [${nick}] 유저를 닉네임으로 차단하시겠습니까?`)) {
+                                    addMuteItem('nicks', nick);
+                                    refreshAllMuteStates();
+                                }
+                            }
+                        }, false);
+
+                        const semiTag = item.querySelector('.dc-semi-tag-span');
+                        if (semiTag && semiTag.parentNode === btnAnchor) {
+                            semiTag.insertAdjacentElement('afterend', muteBtn);
+                        } else if (isNickAnchor) {
+                            nickTargetEl.insertAdjacentElement('afterend', muteBtn);
+                        } else if (!ip && iconOuter && iconOuter.parentNode === btnAnchor) {
+                            iconOuter.insertAdjacentElement('afterend', muteBtn);
+                        } else {
+                            btnAnchor.appendChild(muteBtn);
+                        }
+                    }
+
+                    const textEl = item.querySelector('.subjectin, .subjectTxt, .gall_tit, .txt, .usertxt');
+                    const contentText = textEl ? textEl.textContent : '';
+
+                    let shouldMute = false;
+                    if (ip && allMutedIps.some(targetIp => ip.startsWith(targetIp))) {
+                        shouldMute = true;
+                    } else if (ip && DC_MUTE_CONFIG.categories.length > 0 && DC_MUTE_CONFIG.categories.includes(getIpLabel(ip))) {
+                        shouldMute = true;
+                    } else if (isSemi && DC_MUTE_CONFIG.categories.includes('반고닉')) {
+                        shouldMute = true;
+                    } else if (uid && allMutedUidSet.has(uid)) {
+                        shouldMute = true;
+                    } else if (!ip && nick && !COMMON_DUP_NICKS.has(nick) && allMutedNicks.includes(nick)) {
+                        shouldMute = true;
+                    } else if (contentText && allMutedKeywords.some(kw => contentText.includes(kw))) {
+                        shouldMute = true;
+                    }
+
+                    if (shouldMute) {
+                        item.style.setProperty('display', 'none', 'important');
+                        item.setAttribute('data-muted-hidden', 'true');
+                    }
+                });
+            }
+
+            function runDcTasks() {
+                const rules = buildActiveMuteRules();
+                tagIPs();
+                processPostViewHeader(rules);
+                processItemsAndMute(rules);
+                updateManageBar();
+            }
+
+            runDcTasks();
+
+            // 사파리 뒤로가기 제스처(BFCache 복원) 시 본문에서 추가한 차단 내역을 목록에 즉시 반영
+            window.addEventListener('pageshow', (e) => {
+                if (e.persisted) {
+                    dynamicMutes = loadSavedMutes(true);
+                    refreshAllMuteStates();
+                }
+            }, { passive: true });
+
+            const isOwnInjectedNode = (node) => {
+                if (!node || node.nodeType !== 1) return false;
+                if (node.id === 'dc-mute-manage-bar' || node.id === 'dc-mute-modal-backdrop' || node.id === 'dc-custom-stealth-style') return true;
+                const cls = node.classList;
+                return cls ? (cls.contains('dc-ip-tag-span') || cls.contains('dc-semi-tag-span') || cls.contains('dc-one-touch-mute-btn')) : false;
+            };
+
+            let dcScheduled = false;
+            const dcObserver = new MutationObserver((mutations) => {
+                if (dcScheduled) return;
+                const hasExternalAdd = mutations.some(m => {
+                    for (let i = 0; i < m.addedNodes.length; i++) {
+                        if (!isOwnInjectedNode(m.addedNodes[i])) return true;
+                    }
+                    return false;
+                });
+                if (hasExternalAdd) {
+                    dcScheduled = true;
+                    window.requestAnimationFrame(() => {
+                        dcScheduled = false;
+                        runDcTasks();
+                    });
                 }
             });
-        })();
+            if (document.body) {
+                dcObserver.observe(document.body, { childList: true, subtree: true });
+            }
+        });
     }
     // ====================== [모듈 4: 디시인사이드 끝] ==========================
-
 
 
     // =========================================================================
