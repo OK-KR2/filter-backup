@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         [통합] 내 전용 웹사이트 편의성 & 광고 차단팩
 // @namespace    http://tampermonkey.net/
-// @version      4.1
+// @version      4.2
 // @description  1.나무위키 광고차단 | 2.툰코(서브도메인 대응) 스크롤메뉴·배너제거 | 3.유튜브 PiP·백그라운드 연속재생(rAF우회/0:00돌파)·최고화질 | 4.디시 스텔스·IP/반고닉·핀셋차단 | 5.블로그·티스토리 복사해제
 //
 // --- [1. 나무위키 주소 규칙] ---
@@ -734,15 +734,19 @@
     // ======================= [모듈 3: 유튜브 끝] ==============================
 
     // =========================================================================
-    // 📦 [모듈 4] Dcinside IP/반고닉 식별 & 핀셋 차단 경량화 버전 v7.1
+    // 📦 [모듈 4] Dcinside IP/반고닉 식별 & 핀셋 차단 경량화 버전 v7.2
     // [반복 금지 규칙 (Anti-Repeat Rules)]
-    // 1. document-start 시점 개입, Object.defineProperty(window) 잠금, fetch/XHR 후킹 금지
+    // 1. Object.defineProperty(window) 잠금, fetch/XHR 후킹, 이미지 강제 로더 절대 금지
     // 2. touchstart/pointerdown/click 이벤트 가로채기 및 pageshow 전체 DOM 재스캔 절대 금지
-    // 3. javascript:go_statistics 링크의 정적 href 치환(sanitizeDcLinks)은 필수 유지 (삭제 금지)
-    // 4. 이미지/비디오 강제 로더(loadOriginalImages) 및 .penalty-box CSS 숨김 절대 금지
-    // 5. dataset.dcProcessed 1회 처리 플래그 및 find_ab=ok 쿠키 경량 차단 유지
+    // 3. javascript:go_statistics 정적 치환(sanitizeDcLinks) 및 초기 find_ab=no 쿠키 유지
+    // 4. getCleanText 내 cloneNode(true) 사용 금지 및 .penalty-box CSS 숨김 금지
+    // 5. dataset.dcProcessed 1회 처리 플래그 및 MutationObserver 광고 노드 필터링 유지
     // =========================================================================
     if (ENABLE_MODULES.dcinside && currentHost.includes('dcinside.com') && !/^(nstatic|dcimg\d*|dccdn\d*|dcm\d*)\./i.test(currentHost) && !/^image\//i.test(document.contentType || '')) {
+        try {
+            document.cookie = 'find_ab=no; expires=Thu, 01 Jan 2030 00:00:00 UTC; path=/; domain=.dcinside.com';
+        } catch (e) {}
+
         runAtDocumentEnd(function() {
             const DC_MUTE_CONFIG = {
                 confirmBeforeMute: true,  // [차단] 터치 시 확인 창 띄우기 (바로 차단하려면 false)
@@ -1127,10 +1131,8 @@
             };
 
             const getCleanText = (el) => {
-                if (!el) return '';
-                const clone = el.cloneNode(true);
-                clone.querySelectorAll('.dc-ip-tag-span, .dc-semi-tag-span, .dc-one-touch-mute-btn, .sp-nick, .writer_nikcon').forEach(n => n.remove());
-                return clone.textContent.trim();
+                if (!el || !el.textContent) return '';
+                return el.textContent.replace(/\[(?:통피|비공개|VPN|개인|반고닉|차단됨?)\]/g, '').trim();
             };
 
             const extractGallogId = (scopeEl) => {
@@ -1761,23 +1763,27 @@
 
             runDcTasks();
 
-            const isOwnInjectedNode = (node) => {
+            const isRelevantAddedNode = (node) => {
                 if (!node || node.nodeType !== 1) return false;
-                if (node.id === 'dc-mute-manage-bar' || node.id === 'dc-mute-modal-backdrop' || node.id === 'dc-custom-stealth-style') return true;
+                const tag = node.tagName;
+                if (tag === 'SCRIPT' || tag === 'STYLE' || tag === 'INS' || tag === 'IFRAME') return false;
+                if (node.id === 'dc-mute-manage-bar' || node.id === 'dc-mute-modal-backdrop' || node.id === 'dc-custom-stealth-style') return false;
                 const cls = node.classList;
-                return cls ? (cls.contains('dc-ip-tag-span') || cls.contains('dc-semi-tag-span') || cls.contains('dc-one-touch-mute-btn')) : false;
+                if (cls && (cls.contains('dc-ip-tag-span') || cls.contains('dc-semi-tag-span') || cls.contains('dc-one-touch-mute-btn') || cls.contains('dcads_slot') || cls.contains('kakao_ad_area'))) return false;
+                if (tag === 'LI' || tag === 'TR' || tag === 'UL') return true;
+                return !!(node.querySelector && node.querySelector('li, tr.ub-content, a[href*="go_statistics"]'));
             };
 
             let dcScheduled = false;
             const dcObserver = new MutationObserver((mutations) => {
                 if (dcScheduled) return;
-                const hasExternalAdd = mutations.some(m => {
+                const hasRelevantAdd = mutations.some(m => {
                     for (let i = 0; i < m.addedNodes.length; i++) {
-                        if (!isOwnInjectedNode(m.addedNodes[i])) return true;
+                        if (isRelevantAddedNode(m.addedNodes[i])) return true;
                     }
                     return false;
                 });
-                if (hasExternalAdd) {
+                if (hasRelevantAdd) {
                     dcScheduled = true;
                     window.requestAnimationFrame(() => {
                         dcScheduled = false;
