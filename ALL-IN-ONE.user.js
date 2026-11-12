@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         [통합] 내 전용 웹사이트 편의성 & 광고 차단팩
 // @namespace    http://tampermonkey.net/
-// @version      4.0
+// @version      4.1
 // @description  1.나무위키 광고차단 | 2.툰코(서브도메인 대응) 스크롤메뉴·배너제거 | 3.유튜브 PiP·백그라운드 연속재생(rAF우회/0:00돌파)·최고화질 | 4.디시 스텔스·IP/반고닉·핀셋차단 | 5.블로그·티스토리 복사해제
 //
 // --- [1. 나무위키 주소 규칙] ---
@@ -733,15 +733,14 @@
     }
     // ======================= [모듈 3: 유튜브 끝] ==============================
 
-
-
     // =========================================================================
-    // 📦 [모듈 4] Dcinside IP/반고닉 식별 & 핀셋 차단 경량화 버전 v7.0
+    // 📦 [모듈 4] Dcinside IP/반고닉 식별 & 핀셋 차단 경량화 버전 v7.1
     // [반복 금지 규칙 (Anti-Repeat Rules)]
-    // 1. document-start 시점 개입, 전역 변수(window) 잠금, document.cookie 조작 절대 금지
-    // 2. a 태그 href/onclick 변조 및 touchstart/pointerdown/click 링크 가로채기 절대 금지
-    // 3. 이미지/비디오(loadOriginalImages) 강제 로딩 및 fetch/XHR 네트워크 후킹 절대 금지
-    // 4. .penalty-box CSS 숨김 금지 및 dataset.dcProcessed 1회 처리 플래그 필수 유지
+    // 1. document-start 시점 개입, Object.defineProperty(window) 잠금, fetch/XHR 후킹 금지
+    // 2. touchstart/pointerdown/click 이벤트 가로채기 및 pageshow 전체 DOM 재스캔 절대 금지
+    // 3. javascript:go_statistics 링크의 정적 href 치환(sanitizeDcLinks)은 필수 유지 (삭제 금지)
+    // 4. 이미지/비디오 강제 로더(loadOriginalImages) 및 .penalty-box CSS 숨김 절대 금지
+    // 5. dataset.dcProcessed 1회 처리 플래그 및 find_ab=ok 쿠키 경량 차단 유지
     // =========================================================================
     if (ENABLE_MODULES.dcinside && currentHost.includes('dcinside.com') && !/^(nstatic|dcimg\d*|dccdn\d*|dcm\d*)\./i.test(currentHost) && !/^image\//i.test(document.contentType || '')) {
         runAtDocumentEnd(function() {
@@ -855,6 +854,33 @@
                 }
                 dynamicMutes = saveMutesToStore(dynamicMutes);
             };
+
+            function disableFindAbCookie() {
+                try {
+                    if (document.cookie.includes('find_ab=ok')) {
+                        document.cookie = 'find_ab=no; expires=Thu, 01 Jan 2030 00:00:00 UTC; path=/; domain=.dcinside.com';
+                    }
+                    if (typeof window.setCookie_hk_hour === 'function' && !window.setCookie_hk_hour._dcPatched) {
+                        const origSetCookie = window.setCookie_hk_hour;
+                        const wrapped = function(name, value, expiredays) {
+                            if (name === 'find_ab') return;
+                            return origSetCookie.apply(this, arguments);
+                        };
+                        wrapped._dcPatched = true;
+                        window.setCookie_hk_hour = wrapped;
+                    }
+                } catch (e) {}
+            }
+
+            function sanitizeDcLinks() {
+                document.querySelectorAll('a[href*="go_statistics"]').forEach(a => {
+                    const rawHref = a.getAttribute('href') || '';
+                    const m = rawHref.match(/go_statistics\(\s*['"][^'"]*['"]\s*,\s*['"]([^'"]+)['"]/i);
+                    if (m && m[1]) {
+                        a.setAttribute('href', m[1].trim().replace(/^http:\/\/([^/]*dcinside\.com)/i, 'https://$1'));
+                    }
+                });
+            }
 
             const dcStyle = document.createElement('style');
             dcStyle.id = 'dc-custom-stealth-style';
@@ -1116,6 +1142,11 @@
                 if (uidNode && uidNode.getAttribute('data-uid')) {
                     return uidNode.getAttribute('data-uid').trim();
                 }
+                const blockNode = scopeEl.querySelector ? scopeEl.querySelector('.blockCommentId[data-info], .blockInfo[data-info]') : null;
+                if (blockNode) {
+                    const info = (blockNode.getAttribute('data-info') || '').trim();
+                    if (info && !/^\d{1,3}\.\d{1,3}$/.test(info)) return info;
+                }
                 const gallogLinks = scopeEl.querySelectorAll ? scopeEl.querySelectorAll('a[href*="/gallog/"], [onclick*="gallog"]') : [];
                 for (let i = 0; i < gallogLinks.length; i++) {
                     const href = gallogLinks[i].getAttribute('href') || '';
@@ -1243,7 +1274,7 @@
                     modalBackdrop.innerHTML = `
                         <div id="dc-mute-modal" role="dialog" aria-label="차단 목록 관리">
                             <div class="dc-mm-head">
-                                <span>디시 차단 관리 (키워드 / IP / 갤로그ID / 닉네임)</span>
+                                <span>🚫 디시 차단 관리 (키워드 / IP / 갤로그ID / 닉네임)</span>
                                 <button type="button" class="dc-mm-close" aria-label="닫기">✕</button>
                             </div>
                             <div class="dc-mm-body">
@@ -1309,7 +1340,7 @@
                         const exportStr = JSON.stringify(exportObj);
                         const ok = await copyTextToClipboard(exportStr);
                         if (ok) {
-                            alert(`클립보드에 차단 목록이 복사되었습니다!\n\n${exportStr}`);
+                            alert(`✅ 클립보드에 차단 목록이 복사되었습니다!\n\n${exportStr}`);
                         } else {
                             prompt('아래 텍스트를 복사해 보관하세요:', exportStr);
                         }
@@ -1352,9 +1383,9 @@
                             dynamicMutes = saveMutesToStore(dynamicMutes);
                             renderModalLists();
                             refreshAllMuteStates();
-                            alert('차단 목록이 성공적으로 복원되었습니다!');
+                            alert('✅ 차단 목록이 성공적으로 복원되었습니다!');
                         } catch (err) {
-                            alert('올바른 백업 형식(JSON)이 아닙니다.');
+                            alert('❌ 올바른 백업 형식(JSON)이 아닙니다.');
                         }
                     });
 
@@ -1507,9 +1538,9 @@
                             if (ipMatch) ip = ipMatch[1];
                         }
                         if (!nick) {
-                            const nickEl = headerEl.querySelector('.nickname');
+                            const nickEl = headerEl.querySelector('.nickname, .nick');
                             if (nickEl) {
-                                nick = nickEl.textContent.trim();
+                                nick = getCleanText(nickEl).replace(/\(\d{1,3}\.\d{1,3}\)\s*$/, '').trim();
                             } else {
                                 nick = cleanText.replace(/\(\d{1,3}\.\d{1,3}\)\s*$/, '').trim();
                             }
@@ -1600,7 +1631,6 @@
                 const itemSelectors = 'ul.gall-detail-lst > li, ul.typet-list > li, tr.ub-content, ul.all-comment-lst > li, .cmt_list > li.ub-content, .reply_list > li.ub-content';
 
                 document.querySelectorAll(itemSelectors).forEach(item => {
-                    // 1회 처리 완료 플래그: 이미 검사·배지 부착이 끝난 항목은 즉시 건너뛰어 과부하 차단
                     if (item.dataset.dcProcessed === 'true') return;
                     item.dataset.dcProcessed = 'true';
 
@@ -1720,6 +1750,8 @@
             }
 
             function runDcTasks() {
+                disableFindAbCookie();
+                sanitizeDcLinks();
                 const rules = buildActiveMuteRules();
                 tagIPs();
                 processPostViewHeader(rules);
@@ -1728,14 +1760,6 @@
             }
 
             runDcTasks();
-
-            // 사파리 뒤로가기 제스처(BFCache 복원) 시 본문에서 추가한 차단 내역을 목록에 즉시 반영
-            window.addEventListener('pageshow', (e) => {
-                if (e.persisted) {
-                    dynamicMutes = loadSavedMutes(true);
-                    refreshAllMuteStates();
-                }
-            }, { passive: true });
 
             const isOwnInjectedNode = (node) => {
                 if (!node || node.nodeType !== 1) return false;
@@ -1767,7 +1791,6 @@
         });
     }
     // ====================== [모듈 4: 디시인사이드 끝] ==========================
-
 
     // =========================================================================
     // 📦 [모듈 5] Mobile Absolute Copy Unlocker 🔓 v10.1 (무소음 · 경량화 버전)
