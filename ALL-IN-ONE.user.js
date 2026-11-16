@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         [통합] 내 전용 웹사이트 편의성 & 광고 차단팩
 // @namespace    http://tampermonkey.net/
-// @version      4.2
+// @version      4.3
 // @description  1.나무위키 광고차단 | 2.툰코(서브도메인 대응) 스크롤메뉴·배너제거 | 3.유튜브 PiP·백그라운드 연속재생(rAF우회/0:00돌파)·최고화질 | 4.디시 스텔스·IP/반고닉·핀셋차단 | 5.블로그·티스토리 복사해제
 //
 // --- [1. 나무위키 주소 규칙] ---
@@ -324,53 +324,39 @@
 
 
     // =========================================================================
-    // 📦 [모듈 3] YouTube Background Playlist Unlocker, Max Quality & Smart PiP v37.0
+    // 📦 [모듈 3] YouTube Background Play, Max Quality, Smart PiP & Customizer v38.0
     // - 작동 조건: youtube.com 접속 시
+    // - 통합 내역:
+    //   1) 백그라운드 재생 (v2.6 순정 상태 위장 + _lact 갱신)
+    //   2) 최고 화질(1080p~4K) 자동 고정
+    //   3) /watch 전용 반투명 PiP 버튼 & 댓글 스크롤 시 자동 숨김
+    //   4) My YouTube Customizer v1.6 (일시정지 팝업·실시간 채팅 차단, 플레이리스트 고정·순환, 절전 방지, 광고 기능 주석 보존)
     // =========================================================================
     if (ENABLE_MODULES.youtube && currentHost.includes('youtube.com')) {
         (function() {
             const YT_CONFIG = {
-                autoMaxQuality: true,     // 최고 화질 자동 고정 켜기/끄기 (화면 켜져 있을 때만 작동)
+                autoMaxQuality: true,     // 최고 화질 자동 고정 켜기/끄기
                 targetRes: 'hd2160',      // 목표 최대 화질 ('hd2160'=4K, 'hd1440'=QHD, 'hd1080'=FHD)
                 pipIdleOpacity: '0.40'    // 평소 PiP 버튼 투명도 (0.1 ~ 1.0)
             };
 
-            const nativeHiddenDesc = Object.getOwnPropertyDescriptor(Document.prototype, 'hidden') ||
-                                     Object.getOwnPropertyDescriptor(document, 'hidden');
-            const nativeVisDesc = Object.getOwnPropertyDescriptor(Document.prototype, 'visibilityState') ||
-                                  Object.getOwnPropertyDescriptor(document, 'visibilityState');
-
-            let fallbackBgFlag = false;
-            const checkRealBackground = () => {
-                try {
-                    if (nativeHiddenDesc && typeof nativeHiddenDesc.get === 'function') {
-                        return !!nativeHiddenDesc.get.call(document);
-                    }
-                    if (nativeVisDesc && typeof nativeVisDesc.get === 'function') {
-                        return nativeVisDesc.get.call(document) !== 'visible';
-                    }
-                } catch (e) {}
-                return fallbackBgFlag;
-            };
-
-            const nativeRAF = window.requestAnimationFrame ? window.requestAnimationFrame.bind(window) : null;
-            const nativeCAF = window.cancelAnimationFrame ? window.cancelAnimationFrame.bind(window) : null;
-
-            if (nativeRAF) {
-                window.requestAnimationFrame = function(callback) {
-                    if (!checkRealBackground()) {
-                        return nativeRAF(callback);
-                    }
-                    return window.setTimeout(() => {
-                        try { callback(performance.now()); } catch (e) {}
-                    }, 30);
-                };
-                window.cancelAnimationFrame = function(id) {
-                    try { if (nativeCAF) nativeCAF(id); } catch (e) {}
-                    window.clearTimeout(id);
-                };
+            /**
+             * [공통 유틸리티] CSS 스타일 주입 함수 (GM_addStyle 및 표준 <style> 태그 모두 호환)
+             */
+            function injectModuleStyle(cssText, id) {
+                if (id && document.getElementById(id)) return;
+                if (typeof GM_addStyle === 'function') {
+                    const styleEl = GM_addStyle(cssText);
+                    if (id && styleEl) styleEl.id = id;
+                    return;
+                }
+                const style = document.createElement('style');
+                if (id) style.id = id;
+                style.textContent = cssText;
+                (document.head || document.documentElement).appendChild(style);
             }
 
+            // [3-1] 백그라운드 재생 활성화 (document-start 시점 상태 위장)
             try {
                 Object.defineProperties(document, {
                     'hidden': { get: () => false, configurable: true },
@@ -380,49 +366,33 @@
                 });
             } catch (e) {}
 
-            let lastLockTransitionTime = 0;
             const blockBgEvents = (e) => {
-                if (e.type === 'pagehide' || checkRealBackground()) {
-                    fallbackBgFlag = true;
-                    lastLockTransitionTime = Date.now();
-                } else {
-                    fallbackBgFlag = false;
-                }
                 e.stopImmediatePropagation();
             };
-
             ['visibilitychange', 'webkitvisibilitychange', 'mozvisibilitychange', 'pagehide'].forEach(evt => {
                 window.addEventListener(evt, blockBgEvents, true);
                 document.addEventListener(evt, blockBgEvents, true);
             });
 
-            window.addEventListener('blur', () => {
-                if (checkRealBackground()) {
-                    fallbackBgFlag = true;
-                    lastLockTransitionTime = Date.now();
-                }
-            }, { passive: true });
-
             const keepAliveLact = () => {
-                try { window._lact = Date.now(); } catch (e) {}
+                if (typeof window._lact !== 'undefined') {
+                    window._lact = Date.now();
+                }
             };
-
-            ['touchstart', 'click', 'scroll', 'keydown', 'pageshow', 'focus'].forEach(evt => {
-                window.addEventListener(evt, () => {
-                    fallbackBgFlag = false;
-                    keepAliveLact();
-                }, { passive: true });
+            ['touchstart', 'click', 'scroll', 'keydown'].forEach(evt => {
+                window.addEventListener(evt, keepAliveLact, { passive: true });
             });
 
             let lastTimeUpdateLact = 0;
             document.addEventListener('timeupdate', () => {
                 const now = Date.now();
-                if (now - lastTimeUpdateLact > 15000) {
+                if (now - lastTimeUpdateLact > 20000) {
                     lastTimeUpdateLact = now;
                     keepAliveLact();
                 }
             }, true);
 
+            // [3-2] 최고 화질(1080p 이상) 자동 고정 로직
             const setYtLocalStorageQuality = () => {
                 if (!YT_CONFIG.autoMaxQuality) return;
                 try {
@@ -438,7 +408,7 @@
             setYtLocalStorageQuality();
 
             const applyMaxQualityToPlayer = () => {
-                if (!YT_CONFIG.autoMaxQuality || checkRealBackground()) return;
+                if (!YT_CONFIG.autoMaxQuality) return;
                 try {
                     const player = document.getElementById('movie_player') || document.querySelector('.html5-video-player');
                     if (!player || typeof player.getAvailableQualityLevels !== 'function') return;
@@ -466,91 +436,11 @@
                 } catch (e) {}
             };
 
-            let isTrackTransitioning = false;
-            let kickstartTimers = [];
-
-            const clearKickstartTimers = () => {
-                kickstartTimers.forEach(t => clearTimeout(t));
-                kickstartTimers = [];
-            };
-
-            const wakeUpStalledPlayer = () => {
-                if (!window.location.pathname.startsWith('/watch')) return;
-                const v = document.querySelector('video');
-                const player = document.getElementById('movie_player') || document.querySelector('.html5-video-player');
-                if (!v) return;
-
-                if ((checkRealBackground() || isTrackTransitioning) && v.currentTime < 0.5 && (v.paused || v.readyState < 3)) {
-                    keepAliveLact();
-                    try {
-                        if (v.currentTime === 0) {
-                            v.currentTime = 0.05;
-                        }
-                        if (player && typeof player.playVideo === 'function') {
-                            player.playVideo();
-                        }
-                        const playPromise = v.play();
-                        if (playPromise && typeof playPromise.catch === 'function') {
-                            playPromise.catch(() => {});
-                        }
-                    } catch (e) {}
-                }
-            };
-
-            const scheduleZeroStallKickstart = () => {
-                clearKickstartTimers();
-                [600, 1500, 3000].forEach(delay => {
-                    kickstartTimers.push(setTimeout(wakeUpStalledPlayer, delay));
-                });
-            };
-
-            document.addEventListener('ended', (e) => {
-                if (e.target && e.target.tagName === 'VIDEO') {
-                    isTrackTransitioning = true;
-                    keepAliveLact();
-                    scheduleZeroStallKickstart();
-                }
-            }, true);
-
-            ['loadedmetadata', 'loadeddata', 'canplay'].forEach(evt => {
-                document.addEventListener(evt, (e) => {
-                    if (e.target && e.target.tagName === 'VIDEO') {
-                        keepAliveLact();
-                        if (checkRealBackground() || isTrackTransitioning) {
-                            scheduleZeroStallKickstart();
-                        }
-                    }
-                }, true);
-            });
-
-            document.addEventListener('pause', (e) => {
-                if (e.target && e.target.tagName === 'VIDEO') {
-                    if (e.target.ended) {
-                        isTrackTransitioning = true;
-                        keepAliveLact();
-                        scheduleZeroStallKickstart();
-                        return;
-                    }
-                    if (Date.now() - lastLockTransitionTime < 1200) {
-                        const v = e.target;
-                        setTimeout(() => {
-                            try {
-                                const player = document.getElementById('movie_player') || document.querySelector('.html5-video-player');
-                                if (player && typeof player.playVideo === 'function') player.playVideo();
-                                v.play().catch(() => {});
-                            } catch (err) {}
-                        }, 100);
-                    }
-                }
-            }, true);
-
             let lastQualityVideoSrc = '';
             document.addEventListener('playing', (e) => {
                 if (e.target && e.target.tagName === 'VIDEO') {
-                    isTrackTransitioning = false;
-                    clearKickstartTimers();
                     keepAliveLact();
-                    if (!checkRealBackground() && e.target.currentSrc !== lastQualityVideoSrc) {
+                    if (e.target.currentSrc !== lastQualityVideoSrc) {
                         lastQualityVideoSrc = e.target.currentSrc;
                         applyMaxQualityToPlayer();
                         setTimeout(applyMaxQualityToPlayer, 400);
@@ -558,9 +448,307 @@
                 }
             }, true);
 
+            // ============================================================================
+            // [3-3] My YouTube Customizer (기존 style.css + content.js 100% 동일 이식)
+            // ============================================================================
+            function initYouTubeCustomizerModule() {
+                // 1. 기존 style.css 원본 그대로 주입 (임의 수정 금지)
+                const customizerCss = `
+                 #chat-container,
+                 #chat,
+                 ytd-live-chat-frame,
+                 ytd-engagement-panel-section-list-renderer[target-id="engagement-panel-live-chat-description"] {
+                 display: none !important;
+                 }
+
+                 ytd-watch-flexy[playlist] #related {
+                 display: none !important;
+                 }
+
+                 ytd-watch-flexy[playlist] .html5-endscreen,
+                 ytd-watch-flexy[playlist] .ytp-ce-element {
+                 display: none !important;
+                 }
+                `;
+                injectModuleStyle(customizerCss, 'my-youtube-customizer-style');
+
+                // 2. 기존 content.js (광고 제거 및 주석 보존 확정본) 원본 로직 100% 유지
+                /**
+                 * [아키텍처 및 유지보수 주의사항 - 임의 수정 금지]
+                 * 1. checkAndLockPlaylist / updateFirstItemUrl / ended 리스너:
+                 *    플레이리스트 고정 및 마지막 곡 종료 후 첫 곡 순환 로직이 완성되어 있으므로 구조 변경 금지.
+                 * 2. [광고 기능 제거 완료 - 복구 및 임의 수정 금지] handleAds 내 배속(16.0) 및 시간 이동(duration - 0.05) 수치:
+                 *    기존 버전의 광고 스킵/배속/시간 이동/음소거 기능은 모두 비활성화(주석 처리) 완료되었음.
+                 * 3. isUserPaused 기반 자동 재생 복구:
+                 *    사용자의 직접 조작(클릭/키보드) 없는 일시정지(광고 전환 직후, 모니터 절전, 백그라운드 정지)만 골라 자동 재생함.
+                 * 4. [코드 구조 유지 및 의미 없는 반복 수정 금지]:
+                 *    - 테스트 완료된 원본(content.js)의 함수 배치 및 실행 순서를 절대 변경하지 말 것.
+                 *    - 불필요한 헬퍼 함수(예: isAdShowing 등)를 새로 만들거나 play/pause/observeYouTubeDOM 내부 로직을 임의 변형하지 말 것.
+                 */
+
+                let activeListId = null;
+                let fallbackPlaylistUrl = null;
+
+                /* [광고 기능 제거 기록 - 관련 상태 변수 완전 비활성화 (이후 의미 없는 수정 금지)]
+                let isAdPlaying = false;
+                let prevMuted = false;
+                let prevPlaybackRate = 1.0;
+                */
+
+                // 사용자가 직접 일시정지했는지 여부를 추적 (시스템 강제 일시정지와 구분)
+                let isUserPaused = false;
+                let lastUserInteractionTime = 0;
+
+                // [유지 - 수정 금지] 플레이리스트 첫 번째 곡 URL 확보
+                function updateFirstItemUrl() {
+                    const firstItem = document.querySelector('ytd-playlist-panel-renderer a#wc-endpoint');
+                    if (firstItem && firstItem.href) {
+                        fallbackPlaylistUrl = firstItem.href;
+                    }
+                }
+
+                // [유지 - 수정 금지] 플레이리스트 이탈 감지 및 강제 복귀
+                function checkAndLockPlaylist() {
+                    const currentUrl = new URL(window.location.href);
+                    const listParam = currentUrl.searchParams.get('list');
+
+                    if (currentUrl.pathname !== '/watch') {
+                        activeListId = null;
+                        fallbackPlaylistUrl = null;
+                        return;
+                    }
+
+                    if (listParam) {
+                        if (activeListId !== listParam) {
+                            activeListId = listParam;
+                            fallbackPlaylistUrl = window.location.href;
+                        }
+                        updateFirstItemUrl();
+                    } else if (activeListId && fallbackPlaylistUrl) {
+                        window.location.replace(fallbackPlaylistUrl);
+                    }
+                }
+
+                window.addEventListener('yt-navigate-finish', () => {
+                    isUserPaused = false;
+                    checkAndLockPlaylist();
+                });
+                checkAndLockPlaylist();
+
+                // 사용자 직접 조작(마우스 클릭, 스페이스바, K키, 미디어키) 감지
+                function recordUserInteraction(e) {
+                    if (!e.isTrusted) return;
+                    if (e.type === 'mousedown') {
+                        // 플레이어 영역이나 하단 컨트롤바 클릭 시에만 사용자 조작으로 기록
+                        if (e.target.closest('#movie_player, .html5-video-player, ytd-player')) {
+                            lastUserInteractionTime = Date.now();
+                        }
+                    } else if (e.type === 'keydown') {
+                        if (['Space', 'KeyK', 'MediaPlayPause'].includes(e.code) || [' ', 'k', 'K'].includes(e.key)) {
+                            lastUserInteractionTime = Date.now();
+                        }
+                    }
+                }
+
+                window.addEventListener('mousedown', recordUserInteraction, true);
+                window.addEventListener('keydown', recordUserInteraction, true);
+
+                // [유지 - 임의 변형 금지] 비디오 이벤트 감지를 통해 사용자 일시정지 vs 시스템 강제 일시정지 판별
+                document.addEventListener('pause', (e) => {
+                    if (e.target && e.target.tagName === 'VIDEO') {
+                        const adPlayer = document.querySelector('.html5-video-player.ad-showing, .html5-video-player.ad-interrupting');
+                        // [광고 기능 제거 기록] isAdPlaying 조건만 주석 처리하고 원본 adPlayer 감지 로직 유지 (이후 의미 없는 수정 금지)
+                        if (adPlayer /* || isAdPlaying */ || e.target.ended) return;
+
+                        // 최근 800ms 이내에 사용자의 플레이어 클릭/단축키 입력이 있었다면 정상적인 사용자 일시정지로 인정
+                        if (Date.now() - lastUserInteractionTime < 800) {
+                            isUserPaused = true;
+                        } else {
+                            // 사용자 조작 없이 멈춘 경우(모니터 절전, 오디오 재연결, 광고 직후 멈춤 등) 즉시 재생 복구
+                            isUserPaused = false;
+                            setTimeout(() => {
+                                if (e.target.paused && !e.target.ended && !isUserPaused) {
+                                    e.target.play().catch(() => {});
+                                }
+                            }, 150);
+                        }
+                    }
+                }, true);
+
+                // [유지 - 임의 조건 추가 금지] 재생 시작 시 사용자 일시정지 플래그 해제
+                document.addEventListener('play', (e) => {
+                    if (e.target && e.target.tagName === 'VIDEO') {
+                        isUserPaused = false;
+                    }
+                }, true);
+
+                /* [광고 기능 제거 기록 - 광고 스킵/오버레이 닫기/음소거/16배속/시간 점프 기능 전체 비활성화 (이후 의미 없는 수정 금지)]
+                function handleAds() {
+                  // 1. 스킵 버튼 및 오버레이 닫기 버튼 클릭 시도
+                  const skipButtons = document.querySelectorAll(
+                    '.ytp-ad-skip-button, .ytp-ad-skip-button-modern, .ytp-skip-ad-button, .ytp-ad-skip-button-slot button, .ytp-ad-overlay-close-button'
+                  );
+                  skipButtons.forEach((btn) => btn.click());
+
+                  // 2. 동영상 광고 감지 및 자연 종료 유도
+                  const adPlayer = document.querySelector('.html5-video-player.ad-showing, .html5-video-player.ad-interrupting');
+                  const video = document.querySelector('video.html5-main-video');
+
+                  if (adPlayer && video) {
+                    if (!isAdPlaying) {
+                      isAdPlaying = true;
+                      prevMuted = video.muted;
+                      prevPlaybackRate = video.playbackRate < 16.0 ? video.playbackRate : 1.0;
+                    }
+                    video.muted = true;
+                    video.playbackRate = 16.0;
+
+                    // [수정 금지] 완전 끝(duration)으로 점프하면 스킵 대기 화면에서 멈추므로 0.05초 전으로 이동 후 재생 유지
+                    if (isFinite(video.duration) && video.duration > 0.5 && video.currentTime < video.duration - 0.2) {
+                      video.currentTime = video.duration - 0.05;
+                    }
+                    if (video.paused) {
+                      video.play().catch(() => {});
+                    }
+                  } else if (isAdPlaying && video) {
+                    // 광고가 끝나면 원래 사용자의 음소거 상태와 재생 속도로 복구
+                    isAdPlaying = false;
+                    video.muted = prevMuted;
+                    video.playbackRate = prevPlaybackRate;
+
+                    // 광고 종료 직후 본영상이 일시정지 상태로 로드되는 현상 방지
+                    if (video.paused && !video.ended && !isUserPaused) {
+                      video.play().catch(() => {});
+                    }
+                  }
+                }
+                */
+
+                // [유지 - 내부 코드 순서 및 로직 임의 변경 금지]
+                function observeYouTubeDOM() {
+                    // [광고 기능 제거 기록 - handleAds 호출 비활성화 (이후 의미 없는 수정 금지)]
+                    // handleAds();
+
+                    // 일시정지 확인 팝업 자동 닫기 (화면 잠금/비가시 상태에서도 감지되도록 hidden 속성 체크 병행)
+                    const dialogs = document.querySelectorAll('yt-confirm-dialog-renderer');
+                    dialogs.forEach((dialog) => {
+                        const rect = dialog.getBoundingClientRect();
+                        const paperDialog = dialog.closest('tp-yt-paper-dialog');
+                        const isVisible =
+                            (rect.width > 0 && rect.height > 0) ||
+                            (paperDialog && !paperDialog.hasAttribute('hidden') && paperDialog.getAttribute('aria-hidden') !== 'true');
+
+                        if (isVisible) {
+                            const confirmBtn = dialog.querySelector('#confirm-button button, yt-button-renderer#confirm-button button');
+                            if (confirmBtn) {
+                                confirmBtn.click();
+                                isUserPaused = false;
+                                const video = document.querySelector('video.html5-main-video');
+                                if (video && video.paused) {
+                                    video.play().catch(() => {});
+                                }
+                            }
+                        }
+                    });
+
+                    // 실시간 채팅 차단
+                    const chatFrame = document.querySelector('ytd-live-chat-frame iframe#chatframe');
+                    if (chatFrame && chatFrame.src !== 'about:blank') {
+                        chatFrame.src = 'about:blank';
+                    }
+
+                    // 플레이리스트 활성화 시 첫 곡 URL 갱신 및 자동재생 토글 제어
+                    if (activeListId) {
+                        updateFirstItemUrl();
+                        const autonavBtn = document.querySelector('.ytp-autonav-toggle-button[aria-checked="true"]');
+                        if (autonavBtn) {
+                            autonavBtn.click();
+                        }
+                    }
+                }
+
+                const observer = new MutationObserver(observeYouTubeDOM);
+                observer.observe(document.body, { childList: true, subtree: true });
+
+                // 0.2초 주기로 비사용자 일시정지 및 팝업 상태를 상시 점검 (기존 광고 즉시 처리 루틴은 제거됨)
+                setInterval(() => {
+                    /* [광고 기능 제거 기록 - 주기적 광고 스킵 호출 비활성화 (이후 의미 없는 수정 금지)]
+                    if (isAdPlaying || document.querySelector('.html5-video-player.ad-showing, .html5-video-player.ad-interrupting')) {
+                      handleAds();
+                    }
+                    */
+
+                    // 시청 페이지에서 사용자 조작 없이 영상이 멈춰 있다면 팝업 점검 및 강제 재생
+                    if (window.location.pathname === '/watch') {
+                        const adPlayer = document.querySelector('.html5-video-player.ad-showing, .html5-video-player.ad-interrupting');
+                        const video = document.querySelector('video.html5-main-video');
+                        // [광고 기능 제거 기록] 기존 !isAdPlaying을 원본의 !adPlayer 감지로 대체하여 광고 중 불필요한 개입 방지 (이후 의미 없는 수정 금지)
+                        if (video && video.paused && !video.ended && !isUserPaused && !adPlayer /* && !isAdPlaying */) {
+                            observeYouTubeDOM();
+                            video.play().catch(() => {});
+                        }
+                    }
+                }, 200);
+
+                // [유지 - 수정 금지] 플레이리스트 마지막 곡 종료 시 이탈 방지 및 첫 곡 순환
+                document.addEventListener('ended', (e) => {
+                    // 광고 영상이 끝나서 발생한 ended 이벤트는 무시
+                    const adPlayer = document.querySelector('.html5-video-player.ad-showing, .html5-video-player.ad-interrupting');
+                    // [광고 기능 제거 기록] isAdPlaying 조건만 주석 처리하고 원본 adPlayer 감지 로직 유지 (이후 의미 없는 수정 금지)
+                    if (adPlayer /* || isAdPlaying */) return;
+
+                    if (e.target && e.target.tagName === 'VIDEO' && activeListId) {
+                        const nextBtn = document.querySelector('a.ytp-next-button');
+                        let isLeavingPlaylist = false;
+
+                        if (nextBtn && nextBtn.href) {
+                            try {
+                                const nextUrl = new URL(nextBtn.href, window.location.origin);
+                                if (nextUrl.searchParams.get('list') !== activeListId) {
+                                    isLeavingPlaylist = true;
+                                }
+                            } catch (err) {}
+                        }
+
+                        if (isLeavingPlaylist) {
+                            e.stopImmediatePropagation();
+                            const firstItem = document.querySelector('ytd-playlist-panel-renderer a#wc-endpoint');
+                            if (firstItem) {
+                                firstItem.click();
+                            } else if (fallbackPlaylistUrl) {
+                                window.location.replace(fallbackPlaylistUrl);
+                            }
+                        }
+                    }
+                }, true);
+
+                // 화면을 켜둘 때 윈도우/모니터가 자동으로 절전 모드로 진입하지 않도록 방지 (Screen Wake Lock)
+                let wakeLock = null;
+                async function requestWakeLock() {
+                    if ('wakeLock' in navigator && document.visibilityState === 'visible') {
+                        try {
+                            if (!wakeLock || wakeLock.released) {
+                                wakeLock = await navigator.wakeLock.request('screen');
+                            }
+                        } catch (err) {}
+                    }
+                }
+
+                document.addEventListener('visibilitychange', () => {
+                    if (document.visibilityState === 'visible') {
+                        requestWakeLock();
+                    }
+                });
+                requestWakeLock();
+            }
+
+            // [3-4] /watch 전용 반투명 PiP 버튼, 댓글 스크롤 시 자동 숨김 & Customizer 초기화 (document-idle 시점)
             runAtDocumentIdle(function() {
-                const ytPipStyle = document.createElement('style');
-                ytPipStyle.textContent = `
+                if (window.top === window.self) {
+                    initYouTubeCustomizerModule();
+                }
+
+                const ytPipStyle = `
                     #force-pip-btn {
                         position: fixed !important;
                         bottom: 76px !important;
@@ -593,7 +781,7 @@
                         pointer-events: none !important;
                     }
                 `;
-                (document.head || document.documentElement).appendChild(ytPipStyle);
+                injectModuleStyle(ytPipStyle, 'yt-force-pip-style');
 
                 let cachedVideo = null;
                 let lastVideoCheckTime = 0;
@@ -710,11 +898,7 @@
                     window.addEventListener(evt, () => {
                         keepAliveLact();
                         schedulePipUpdate();
-                        if (checkRealBackground() || isTrackTransitioning) {
-                            scheduleZeroStallKickstart();
-                        } else {
-                            applyMaxQualityToPlayer();
-                        }
+                        applyMaxQualityToPlayer();
                     });
                 });
 
