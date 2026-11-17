@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         [통합] 내 전용 웹사이트 편의성 & 광고 차단팩
 // @namespace    http://tampermonkey.net/
-// @version      4.3
+// @version      4.4
 // @description  1.나무위키 광고차단 | 2.툰코(서브도메인 대응) 스크롤메뉴·배너제거 | 3.유튜브 PiP·백그라운드 연속재생(rAF우회/0:00돌파)·최고화질 | 4.디시 스텔스·IP/반고닉·핀셋차단 | 5.블로그·티스토리 복사해제
 //
 // --- [1. 나무위키 주소 규칙] ---
@@ -449,41 +449,42 @@
             }, true);
 
             // ============================================================================
-            // [3-3] My YouTube Customizer (기존 style.css + content.js 100% 동일 이식)
+            // [3-3] My YouTube Customizer (기존 style.css + content.js 이식 및 iOS 수동 정지 판별 보강)
             // ============================================================================
             function initYouTubeCustomizerModule() {
                 // 1. 기존 style.css 원본 그대로 주입 (임의 수정 금지)
                 const customizerCss = `
-                 #chat-container,
-                 #chat,
-                 ytd-live-chat-frame,
-                 ytd-engagement-panel-section-list-renderer[target-id="engagement-panel-live-chat-description"] {
-                 display: none !important;
-                 }
+                #chat-container,
+                #chat,
+                ytd-live-chat-frame,
+                ytd-engagement-panel-section-list-renderer[target-id="engagement-panel-live-chat-description"] {
+                display: none !important;
+                }
 
-                 ytd-watch-flexy[playlist] #related {
-                 display: none !important;
-                 }
+                ytd-watch-flexy[playlist] #related {
+                display: none !important;
+                }
 
-                 ytd-watch-flexy[playlist] .html5-endscreen,
-                 ytd-watch-flexy[playlist] .ytp-ce-element {
-                 display: none !important;
-                 }
+                ytd-watch-flexy[playlist] .html5-endscreen,
+                ytd-watch-flexy[playlist] .ytp-ce-element {
+                display: none !important;
+                }
                 `;
                 injectModuleStyle(customizerCss, 'my-youtube-customizer-style');
 
-                // 2. 기존 content.js (광고 제거 및 주석 보존 확정본) 원본 로직 100% 유지
+                // 2. 기존 content.js (광고 제거 및 주석 보존 확정본) + iOS 사파리 수동 일시정지 오작동 방지
                 /**
                  * [아키텍처 및 유지보수 주의사항 - 임의 수정 금지]
                  * 1. checkAndLockPlaylist / updateFirstItemUrl / ended 리스너:
                  *    플레이리스트 고정 및 마지막 곡 종료 후 첫 곡 순환 로직이 완성되어 있으므로 구조 변경 금지.
                  * 2. [광고 기능 제거 완료 - 복구 및 임의 수정 금지] handleAds 내 배속(16.0) 및 시간 이동(duration - 0.05) 수치:
                  *    기존 버전의 광고 스킵/배속/시간 이동/음소거 기능은 모두 비활성화(주석 처리) 완료되었음.
-                 * 3. isUserPaused 기반 자동 재생 복구:
-                 *    사용자의 직접 조작(클릭/키보드) 없는 일시정지(광고 전환 직후, 모니터 절전, 백그라운드 정지)만 골라 자동 재생함.
+                 * 3. [일시정지 자동 복구 수정 기록 - 의미 없는 반복 수정 금지] isUserPaused 기반 자동 재생 복구:
+                 *    - 모바일 사파리 터치(touchstart/pointerdown/click) 및 모바일 컨트롤 오버레이(#player-control-overlay 등) 선택자 필수 유지.
+                 *    - iOS 다이내믹 아일랜드/잠금화면/제어센터 수동 정지 인식을 위한 MediaSession 후킹 및 원본 Document.prototype.hidden 전환 시점(1500ms) 판별 로직 임의 제거·축소 금지.
+                 *    - 화면 잠금/탭 전환/사파리 내림 시에만 자동 복구(lastBgTransitionTime < 1500)하고, 포그라운드 시청 중 정지나 백그라운드 안정 재생 중 정지는 사용자 수동 정지(isUserPaused = true)로 보존할 것.
                  * 4. [코드 구조 유지 및 의미 없는 반복 수정 금지]:
                  *    - 테스트 완료된 원본(content.js)의 함수 배치 및 실행 순서를 절대 변경하지 말 것.
-                 *    - 불필요한 헬퍼 함수(예: isAdShowing 등)를 새로 만들거나 play/pause/observeYouTubeDOM 내부 로직을 임의 변형하지 말 것.
                  */
 
                 let activeListId = null;
@@ -498,6 +499,102 @@
                 // 사용자가 직접 일시정지했는지 여부를 추적 (시스템 강제 일시정지와 구분)
                 let isUserPaused = false;
                 let lastUserInteractionTime = 0;
+                let lastBgTransitionTime = 0;
+                let lastTrackTransitionTime = 0;
+                let lastAdShowingTime = 0;
+
+                // [일시정지 자동 복구 수정 기록 - 삭제 금지] [3-1]의 document.hidden 위장과 무관하게 실제 iOS 화면 잠금/탭 전환 상태를 감지
+                const nativeHiddenDesc = Object.getOwnPropertyDescriptor(Document.prototype, 'hidden');
+                const nativeVisDesc = Object.getOwnPropertyDescriptor(Document.prototype, 'visibilityState');
+                function isRealHidden() {
+                    try {
+                        if (nativeHiddenDesc && typeof nativeHiddenDesc.get === 'function') {
+                            return !!nativeHiddenDesc.get.call(document);
+                        }
+                        if (nativeVisDesc && typeof nativeVisDesc.get === 'function') {
+                            return nativeVisDesc.get.call(document) !== 'visible';
+                        }
+                    } catch (e) {}
+                    return false;
+                }
+
+                let wasRealHidden = isRealHidden();
+                function syncVisibilityTransition() {
+                    const curHidden = isRealHidden();
+                    if (curHidden && !wasRealHidden) {
+                        // 화면 잠금, 사파리 탭 전환, 사파리 내림 발생 시점 기록
+                        lastBgTransitionTime = Date.now();
+                    }
+                    wasRealHidden = curHidden;
+                    return curHidden;
+                }
+
+                window.addEventListener('blur', syncVisibilityTransition, true);
+                window.addEventListener('focus', syncVisibilityTransition, true);
+                window.addEventListener('pageshow', syncVisibilityTransition, true);
+
+                // [일시정지 자동 복구 수정 기록 - 삭제 금지] iOS 다이내믹 아일랜드·잠금화면·제어센터·이어폰 수동 정지/재생 감지용 MediaSession 후킹
+                function setupMediaSessionHook() {
+                    if (!('mediaSession' in navigator) || ! window.MediaSession) return;
+                    try {
+                        const proto = window.MediaSession.prototype;
+                        if (proto && typeof proto.setActionHandler === 'function' && !proto.setActionHandler._ytCustomPatched) {
+                            const origSetActionHandler = proto.setActionHandler;
+                            const wrappedSetActionHandler = function(action, handler) {
+                                if (action === 'pause' || action === 'stop') {
+                                    const wrappedPause = function() {
+                                        isUserPaused = true;
+                                        lastUserInteractionTime = Date.now();
+                                        if (typeof handler === 'function') return handler.apply(this, arguments);
+                                        const v = document.querySelector('video.html5-main-video, video');
+                                        if (v && !v.paused) v.pause();
+                                    };
+                                    return origSetActionHandler.call(this, action, wrappedPause);
+                                }
+                                if (action === 'play') {
+                                    const wrappedPlay = function() {
+                                        isUserPaused = false;
+                                        if (typeof handler === 'function') return handler.apply(this, arguments);
+                                        const v = document.querySelector('video.html5-main-video, video');
+                                        if (v && v.paused) v.play().catch(() => {});
+                                    };
+                                    return origSetActionHandler.call(this, action, wrappedPlay);
+                                }
+                                return origSetActionHandler.apply(this, arguments);
+                            };
+                            wrappedSetActionHandler._ytCustomPatched = true;
+                            proto.setActionHandler = wrappedSetActionHandler;
+                        }
+                        // 모바일 유튜브 기본 핸들러 미등록 상태 대비 초기 바인딩
+                        navigator.mediaSession.setActionHandler('pause', () => {
+                            isUserPaused = true;
+                            lastUserInteractionTime = Date.now();
+                            const v = document.querySelector('video.html5-main-video, video');
+                            if (v && !v.paused) v.pause();
+                        });
+                        navigator.mediaSession.setActionHandler('play', () => {
+                            isUserPaused = false;
+                            const v = document.querySelector('video.html5-main-video, video');
+                            if (v && v.paused) v.play().catch(() => {});
+                        });
+                    } catch (e) {}
+                }
+                setupMediaSessionHook();
+
+                // 일시정지 확인 팝업("계속 시청하시겠습니까?") 노출 여부 확인 (PC/모바일 겸용)
+                function isConfirmPopupVisible() {
+                    const dialogs = document.querySelectorAll('yt-confirm-dialog-renderer, ytm-you-there-renderer');
+                    for (let i = 0; i < dialogs.length; i++) {
+                        const dialog = dialogs[i];
+                        const rect = dialog.getBoundingClientRect();
+                        const paperDialog = dialog.closest('tp-yt-paper-dialog, [ role="dialog" ]');
+                        if ((rect.width > 0 && rect.height > 0) ||
+                            (paperDialog && !paperDialog.hasAttribute('hidden') && paperDialog.getAttribute('aria-hidden') !== 'true')) {
+                            return true;
+                        }
+                    }
+                    return false;
+                }
 
                 // [유지 - 수정 금지] 플레이리스트 첫 번째 곡 URL 확보
                 function updateFirstItemUrl() {
@@ -531,47 +628,96 @@
 
                 window.addEventListener('yt-navigate-finish', () => {
                     isUserPaused = false;
+                    lastTrackTransitionTime = Date.now();
                     checkAndLockPlaylist();
                 });
                 checkAndLockPlaylist();
 
-                // 사용자 직접 조작(마우스 클릭, 스페이스바, K키, 미디어키) 감지
+                // [일시정지 자동 복구 수정 기록 - 임의 축소 금지] 모바일 사파리 터치/포인터 및 모바일 플레이어 컨트롤 오버레이(#player-control-overlay 등) 포함 감지
+                const PLAYER_INTERACTION_SELECTOR = [
+                    '#movie_player',
+                    '.html5-video-player',
+                    'ytd-player',
+                    'ytm-player',
+                    '#player',
+                    '#player-container-id',
+                    '#player-control-overlay',
+                    '.player-controls-content',
+                    'ytm-custom-control',
+                    '.ytp-play-button',
+                    'button[aria-label*="일시중지"]',
+                    'button[aria-label*="Pause"]',
+                    'button[aria-label*="재생"]',
+                    'button[aria-label*="Play"]'
+                ].join(', ');
+
                 function recordUserInteraction(e) {
                     if (!e.isTrusted) return;
-                    if (e.type === 'mousedown') {
-                        // 플레이어 영역이나 하단 컨트롤바 클릭 시에만 사용자 조작으로 기록
-                        if (e.target.closest('#movie_player, .html5-video-player, ytd-player')) {
-                            lastUserInteractionTime = Date.now();
-                        }
-                    } else if (e.type === 'keydown') {
+                    if (e.type === 'keydown') {
                         if (['Space', 'KeyK', 'MediaPlayPause'].includes(e.code) || [' ', 'k', 'K'].includes(e.key)) {
                             lastUserInteractionTime = Date.now();
                         }
+                        return;
+                    }
+                    if (e.target && typeof e.target.closest === 'function' && e.target.closest(PLAYER_INTERACTION_SELECTOR)) {
+                        lastUserInteractionTime = Date.now();
                     }
                 }
 
-                window.addEventListener('mousedown', recordUserInteraction, true);
+                ['pointerdown', 'touchstart', 'touchend', 'mousedown', 'click'].forEach(evt => {
+                    window.addEventListener(evt, recordUserInteraction, { capture: true, passive: true });
+                });
                 window.addEventListener('keydown', recordUserInteraction, true);
 
                 // [유지 - 임의 변형 금지] 비디오 이벤트 감지를 통해 사용자 일시정지 vs 시스템 강제 일시정지 판별
                 document.addEventListener('pause', (e) => {
                     if (e.target && e.target.tagName === 'VIDEO') {
                         const adPlayer = document.querySelector('.html5-video-player.ad-showing, .html5-video-player.ad-interrupting');
-                        // [광고 기능 제거 기록] isAdPlaying 조건만 주석 처리하고 원본 adPlayer 감지 로직 유지 (이후 의미 없는 수정 금지)
-                        if (adPlayer /* || isAdPlaying */ || e.target.ended) return;
-
-                        // 최근 800ms 이내에 사용자의 플레이어 클릭/단축키 입력이 있었다면 정상적인 사용자 일시정지로 인정
-                        if (Date.now() - lastUserInteractionTime < 800) {
-                            isUserPaused = true;
-                        } else {
-                            // 사용자 조작 없이 멈춘 경우(모니터 절전, 오디오 재연결, 광고 직후 멈춤 등) 즉시 재생 복구
-                            isUserPaused = false;
-                            setTimeout(() => {
-                                if (e.target.paused && !e.target.ended && !isUserPaused) {
-                                    e.target.play().catch(() => {});
-                                }
-                            }, 150);
+                        if (adPlayer) {
+                            lastAdShowingTime = Date.now();
+                            return;
                         }
+                        // [광고 기능 제거 기록] isAdPlaying 조건만 주석 처리하고 원본 adPlayer 감지 로직 유지 (이후 의미 없는 수정 금지)
+                        if (/* isAdPlaying || */ e.target.ended) {
+                            lastTrackTransitionTime = Date.now();
+                            return;
+                        }
+
+                        syncVisibilityTransition();
+
+                        // 1. 최근 1000ms 이내에 플레이어 터치/클릭/단축키 또는 MediaSession 수동 정지가 있었다면 즉시 사용자 일시정지로 확정
+                        if (Date.now() - lastUserInteractionTime < 1000) {
+                            isUserPaused = true;
+                            return;
+                        }
+
+                        // 2. 150ms 대기 후 실제 백그라운드 전환(화면 잠금/탭 전환/사파리 내림) 여부와 대조하여 자동 복구 vs 수동 정지 판별
+                        setTimeout(() => {
+                            if (!e.target.paused || e.target.ended || isUserPaused) return;
+
+                            const curHidden = syncVisibilityTransition();
+                            const now = Date.now();
+
+                            // 시스템 강제 정지로 인정하여 자동 복구할 4가지 조건:
+                            // ① 화면 잠금 / 사파리 탭 전환 / 사파리 내림 직후 (1500ms 이내)
+                            // ② 광고 종료 직후 (1500ms 이내)
+                            // ③ 다음 곡 전환 로딩 직후 (3000ms 이내 또는 재생 시작 0.8초 미만)
+                            // ④ "계속 시청하시겠습니까?" 일시정지 팝업 노출 시
+                            const isSystemAutoPause =
+                                (curHidden && (now - lastBgTransitionTime < 1500)) ||
+                                (now - lastAdShowingTime < 1500) ||
+                                (now - lastTrackTransitionTime < 3000) ||
+                                (e.target.currentTime < 0.8) ||
+                                isConfirmPopupVisible();
+
+                            if (isSystemAutoPause) {
+                                isUserPaused = false;
+                                e.target.play().catch(() => {});
+                            } else {
+                                // 포그라운드 시청 중 정지(다이내믹 아일랜드/제어센터 포함) 또는 백그라운드 안정 재생 중 잠금화면 정지는 수동 정지로 보존
+                                isUserPaused = true;
+                            }
+                        }, 150);
                     }
                 }, true);
 
@@ -579,6 +725,7 @@
                 document.addEventListener('play', (e) => {
                     if (e.target && e.target.tagName === 'VIDEO') {
                         isUserPaused = false;
+                        syncVisibilityTransition();
                     }
                 }, true);
 
@@ -629,21 +776,21 @@
                     // [광고 기능 제거 기록 - handleAds 호출 비활성화 (이후 의미 없는 수정 금지)]
                     // handleAds();
 
-                    // 일시정지 확인 팝업 자동 닫기 (화면 잠금/비가시 상태에서도 감지되도록 hidden 속성 체크 병행)
-                    const dialogs = document.querySelectorAll('yt-confirm-dialog-renderer');
+                    // 일시정지 확인 팝업 자동 닫기 (화면 잠금/비가시 상태에서도 감지되도록 hidden 속성 체크 병행, 모바일 ytm-you-there-renderer 포함)
+                    const dialogs = document.querySelectorAll('yt-confirm-dialog-renderer, ytm-you-there-renderer');
                     dialogs.forEach((dialog) => {
                         const rect = dialog.getBoundingClientRect();
-                        const paperDialog = dialog.closest('tp-yt-paper-dialog');
+                        const paperDialog = dialog.closest('tp-yt-paper-dialog, [role="dialog"]');
                         const isVisible =
                             (rect.width > 0 && rect.height > 0) ||
                             (paperDialog && !paperDialog.hasAttribute('hidden') && paperDialog.getAttribute('aria-hidden') !== 'true');
 
                         if (isVisible) {
-                            const confirmBtn = dialog.querySelector('#confirm-button button, yt-button-renderer#confirm-button button');
+                            const confirmBtn = dialog.querySelector('#confirm-button button, yt-button-renderer#confirm-button button, button');
                             if (confirmBtn) {
                                 confirmBtn.click();
                                 isUserPaused = false;
-                                const video = document.querySelector('video.html5-main-video');
+                                const video = document.querySelector('video.html5-main-video, video');
                                 if (video && video.paused) {
                                     video.play().catch(() => {});
                                 }
@@ -670,7 +817,7 @@
                 const observer = new MutationObserver(observeYouTubeDOM);
                 observer.observe(document.body, { childList: true, subtree: true });
 
-                // 0.2초 주기로 비사용자 일시정지 및 팝업 상태를 상시 점검 (기존 광고 즉시 처리 루틴은 제거됨)
+                // 0.2초 주기로 비사용자 일시정지(화면 잠금/탭 전환/팝업/트랙 전환) 상태를 상시 점검
                 setInterval(() => {
                     /* [광고 기능 제거 기록 - 주기적 광고 스킵 호출 비활성화 (이후 의미 없는 수정 금지)]
                     if (isAdPlaying || document.querySelector('.html5-video-player.ad-showing, .html5-video-player.ad-interrupting')) {
@@ -678,14 +825,28 @@
                     }
                     */
 
-                    // 시청 페이지에서 사용자 조작 없이 영상이 멈춰 있다면 팝업 점검 및 강제 재생
+                    const curHidden = syncVisibilityTransition();
+
                     if (window.location.pathname === '/watch') {
                         const adPlayer = document.querySelector('.html5-video-player.ad-showing, .html5-video-player.ad-interrupting');
-                        const video = document.querySelector('video.html5-main-video');
+                        if (adPlayer) {
+                            lastAdShowingTime = Date.now();
+                            return;
+                        }
+                        const video = document.querySelector('video.html5-main-video, video');
                         // [광고 기능 제거 기록] 기존 !isAdPlaying을 원본의 !adPlayer 감지로 대체하여 광고 중 불필요한 개입 방지 (이후 의미 없는 수정 금지)
                         if (video && video.paused && !video.ended && !isUserPaused && !adPlayer /* && !isAdPlaying */) {
                             observeYouTubeDOM();
-                            video.play().catch(() => {});
+                            const now = Date.now();
+                            const shouldRecover =
+                                (curHidden && (now - lastBgTransitionTime < 1500)) ||
+                                (now - lastAdShowingTime < 1500) ||
+                                (now - lastTrackTransitionTime < 3000) ||
+                                (video.currentTime < 0.8);
+
+                            if (shouldRecover) {
+                                video.play().catch(() => {});
+                            }
                         }
                     }
                 }, 200);
@@ -696,6 +857,11 @@
                     const adPlayer = document.querySelector('.html5-video-player.ad-showing, .html5-video-player.ad-interrupting');
                     // [광고 기능 제거 기록] isAdPlaying 조건만 주석 처리하고 원본 adPlayer 감지 로직 유지 (이후 의미 없는 수정 금지)
                     if (adPlayer /* || isAdPlaying */) return;
+
+                    if (e.target && e.target.tagName === 'VIDEO') {
+                        lastTrackTransitionTime = Date.now();
+                        isUserPaused = false;
+                    }
 
                     if (e.target && e.target.tagName === 'VIDEO' && activeListId) {
                         const nextBtn = document.querySelector('a.ytp-next-button');
